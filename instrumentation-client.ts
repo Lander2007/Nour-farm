@@ -1,0 +1,2 @@
+// Client instrumentation disabled
+export {}

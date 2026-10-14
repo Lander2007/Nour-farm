@@ -1,0 +1,10 @@
+{
+  "description": "An Arabic-first e-commerce site offering a cinematic scroll-driven journey showcasing fresh produce preparation with interactive shopping and seamless cart management.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

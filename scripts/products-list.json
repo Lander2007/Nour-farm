@@ -1,0 +1,782 @@
+[
+  {
+    "id": "tomato",
+    "name": "طماطم بلدي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "cucumber",
+    "name": "خيار بلدي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "carrot",
+    "name": "جزر أصفر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "bell-pepper",
+    "name": "فلفل ألوان أحمر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "broccoli",
+    "name": "بروكلي أخضر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "lemon",
+    "name": "ليمون بلدي",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "avocado",
+    "name": "أفوكادو هاس",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "pomegranate",
+    "name": "رمان بلدي",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "orange",
+    "name": "برتقال أبو سرة",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "basil",
+    "name": "ريحان طازج",
+    "section": "الخضرة"
+  },
+  {
+    "id": "cherry-tomato",
+    "name": "طماطم شيري سكري",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "frying-potatoes",
+    "name": "بطاطس تحمير رملية",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "spunta-potatoes",
+    "name": "بطاطس إسبونتا للطبخ",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "red-onion",
+    "name": "بصل أحمر فاير بلدي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "white-onion",
+    "name": "بصل أبيض فاير حلو",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "crisp-cucumber",
+    "name": "خيار بلدي مقرمش",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "carrots",
+    "name": "جزر أصفر سكري",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "garlic",
+    "name": "ثوم بلدي رأس فريش",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "green-pepper-godin",
+    "name": "فلفل أخضر رومي (جودين)",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "stuffing-green-pepper",
+    "name": "فلفل أخضر للمحشي ناعم",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "colored-peppers",
+    "name": "فلفل ألوان أحمر وأصفر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "local-lemon",
+    "name": "ليمون بلدي عصير فريش",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "italian-lemon",
+    "name": "ليمون إيطالي كبير",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "adalia-lemon",
+    "name": "ليمون أضاليا بلدي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "zucchini",
+    "name": "كوسة بلدي طازجة",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "black-eggplant",
+    "name": "باذنجان أسود عروس",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "white-eggplant",
+    "name": "باذنجان أبيض عروس",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "roomi-eggplant",
+    "name": "باذنجان رومي كبير للمسقعة",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "hot-chili",
+    "name": "فلفل حار شطة بلدي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "beetroot",
+    "name": "بنجر أحمر سكري",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "mushroom",
+    "name": "مشروم طازج أبيض فاخر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "turkish-okra",
+    "name": "بامية تركي صغيرة ناعمة",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "local-okra",
+    "name": "بامية فلاحي خضراء",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "fresh-molokhia",
+    "name": "ملوخية فلاحي ورق طازج",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "fresh-spinach",
+    "name": "سبانخ بلدي خضراء",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "baby-spinach",
+    "name": "سبانخ بيبي أورجانيك",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "taro-root",
+    "name": "قلقاس بلدي شتوي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "green-beans",
+    "name": "فاصوليا خضراء فرنسية",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "fresh-broccoli",
+    "name": "بروكلي أخضر طازج",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "cabbage-stuffing",
+    "name": "كرنب حشو بلدي فلاحي",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "red-cabbage",
+    "name": "كرنب أحمر للسلطات",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "cauliflower",
+    "name": "قرنبيط بلدي طازج",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "korean-lettuce",
+    "name": "خس كوري فاخر مقرمش",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "red-lettuce",
+    "name": "خس أحمر أرجواني فاخر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "green-lettuce",
+    "name": "خس أخضر بلدي (رابطة)",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "iceberg-lettuce",
+    "name": "كابوتشي آيسبرج مقرمش",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "avocado-fresh",
+    "name": "أفوكادو هاس فاخر",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "sweet-potato",
+    "name": "بطاطا سكرية عسلية",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "pumpkin",
+    "name": "قرع عسل (يقطين سكري)",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "red-radish",
+    "name": "فجل أحمر بلدي مقرمش",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "fresh-artichoke",
+    "name": "خرشوف بلدي طازج",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "sweet-corn-cobs",
+    "name": "ذرة حلوة كيزان صفراء",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "fresh-ginger",
+    "name": "زنجبيل طازج عالي التركيز",
+    "section": "خضار طازج"
+  },
+  {
+    "id": "rosemary",
+    "name": "روزماري طازج (حصى البان)",
+    "section": "الخضرة"
+  },
+  {
+    "id": "fresh-thyme",
+    "name": "زعتر أخضر بلدي طازج",
+    "section": "الخضرة"
+  },
+  {
+    "id": "italian-basil",
+    "name": "ريحان إيطالي عطري",
+    "section": "الخضرة"
+  },
+  {
+    "id": "parsley",
+    "name": "بقدونس بلدي منقى",
+    "section": "الخضرة"
+  },
+  {
+    "id": "coriander",
+    "name": "كزبرة خضراء فلاحي",
+    "section": "الخضرة"
+  },
+  {
+    "id": "dill",
+    "name": "شبت بلدي طازج",
+    "section": "الخضرة"
+  },
+  {
+    "id": "local-celery",
+    "name": "كرفس بلدي فلاحي",
+    "section": "الخضرة"
+  },
+  {
+    "id": "french-celery",
+    "name": "كرفس فرنساوي عريض فاخر",
+    "section": "الخضرة"
+  },
+  {
+    "id": "arugula-bunch",
+    "name": "جرجير بلدي طازج",
+    "section": "الخضرة"
+  },
+  {
+    "id": "chard",
+    "name": "سلق فلاحي طازج للقلقاس",
+    "section": "الخضرة"
+  },
+  {
+    "id": "mint-bunch",
+    "name": "نعناع بلدي أخضر منعش",
+    "section": "الخضرة"
+  },
+  {
+    "id": "green-onions-bunch",
+    "name": "بصل أخضر بلدي طازج",
+    "section": "الخضرة"
+  },
+  {
+    "id": "prepped-okra-400g",
+    "name": "بامية مقمعة جاهزة (٤٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "prepped-taro-chard-500g",
+    "name": "قلقاس مكعبات مع سلق متقطع (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "minced-molokhia-500g",
+    "name": "ملوخية متخرطة طازجة (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "washed-baby-spinach-500g",
+    "name": "سبانخ بيبي مغسولة ومنظفة (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "chopped-green-beans-500g",
+    "name": "فاصوليا خضراء متقطعة (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "shelled-peas-500g",
+    "name": "بسلة سكري متفصصة فريش (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "peas-carrots-mix-500g",
+    "name": "بسلة متفصصة مع جزر مكعبات (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "boiled-cabbage-leaves-500g",
+    "name": "كرنب مسلوق ومتقطع للمحشي (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "boiled-cauliflower-500g",
+    "name": "قرنبيط مسلوق ومتقطع (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cut-cauliflower-florets-500g",
+    "name": "قرنبيط متقطع فصوص طازج (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "boiled-broccoli-250g",
+    "name": "بروكلي مسلوق ومتقطع (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cubed-pumpkin-500g",
+    "name": "قرع عسل متقطع مكعبات (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cut-sweet-corn-500g",
+    "name": "ذرة حلوة متقطعة حلقات (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-avocado-250g",
+    "name": "أفوكادو متقطع شرائح (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cored-zucchini-500g",
+    "name": "كوسة متقورة جاهزة للمحشي (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cored-white-eggplant-500g",
+    "name": "باذنجان أبيض متقور للمحشي (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cored-black-eggplant-500g",
+    "name": "باذنجان أسود متقور للمحشي (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cored-potatoes-500g",
+    "name": "بطاطس متقورة للحشو باللحمة (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cored-onions-250g",
+    "name": "بصل متقور للحشو (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cored-tomatoes-250g",
+    "name": "طماطم متقورة للحشو (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "saute-veg-mix-250g",
+    "name": "خضار سوتيه مشكل بالروزماري (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "tourli-veg-mix-500g",
+    "name": "تورلي خضار مشكل طازج (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "veggie-soup-mix-500g",
+    "name": "شوربة خضار مشكلة مع ليمونة (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "peeled-garlic-cloves-250g",
+    "name": "ثوم بلدي مفصص جاهز (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "chopped-cooking-tomatoes-500g",
+    "name": "طماطم متقطعة للطبيخ والصلصة (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-red-onion-rings-250g",
+    "name": "بصل أحمر متقطع حلقات (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-white-onion-rings-250g",
+    "name": "بصل أبيض متقطع حلقات (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "diced-green-pepper-250g",
+    "name": "فلفل أخضر متقطع صغير للطبيخ (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-green-pepper-strips-250g",
+    "name": "فلفل أخضر صوابع فاهيتا (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "diced-color-pepper-250g",
+    "name": "فلفل ألوان مكعبات للطبيخ (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "fajita-color-pepper-strips-250g",
+    "name": "فلفل ألوان صوابع فاهيتا (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cubed-potatoes-250g",
+    "name": "بطاطس مكعبات للطبيخ (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-potato-rounds-250g",
+    "name": "بطاطس حلقات لصواني الفرن (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "french-fry-potato-sticks-500g",
+    "name": "بطاطس صوابع للتحمير فريش (٥٠٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cubed-zucchini-250g",
+    "name": "كوسة مكعبات طبيخ (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-zucchini-rounds-250g",
+    "name": "كوسة متقطعة حلقات (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "zucchini-sticks-250g",
+    "name": "كوسة متقطعة صوابع (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "cubed-carrots-250g",
+    "name": "جزر مكعبات طبيخ (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "sliced-carrots-rounds-250g",
+    "name": "جزر حلقات للشوربة والصواني (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "carrot-sticks-250g",
+    "name": "جزر صوابع للطبخ والسوتيه (٢٥٠ جرام)",
+    "section": "جاهز للطبخ"
+  },
+  {
+    "id": "coleslaw-150g",
+    "name": "سلطة كول سلو بالعسل (علبة ١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "green-salad-rounds-250g",
+    "name": "سلطة خضراء حلقات طازجة (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "green-salad-fingers-250g",
+    "name": "سلطة خضراء صوابع فريش (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "classic-diced-green-salad-250g",
+    "name": "سلطة خضراء مكعبات بلدي كلاسيك (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "shredded-iceberg-250g",
+    "name": "كابوتشي متقطع شرائح سلطة (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "shredded-green-cabbage-250g",
+    "name": "كرنب أخضر متقطع شرائح (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "shredded-red-cabbage-250g",
+    "name": "كرنب أحمر متقطع شرائح (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "sliced-lemon-rounds-150g",
+    "name": "ليمون حلقات مقطع جاهز (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "sliced-orange-rounds-150g",
+    "name": "برتقال حلقات مقطع جاهز (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "fresh-pomegranate-seeds-250g",
+    "name": "رمان مفرط حبات سكرية (٢٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "carrot-sticks-snack-150g",
+    "name": "جزر صوابع مقرمش سناك (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "cucumber-sticks-150g",
+    "name": "خيار صوابع مقرمش فريش (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "carrot-cucumber-snack-mix-150g",
+    "name": "ميكس جزر وخيار صوابع سناكس (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "sliced-tomato-salad-150g",
+    "name": "طماطم حلقات سلطة أنيقة (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "sliced-avocado-fingers-150g",
+    "name": "أفوكادو صوابع جاهز للأكل (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "arugula-pomegranate-avocado-salad-150g",
+    "name": "سلطة جرجير بالرمان والأفوكادو (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "cherry-tomato-arugula-corn-salad-150g",
+    "name": "سلطة طماطم شيري مع جرجير وذرة حلوة (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "red-bean-corn-pomegranate-salad-150g",
+    "name": "سلطة فاصوليا حمراء وذرة وفلفل ورمان (١٥٠ جرام)",
+    "section": "السلطات"
+  },
+  {
+    "id": "local-orange",
+    "name": "برتقال بلدي عصير سكري",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "navel-orange",
+    "name": "برتقال أبو سرة سكري فاخر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "grapefruit",
+    "name": "جريب فروت أحمر ياقوتي",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "crimson-grapes",
+    "name": "عنب كريمسون أحمر خالي البذر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "red-roomi-grapes",
+    "name": "عنب رومي أحمر سكري",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "red-apple",
+    "name": "تفاح أمريكي إيطالي أحمر فاخر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "golden-apple",
+    "name": "تفاح جولدن أصفر سكري",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "lebanese-apple",
+    "name": "تفاح سوري لبناني بلدي",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "samany-dates",
+    "name": "بلح سماني أصفر مقرمش",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "zaghloul-dates",
+    "name": "بلح زغلول أحمر سكري",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "siwi-dates",
+    "name": "بلح سيوي رطب عسلي",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "barhi-dates",
+    "name": "بلح برحي سكري فاخر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "fresh-figs",
+    "name": "تين برشومي سكري عسل",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "sweet-guava",
+    "name": "جوافة بناتي سكرية ريحة زمان",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "pomegranate-fruit",
+    "name": "رمان أسيوطي سكري حبات حمراء",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "cantaloupe",
+    "name": "كانتالوب عسلي طازج",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "persimmon-kaka",
+    "name": "كاكا سكرية طازجة",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "ewais-mango",
+    "name": "مانجو عويس فاخرة سكرية",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "zebdia-mango",
+    "name": "مانجو زبدية للعصير المركز",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "fass-mango",
+    "name": "مانجو فص عويس سكر مركز",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "watermelon",
+    "name": "بطيخ أحمر مرمل على السكين",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "sweet-peach",
+    "name": "خوخ سكري مستورد فاخر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "nectarine",
+    "name": "نكتارين سكري مستورد",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "red-plum",
+    "name": "برقوق أحمر مستورد سكري",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "sweet-pear",
+    "name": "كمثرى ثلاجة سكرية ناعمة",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "golden-pineapple",
+    "name": "أناناس ذهبي سكري كامل",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "kiwi-fruit",
+    "name": "كيوي ذهبي وأخضر فاخر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "chestnuts",
+    "name": "أبو فروة (كستناء فاخرة)",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "papaya-fruit",
+    "name": "باباظ (بابايا استوائية)",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "tropical-avocado",
+    "name": "أفوكادو استوائي فاكهة",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "moroccan-banana",
+    "name": "موز مغربي بلدي مسكر",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "pico-banana",
+    "name": "موز بيكو فاخر درجة أولى",
+    "section": "فواكه طازجة"
+  },
+  {
+    "id": "imported-banana",
+    "name": "موز مستورد تشيكي فاخر",
+    "section": "فواكه طازجة"
+  }
+]
