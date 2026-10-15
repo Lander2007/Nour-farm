@@ -12,11 +12,13 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, Menu, Search, ShoppingBag, X } from "lucide-react"
 import BrandMark from "./BrandMark"
 import { useCart } from "@/store/cart"
-import { products, type Product } from "@/data/products"
+import { useActiveProducts } from "@/store/products"
+import { type Product } from "@/data/products"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
 export default function Header({ solid = true }: { solid?: boolean }) {
+  const products = useActiveProducts()
   const items = useCart((state) => state.items)
   const setOpen = useCart((state) => state.setOpen)
   const add = useCart((state) => state.add)

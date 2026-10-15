@@ -60,7 +60,8 @@ import {
   ShieldCheck,
   Truck,
 } from "lucide-react"
-import { products, sections, type Product } from "@/data/products"
+import { sections, type Product } from "@/data/products"
+import { useActiveProducts } from "@/store/products"
 import Header from "./Header"
 import ProductCard from "./ProductCard"
 import CartDrawer from "./CartDrawer"
@@ -83,6 +84,7 @@ type SortOption = "featured" | "price-asc" | "price-desc" | "rating" | "name"
 const PAGE_SIZE_OPTIONS = [12, 16, 24, 36]
 
 export default function Catalog() {
+  const products = useActiveProducts()
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialCategory =
@@ -135,7 +137,7 @@ export default function Catalog() {
       ).length
     })
     return counts
-  }, [])
+  }, [products])
   const filteredProducts = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase()
     const activeMin =
@@ -212,7 +214,7 @@ export default function Catalog() {
       if (!a.featured && b.featured) return 1
       return 0
     })
-  }, [section, query, minPrice, maxPrice, pricePresetIdx, selectedTag, sortBy])
+  }, [products, section, query, minPrice, maxPrice, pricePresetIdx, selectedTag, sortBy])
   const handleCategoryChange = (cat: string) => {
     setSection(cat)
     setCurrentPage(1)

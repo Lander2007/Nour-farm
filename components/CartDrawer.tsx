@@ -3,13 +3,14 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Minus, Plus, ShoppingBasket, X } from "lucide-react"
-import { products } from "@/data/products"
+import { useActiveProducts } from "@/store/products"
 import { useCart } from "@/store/cart"
 import BrandMark from "./BrandMark"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
 export default function CartDrawer() {
+  const products = useActiveProducts()
   const { items, open, setOpen, change } = useCart()
   const selected = products.filter((product) => items[product.id])
   const total = selected.reduce(

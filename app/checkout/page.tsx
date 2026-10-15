@@ -54,7 +54,8 @@ import LocationPicker, {
   type LocationData,
 } from "@/components/checkout/LocationPicker"
 import { useCart } from "@/store/cart"
-import { products, type Product } from "@/data/products"
+import { useActiveProducts } from "@/store/products"
+import { type Product } from "@/data/products"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
@@ -83,6 +84,7 @@ function WhatsAppIcon({ size = 22, color = "#25D366" }: { size?: number; color?:
 type PaymentMethod = "cod" | "card" | "wallet"
 
 export default function CheckoutPage() {
+  const products = useActiveProducts()
   const items = useCart((state) => state.items)
   const change = useCart((state) => state.change)
 
