@@ -38,15 +38,25 @@ export function clearRateLimit(ip: string): void {
   loginAttempts.delete(ip)
 }
 
+export function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString("hex")
+  const derived = crypto.scryptSync(password, salt, 64, { N: 16384, r: 8, p: 1 }).toString("hex")
+  return `scrypt:${salt}:${derived}`
+}
+
 export function verifyPassword(password: string, storedHash: string): boolean {
-  if (!password || !storedHash || !storedHash.startsWith("scrypt$")) {
+  if (!password || !storedHash) {
     return false
   }
 
-  const parts = storedHash.split("$")
+  const cleanHash = storedHash.replace(/^["']|["']$/g, "").trim()
+  const delimiter = cleanHash.includes(":") ? ":" : "$"
+  const parts = cleanHash.split(delimiter)
   if (parts.length !== 3) return false
 
-  const [, salt, expectedHex] = parts
+  const [prefix, salt, expectedHex] = parts
+  if (prefix !== "scrypt" || !salt || !expectedHex) return false
+
   try {
     const expectedBuf = Buffer.from(expectedHex, "hex")
     const derivedBuf = crypto.scryptSync(password, salt, expectedBuf.length, {

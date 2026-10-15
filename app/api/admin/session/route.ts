@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { isAuthenticatedAdmin, isAuthEnvConfigured } from "@/lib/auth/server-auth"
+import { isAuthenticatedAdmin, isAuthEnvConfigured, verifyPassword } from "@/lib/auth/server-auth"
 import { isUsingDevFallback } from "@/lib/db"
 
 export async function GET() {
