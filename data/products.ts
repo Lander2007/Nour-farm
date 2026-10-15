@@ -1916,7 +1916,7 @@ export const products: Product[] = [
     step: 1,
     price: 28,
     image:
-      "https://images.unsplash.com/photo-1577234286642-fc512a5f8f11?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/grapefruit.jpg",
     tint: "coral",
     rating: 4.7,
     calories: "٤٢ سعرة / ١٠٠جم",
@@ -1931,7 +1931,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 55,
     image:
-      "https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/crimson-grapes.jpg",
     tint: "coral",
     rating: 5,
     calories: "٦٩ سعرة / ١٠٠جم",
@@ -1947,7 +1947,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 45,
     image:
-      "https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/red-roomi-grapes.jpg",
     tint: "coral",
     rating: 4.8,
     calories: "٧١ سعرة / ١٠٠جم",
@@ -1962,7 +1962,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 75,
     image:
-      "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/red-apple.jpg",
     tint: "coral",
     rating: 5,
     calories: "٥٢ سعرة / ١٠٠جم",
@@ -1994,7 +1994,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 60,
     image:
-      "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/lebanese-apple.jpg",
     tint: "coral",
     rating: 4.8,
     calories: "٥٠ سعرة / ١٠٠جم",
@@ -2086,7 +2086,7 @@ export const products: Product[] = [
     step: 1,
     price: 25,
     image:
-      "https://images.unsplash.com/photo-1536511132770-e5058c7e8c46?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/sweet-guava.jpg",
     tint: "mint",
     rating: 4.8,
     calories: "٦٨ سعرة / ١٠٠جم",
@@ -2146,7 +2146,7 @@ export const products: Product[] = [
     step: 1,
     price: 90,
     image:
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/ewais-mango.jpg",
     tint: "sun",
     rating: 5,
     calories: "٦٠ سعرة / ١٠٠جم",
@@ -2163,7 +2163,7 @@ export const products: Product[] = [
     step: 1,
     price: 55,
     image:
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/zebdia-mango.jpg",
     tint: "sun",
     rating: 4.9,
     calories: "٦٠ سعرة / ١٠٠جم",
@@ -2178,7 +2178,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 130,
     image:
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/fass-mango.jpg",
     tint: "sun",
     rating: 5,
     calories: "٦٥ سعرة / ١٠٠جم",
@@ -2194,7 +2194,7 @@ export const products: Product[] = [
     step: 1,
     price: 70,
     image:
-      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/watermelon.jpg",
     tint: "coral",
     rating: 5,
     calories: "٣٠ سعرة / ١٠٠جم",
@@ -2210,7 +2210,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 65,
     image:
-      "https://images.unsplash.com/photo-1629828874514-c1e5103f2150?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/sweet-peach.jpg",
     tint: "coral",
     rating: 4.8,
     calories: "٣٩ سعرة / ١٠٠جم",
@@ -2255,7 +2255,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 55,
     image:
-      "https://images.unsplash.com/photo-1514756331096-242fdeb70d4a?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/sweet-pear.jpg",
     tint: "mint",
     rating: 4.9,
     calories: "٥٧ سعرة / ١٠٠جم",
@@ -2270,7 +2270,7 @@ export const products: Product[] = [
     step: 1,
     price: 85,
     image:
-      "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/golden-pineapple.jpg",
     tint: "sun",
     rating: 4.9,
     calories: "٥٠ سعرة / ١٠٠جم",
@@ -2285,7 +2285,7 @@ export const products: Product[] = [
     step: 0.5,
     price: 65,
     image:
-      "https://images.unsplash.com/photo-1585059895524-72359e06133a?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/kiwi-fruit.jpg",
     tint: "mint",
     rating: 4.9,
     calories: "٦١ سعرة / ١٠٠جم",
@@ -2316,7 +2316,7 @@ export const products: Product[] = [
     step: 1,
     price: 60,
     image:
-      "https://images.unsplash.com/photo-1517282009859-f000ec3b26fe?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/papaya-fruit.jpg",
     tint: "sun",
     rating: 4.8,
     calories: "٤٣ سعرة / ١٠٠جم",
@@ -2346,7 +2346,7 @@ export const products: Product[] = [
     step: 1,
     price: 25,
     image:
-      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/moroccan-banana.jpg",
     tint: "sun",
     rating: 4.9,
     calories: "٨٩ سعرة / ١٠٠جم",
@@ -2362,7 +2362,7 @@ export const products: Product[] = [
     step: 1,
     price: 32,
     image:
-      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/pico-banana.jpg",
     tint: "sun",
     rating: 5,
     calories: "٨٩ سعرة / ١٠٠جم",
@@ -2377,7 +2377,7 @@ export const products: Product[] = [
     step: 1,
     price: 45,
     image:
-      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=800&q=85",
+      "/noor-farm-images/imported-banana.jpg",
     tint: "sun",
     rating: 4.9,
     calories: "٨٩ سعرة / ١٠٠جم",
