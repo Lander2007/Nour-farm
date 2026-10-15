@@ -213,7 +213,7 @@ export default function CheckoutPage() {
       .map((p, idx) => {
         const qty = items[p.id] || 1
         const lineTotal = p.price * qty
-        return `${idx + 1}. *${p.name}*\n   ▫️ الكمية: ${qty} ${p.unit}\n   ▫️ السعر: ${p.price} ج.م (الإجمالي: ${lineTotal} ج.م)`
+        return `${idx + 1}. *${p.name}*\n   - الكمية: ${qty} ${p.unit}\n   - السعر: ${p.price} ج.م (الإجمالي: ${lineTotal} ج.م)`
       })
       .join("\n\n")
 
@@ -225,37 +225,34 @@ export default function CheckoutPage() {
     if (paymentMethod === "card") paymentLabel = "بطاقة بنكية (فيزا / ماستركارد)"
     if (paymentMethod === "wallet") paymentLabel = `إنستاباي / محفظة إلكترونية (المحول منه: ${walletPhone || "تحويل فوري"})`
 
-    const msg = `🌿 *طلب جديد من متجر نور فارم (NOOR FARM)* 🌿
-━━━━━━━━━━━━━━━━━━━━
-📦 *رقم الطلب:* #${generatedOrderNum}
-🕒 *توقيت الطلب:* ${formattedDate}
+    const msg = `*طلب شراء جديد - متجر نور فارم*
+----------------------------------------
+*رقم الطلب:* #${generatedOrderNum}
+*تاريخ ووقت الطلب:* ${formattedDate}
 
-👤 *بيانات العميل:*
-• *الاسم:* ${customerInfo.fullName}
-• *الهاتف الأساسي:* ${customerInfo.phone}
-${customerInfo.secondaryPhone ? `• *هاتف بديل:* ${customerInfo.secondaryPhone}\n` : ""}
-🚪 *تفاصيل العنوان لباب البيت:*
-• *المنطقة / العنوان:* ${locationData?.address || "محدد على الخريطة"}
-• *رقم العمارة:* ${buildingDetails.building}
-• *الدور:* ${buildingDetails.floor || "غير محدد"}
-• *رقم الشقة:* ${buildingDetails.apartment}
-${buildingDetails.landmark ? `• *علامة مميزة:* ${buildingDetails.landmark}\n` : ""}
-🗺️ *رابط اللوكيشن GPS للمندوب:*
-${mapsUrl}
+*بيانات العميل:*
+- الاسم: ${customerInfo.fullName}
+- الهاتف: ${customerInfo.phone}
+${customerInfo.secondaryPhone ? `- هاتف بديل: ${customerInfo.secondaryPhone}\n` : ""}
+*تفاصيل عنوان التوصيل:*
+- العنوان: ${locationData?.address || "محدد على الخريطة"}
+- رقم العمارة: ${buildingDetails.building}
+- الدور: ${buildingDetails.floor || "غير محدد"}
+- رقم الشقة: ${buildingDetails.apartment}
+${buildingDetails.landmark ? `- علامة مميزة: ${buildingDetails.landmark}\n` : ""}- موقع GPS: ${mapsUrl}
 
-🛒 *أصناف الطلب:*
+*الأصناف المطلوبة:*
 ${itemsText}
 
-━━━━━━━━━━━━━━━━━━━━
-💰 *الحساب والإجمالي:*
-• *مجموع المنتجات:* ${subtotal} ج.م
-• *مصاريف التوصيل:* ${deliveryFee === 0 ? "مجاناً (عرض الطلبات فوق ١٥٠ ج.م)" : `${deliveryFee} ج.م`}
-• *الإجمالي المطلوب:* *${total} ج.م*
+----------------------------------------
+*الملخص المالي:*
+- مجموع المنتجات: ${subtotal} ج.م
+- رسوم التوصيل: ${deliveryFee === 0 ? "مجاناً" : `${deliveryFee} ج.م`}
+- *المبلغ الإجمالي المستحق:* *${total} ج.م*
 
-💳 *طريقة الدفع:* ${paymentLabel}
-${customerInfo.notes ? `\n📝 *ملاحظات التوصيل:* ${customerInfo.notes}\n` : ""}
-━━━━━━━━━━━━━━━━━━━━
-✨ *أرجو تأكيد استلام الطلب وبدء التجهيز، شكراً لكم!* ✨`
+- طريقة الدفع: ${paymentLabel}
+${customerInfo.notes ? `\n- ملاحظات إضافية: ${customerInfo.notes}\n` : ""}----------------------------------------
+يرجى تأكيد استلام الطلب والبدء في التجهيز. شكراً لكم.`
 
     setWhatsappMessage(msg)
     const targetUrl = `https://wa.me/${WHATSAPP_INTL}?text=${encodeURIComponent(msg)}`
@@ -392,7 +389,7 @@ ${customerInfo.notes ? `\n📝 *ملاحظات التوصيل:* ${customerInfo.n
             {whatsappMessage && (
               <details style={{ textAlign: "right", margin: "1rem 0" }}>
                 <summary style={{ fontSize: "0.85rem", cursor: "pointer", color: "var(--forest)", fontWeight: 700 }}>
-                  معاينة نص رسالة الواتساب المرسلة للطلب 📄
+                  معاينة نص رسالة الواتساب المرسلة للطلب
                 </summary>
                 <div className="whatsapp-preview-box">
                   {whatsappMessage}

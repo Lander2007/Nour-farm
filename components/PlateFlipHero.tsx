@@ -123,7 +123,7 @@
 import { useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowDown, ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 interface ItemConfig {
@@ -660,7 +660,6 @@ export default function PlateFlipHero({
       <div ref={stageRef} className="plate-hero-stage">
         {}
         <div ref={mobileTopRef} className="hero-mobile-top">
-          <span className="hero-eyebrow">خضار وفواكه طازجة</span>
           <h1 className="hero-mobile-title">
             <span className="hero-mobile-line1">اتقلب الطبق…</span>
             <span className="hero-mobile-line2">
@@ -676,7 +675,6 @@ export default function PlateFlipHero({
             ref={rightColRef}
             className="hero-col hero-col-right desktop-only-col"
           >
-            <span className="hero-eyebrow">خضار وفواكه طازجة</span>
             <h1 className="hero-title-main">اتقلب الطبق…</h1>
             <p className="hero-supporting-line">
               خضار وفاكهة، مغسولة ومتقطّعة على مزاجك… جاهزة للطبخ.
@@ -763,12 +761,6 @@ export default function PlateFlipHero({
               <ArrowLeft size={18} />
             </Link>
           </div>
-        </div>
-
-        {}
-        <div ref={scrollCueRef} className="hero-scroll-cue">
-          <span className="cue-text">انزل تحت</span>
-          <ArrowDown size={15} className="cue-arrow-icon" />
         </div>
       </div>
 
