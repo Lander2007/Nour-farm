@@ -52,13 +52,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "بيانات الدخول غير صحيحة" }, { status: 401 })
   }
 
-  const expectedUsername = process.env.ADMIN_USERNAME
+  const rawExpectedUser = process.env.ADMIN_USERNAME
+  const expectedUsername = rawExpectedUser ? rawExpectedUser.replace(/^["']|["']$/g, "").trim() : null
   const expectedPasswordHash = process.env.ADMIN_PASSWORD_HASH
 
   // Constant-time check for username
   let usernameMatch = false
   if (expectedUsername) {
-    const userBuf = Buffer.from(username)
+    const cleanInputUser = username.trim()
+    const userBuf = Buffer.from(cleanInputUser)
     const expBuf = Buffer.from(expectedUsername)
     if (userBuf.length === expBuf.length && crypto.timingSafeEqual(userBuf, expBuf)) {
       usernameMatch = true

@@ -20,5 +20,21 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+/.agents/
+/.aider-desk/
+/.augment/
+/.autohand/
+/.bob/
+/.claude/
+/.codeartsdoer/
+/.codebuddy/
+/.codemaker/
+/.codestudio/
+/.lingma/
+/.openhands/
+/.windsurf/
+/skills/
+/data/skills/
+skills-lock.json
 scratch/
 

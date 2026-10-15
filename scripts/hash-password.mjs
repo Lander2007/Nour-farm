@@ -18,7 +18,7 @@ if (!password) {
 
 const salt = crypto.randomBytes(16).toString("hex")
 const derived = crypto.scryptSync(password, salt, 64, { N: 16384, r: 8, p: 1 }).toString("hex")
-const hash = `scrypt$${salt}$${derived}`
+const hash = `scrypt:${salt}:${derived}`
 
 console.log("\n========================================")
 console.log("🔑 NOOR FARM ADMIN CREDENTIALS GENERATED")
