@@ -118,6 +118,7 @@ export async function updateSection(id: string, updates: Partial<Section>): Prom
     .single()
 
   if (error) throw error
+  localStore.updateSection(id, updates)
   return data as Section
 }
 
