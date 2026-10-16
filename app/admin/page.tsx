@@ -39,7 +39,6 @@ const DEFAULT_SECTIONS = [
   { id: "salads", dept: "vegetables", name: "السلطات" },
   { id: "fresh-fruits", dept: "fruits", name: "فاكهة طازجة" },
   { id: "cut-fruits", dept: "fruits", name: "فاكهة متقطعة ومجهّزة" },
-  { id: "mixes", dept: "fruits", name: "ميكسات (قريباً)" },
 ]
 
 const UNIT_OPTIONS = [

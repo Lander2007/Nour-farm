@@ -15,7 +15,6 @@ export const metadata: Metadata = {
 const SECTION_DESCRIPTIONS: Record<string, string> = {
   "fresh-fruits": "برقوق أحمر سكري، خوخ، كانتالوب عسلي، ليمون، وأفوكادو مختار بالواحدة.",
   "cut-fruits": "سالاد فروت مشكل طازج، مكعبات كانتالوب وبطيخ مجهزة في علب محكمة للتقديم فوراً.",
-  mixes: "توليفات عصائر وفواكه طازجة جاهزة للشرب والضيافة.",
 }
 
 export default async function FruitsDepartmentPage() {
@@ -62,20 +61,20 @@ export default async function FruitsDepartmentPage() {
           <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-orange-600/20 blur-3xl pointer-events-none" />
         </div>
 
-        {/* 3 Section Cards Grid */}
+        {/* Section Cards Grid */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               اختر تصنيف الفاكهة
             </h2>
             <span className="text-xs font-semibold text-stone-700 bg-stone-200/80 px-3 py-1 rounded-full">
-              3 تصنيفات
+              {sections.length} تصنيفات
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {sections.map((section) => {
-              const isComingSoon = section.id === "mixes"
+              const isComingSoon = false
               const count = sectionCounts[section.id] || 0
               const description = SECTION_DESCRIPTIONS[section.id] || "أصناف فواكه طازجة مختارة بعناية."
 

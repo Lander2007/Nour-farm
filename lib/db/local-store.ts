@@ -72,13 +72,6 @@ const DEFAULT_SECTIONS: Section[] = [
     cover_image: "/noor-farm-images/cantaloupe.jpg",
     sort: 2,
   },
-  {
-    id: "mixes",
-    department_id: "fruits",
-    name_ar: "ميكسات",
-    cover_image: null,
-    sort: 3,
-  },
 ]
 
 function mapOldSectionToNewId(oldSec: string): string {
