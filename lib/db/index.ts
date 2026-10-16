@@ -266,12 +266,16 @@ export async function getOrder(id: string): Promise<Order | null> {
   }
 
   const supabase = getSupabaseServerClient()!
-  // Try by id or by order_number
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .or(`id.eq.${id},order_number.eq.${id}`)
-    .single()
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+  let query = supabase.from("orders").select("*")
+  if (isUuid) {
+    query = query.eq("id", id)
+  } else {
+    query = query.eq("order_number", id)
+  }
+
+  const { data, error } = await query.single()
 
   if (error) {
     if (process.env.NODE_ENV !== "production") return localStore.getOrder(id) || null
@@ -279,6 +283,8 @@ export async function getOrder(id: string): Promise<Order | null> {
   }
   return data as Order
 }
+
+export const getOrderById = getOrder
 
 export async function createOrder(
   order: Omit<Order, "id" | "created_at">
@@ -306,12 +312,16 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   }
 
   const supabase = getSupabaseServerClient()!
-  const { data, error } = await supabase
-    .from("orders")
-    .update({ status })
-    .or(`id.eq.${id},order_number.eq.${id}`)
-    .select()
-    .single()
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+  let query = supabase.from("orders").update({ status })
+  if (isUuid) {
+    query = query.eq("id", id)
+  } else {
+    query = query.eq("order_number", id)
+  }
+
+  const { data, error } = await query.select().single()
 
   if (error) throw error
   return data as Order

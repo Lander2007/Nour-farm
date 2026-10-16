@@ -50,12 +50,24 @@ import {
   User,
 } from "lucide-react"
 import BrandMark from "@/components/BrandMark"
-import LocationPicker, {
-  type LocationData,
-} from "@/components/checkout/LocationPicker"
+import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import { useCart } from "@/store/cart"
 import { useActiveProducts } from "@/store/products"
 import { type Product } from "@/data/products"
+import type { LocationData } from "@/components/checkout/LeafletLocationPicker"
+
+const LeafletLocationPicker = dynamic(
+  () => import("@/components/checkout/LeafletLocationPicker"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[380px] w-full bg-stone-100 rounded-xl animate-pulse flex items-center justify-center text-stone-400 font-bold">
+        جاري تحميل خريطة التوصيل (OpenStreetMap)...
+      </div>
+    ),
+  }
+)
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
@@ -120,17 +132,15 @@ export default function CheckoutPage() {
   const total =
     subtotal +
     deliveryFee
+  const router = useRouter()
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
     phone: "",
     secondaryPhone: "",
     notes: "",
   })
-  const [locationData, setLocationData] = useState<LocationData | null>({
-    lat: 30.0444,
-    lng: 31.2357,
-    address: "القاهرة، مصر",
-  })
+  const [locationData, setLocationData] = useState<LocationData | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const [buildingDetails, setBuildingDetails] = useState({
     building: "",
@@ -147,31 +157,24 @@ export default function CheckoutPage() {
   const [walletPhone, setWalletPhone] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [orderNumber, setOrderNumber] = useState("")
-  const [whatsappMessage, setWhatsappMessage] = useState("")
-  const [whatsappUrl, setWhatsappUrl] = useState("")
-  const [copied, setCopied] = useState(false)
 
   const validateForm = () => {
     const errs: Record<string, string> = {}
-    if (!customerInfo.fullName.trim()) {
-      errs.fullName = "يرجى كتابة الاسم بالكامل"
+    if (!customerInfo.fullName.trim() || customerInfo.fullName.trim().length < 3) {
+      errs.fullName = "يرجى كتابة الاسم بالكامل (٣ أحرف على الأقل)"
     }
-    if (
-      !customerInfo.phone.trim() ||
-      customerInfo.phone.trim().length < 10
-    ) {
-      errs.phone = "يرجى كتابة رقم هاتف صحيح (مثال: 01012345678)"
+    const cleanPhone = customerInfo.phone.trim().replace(/[\s-]/g, "")
+    if (!/^01[0125][0-9]{8}$/.test(cleanPhone)) {
+      errs.phone = "يرجى إدخال رقم موبايل مصري صحيح مكون من 11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015"
     }
-    if (!locationData || !locationData.address.trim()) {
-      errs.location = "يرجى تحديد موقع التوصيل على الخريطة"
+    if (!locationData || typeof locationData.lat !== "number" || typeof locationData.lng !== "number") {
+      errs.location = "تحديد موقع التوصيل على الخريطة إلزامي لإتمام الطلب"
     }
     if (!buildingDetails.building.trim()) {
-      errs.building = "يرجى كتابة رقم المبنى أو العمارة (ضروري للتوصيل لباب بيتك)"
+      errs.building = "يرجى كتابة رقم المبنى أو العمارة"
     }
     if (!buildingDetails.apartment.trim()) {
-      errs.apartment = "يرجى كتابة رقم الشقة (لتسليم الطلب عند باب بيتك)"
+      errs.apartment = "يرجى كتابة رقم الشقة"
     }
     if (paymentMethod === "card") {
       const cleanNum = cardData.number.replace(/\s/g, "")
@@ -186,8 +189,7 @@ export default function CheckoutPage() {
       }
     } else if (paymentMethod === "wallet") {
       if (!walletPhone.trim() || walletPhone.trim().length < 10) {
-        errs.walletPhone =
-          "يرجى إدخال رقم المحفظة / إنستاباي الذي قمت بالتحويل منه"
+        errs.walletPhone = "يرجى إدخال رقم المحفظة / إنستاباي الذي قمت بالتحويل منه"
       }
     }
 
@@ -197,85 +199,73 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError(null)
 
     if (!validateForm()) {
       window.scrollTo({ top: 120, behavior: "smooth" })
       return
     }
 
-    setIsSubmitting(true)
-
-    const generatedOrderNum = `NF-${Math.floor(10000 + Math.random() * 90000)}`
-    setOrderNumber(generatedOrderNum)
-
-    const now = new Date()
-    const formattedDate = `${now.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })} - ${now.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}`
-
-    const itemsText = selectedProducts
-      .map((p, idx) => {
-        const qty = items[p.id] || 1
-        const lineTotal = p.price * qty
-        return `${idx + 1}. *${p.name}*\n   - الكمية: ${qty} ${p.unit}\n   - السعر: ${p.price} ج.م (الإجمالي: ${lineTotal} ج.م)`
-      })
-      .join("\n\n")
-
-    const mapsUrl = locationData
-      ? `https://maps.google.com/?q=${locationData.lat.toFixed(6)},${locationData.lng.toFixed(6)}`
-      : "لم يُحدد"
-
-    let paymentLabel = "الدفع نقداً عند الاستلام"
-    if (paymentMethod === "card") paymentLabel = "بطاقة بنكية (فيزا / ماستركارد)"
-    if (paymentMethod === "wallet") paymentLabel = `إنستاباي / محفظة إلكترونية (المحول منه: ${walletPhone || "تحويل فوري"})`
-
-    const msg = `*طلب شراء جديد - متجر نور فارم*
-----------------------------------------
-*رقم الطلب:* #${generatedOrderNum}
-*تاريخ ووقت الطلب:* ${formattedDate}
-
-*بيانات العميل:*
-- الاسم: ${customerInfo.fullName}
-- الهاتف: ${customerInfo.phone}
-${customerInfo.secondaryPhone ? `- هاتف بديل: ${customerInfo.secondaryPhone}\n` : ""}
-*تفاصيل عنوان التوصيل:*
-- العنوان: ${locationData?.address || "محدد على الخريطة"}
-- رقم العمارة: ${buildingDetails.building}
-- الدور: ${buildingDetails.floor || "غير محدد"}
-- رقم الشقة: ${buildingDetails.apartment}
-${buildingDetails.landmark ? `- علامة مميزة: ${buildingDetails.landmark}\n` : ""}- موقع GPS: ${mapsUrl}
-
-*الأصناف المطلوبة:*
-${itemsText}
-
-----------------------------------------
-*الملخص المالي:*
-- مجموع المنتجات: ${subtotal} ج.م
-- رسوم التوصيل: ${deliveryFee === 0 ? "مجاناً" : `${deliveryFee} ج.م`}
-- *المبلغ الإجمالي المستحق:* *${total} ج.م*
-
-- طريقة الدفع: ${paymentLabel}
-${customerInfo.notes ? `\n- ملاحظات إضافية: ${customerInfo.notes}\n` : ""}----------------------------------------
-يرجى تأكيد استلام الطلب والبدء في التجهيز. شكراً لكم.`
-
-    setWhatsappMessage(msg)
-    const targetUrl = `https://wa.me/${WHATSAPP_INTL}?text=${encodeURIComponent(msg)}`
-    setWhatsappUrl(targetUrl)
-
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    // Open WhatsApp in new tab / app
-    try {
-      window.open(targetUrl, "_blank", "noopener,noreferrer")
-    } catch {
-      // Handled via backup button on confirmation screen
+    if (!locationData) {
+      setSubmitError("برجاء تحديد موقع التوصيل على الخريطة أولاً.")
+      return
     }
 
-    actualSelected.forEach((p) => {
-      change(p, -9999)
-    })
+    setIsSubmitting(true)
 
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    window.scrollTo({ top: 0, behavior: "smooth" })
+    try {
+      const orderPayload = {
+        customer_name: customerInfo.fullName.trim(),
+        customer_phone: customerInfo.phone.trim().replace(/[\s-]/g, ""),
+        address_details: {
+          building: buildingDetails.building.trim(),
+          floor: buildingDetails.floor.trim(),
+          apartment: buildingDetails.apartment.trim(),
+          landmark: buildingDetails.landmark.trim(),
+          notes: customerInfo.notes.trim(),
+        },
+        location: {
+          lat: locationData.lat,
+          lng: locationData.lng,
+          source: locationData.source,
+          address_text: locationData.address_text || "",
+        },
+        items: selectedProducts.map((p) => {
+          const qty = items[p.id] || 1
+          return {
+            id: p.id,
+            name: p.name,
+            unit: p.unit,
+            qty,
+            unit_price: p.price,
+            line_total: p.price * qty,
+          }
+        }),
+      }
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "فشل إرسال الطلب، يرجى مراجعة البيانات والمحاولة مجدداً")
+      }
+
+      // Clear Cart Store
+      useCart.getState().clear()
+
+      // Redirect directly to Order Confirmation Screen
+      router.push(`/order/${data.orderId}`)
+    } catch (err: any) {
+      console.error("Order submission failed:", err)
+      setSubmitError(err.message || "حدث خطأ غير متوقع أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.")
+      setIsSubmitting(false)
+      window.scrollTo({ top: 120, behavior: "smooth" })
+    }
   }
 
   return (
@@ -303,206 +293,12 @@ ${customerInfo.notes ? `\n- ملاحظات إضافية: ${customerInfo.notes}\n
 
       {}
       <div className="checkout-main-container">
-        {}
-        {isSubmitted ? (
-          <div className="checkout-success-wrapper">
-            <div className="success-check-circle">
-              <CheckCircle2 style={{ width: "2.8rem", height: "2.8rem" }} />
-            </div>
-
-            <span
-              style={{
-                fontSize: "0.85rem",
-                fontWeight: 700,
-                color: "var(--tomato)",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              تم استلام طلبك بنجاح!
-            </span>
-
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "2.2rem",
-                fontWeight: 700,
-                margin: "0.5rem 0 1rem",
-              }}
-            >
-              شكراً لاختيارك نور فارم
-            </h1>
-
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "var(--ink)",
-                opacity: 0.85,
-                lineHeight: 1.6,
-              }}
-            >
-              تم تجهيز طلبك رقم{" "}
-              <strong style={{ color: "var(--tomato)", direction: "ltr" }}>
-                {orderNumber}
-              </strong>{" "}
-              بنجاح! سيتم إرساله وتأكيده مع إدارة نور فارم عبر واتساب على الرقم{" "}
-              <strong dir="ltr" style={{ color: "#128C7E", fontWeight: 700 }}>
-                {WHATSAPP_DISPLAY}
-              </strong>
-            </p>
-
-            {whatsappUrl && (
-              <div className="whatsapp-success-actions">
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="whatsapp-direct-send-btn"
-                >
-                  <WhatsAppIcon size={24} color="#ffffff" />
-                  <span>فتح المحادثة على واتساب الآن ({WHATSAPP_DISPLAY})</span>
-                  <ExternalLink size={18} />
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(whatsappMessage)
-                    setCopied(true)
-                    setTimeout(() => setCopied(false), 2500)
-                  }}
-                  className="whatsapp-copy-btn"
-                >
-                  {copied ? (
-                    <>
-                      <Check size={18} style={{ color: "#2e7d32" }} />
-                      <span style={{ color: "#2e7d32" }}>تم نسخ نص الرسالة بالكامل!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={18} />
-                      <span>نسخ تفاصيل الطلب بالكامل</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-
-            {whatsappMessage && (
-              <details style={{ textAlign: "right", margin: "1rem 0" }}>
-                <summary style={{ fontSize: "0.85rem", cursor: "pointer", color: "var(--forest)", fontWeight: 700 }}>
-                  معاينة نص رسالة الواتساب المرسلة للطلب
-                </summary>
-                <div className="whatsapp-preview-box">
-                  {whatsappMessage}
-                </div>
-              </details>
-            )}
-
-            <div className="success-receipt-card">
-              <div className="receipt-row">
-                <span style={{ opacity: 0.7 }}>رقم الطلب:</span>
-                <strong
-                  style={{ fontFamily: "monospace", fontSize: "1.05rem" }}
-                >
-                  {orderNumber}
-                </strong>
-              </div>
-
-              <div className="receipt-row">
-                <span style={{ opacity: 0.7 }}>اسم المستلم:</span>
-                <strong>
-                  {customerInfo.fullName} ({customerInfo.phone})
-                </strong>
-              </div>
-
-              <div className="receipt-row">
-                <span style={{ opacity: 0.7 }}>عنوان وموقع التوصيل:</span>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    maxWidth: "340px",
-                    textAlign: "left",
-                  }}
-                >
-                  {locationData?.address || "الموقع المحدد على الخريطة"}
-                  {buildingDetails.building &&
-                    ` — عمارة ${buildingDetails.building}`}
-                  {buildingDetails.floor && `، دور ${buildingDetails.floor}`}
-                  {buildingDetails.apartment &&
-                    `، شقة ${buildingDetails.apartment}`}
-                </span>
-              </div>
-
-              <div className="receipt-row">
-                <span style={{ opacity: 0.7 }}>طريقة الدفع:</span>
-                <strong>
-                  {paymentMethod === "cod" && "الدفع نقداً عند الاستلام"}
-                  {paymentMethod === "card" && "البطاقة الائتمانية / فيزا"}
-                  {paymentMethod === "wallet" &&
-                    `إنستاباي / محفظة (${walletPhone})`}
-                </strong>
-              </div>
-
-              <div
-                className="receipt-row"
-                style={{
-                  fontSize: "1.15rem",
-                  fontWeight: 700,
-                  color: "var(--tomato)",
-                }}
-              >
-                <span>المبلغ الإجمالي المستحق:</span>
-                <span>{number.format(total)} ج.م</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <Link
-                href="/"
-                style={{
-                  padding: "0.95rem 2rem",
-                  borderRadius: "0.75rem",
-                  background: "var(--ink)",
-                  color: "var(--cream)",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                }}
-              >
-                العودة للصفحة الرئيسية
-              </Link>
-              <Link
-                href="/products"
-                style={{
-                  padding: "0.95rem 2rem",
-                  borderRadius: "0.75rem",
-                  background: "var(--white)",
-                  border: "1.5px solid var(--line)",
-                  color: "var(--ink)",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                }}
-              >
-                تسوّق المزيد من المنتجات
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="checkout-hero-title">
-              <h1>إتمام الطلب وتحديد موقع التوصيل</h1>
-              <p>
-                خطوات بسيطة وسريعة ليصلك خضار اليوم طازة، مغسول ومتقطّع لباب
-                بيتك.
-              </p>
-            </div>
+        <div className="checkout-hero-title">
+          <h1>إتمام الطلب وتحديد موقع التوصيل</h1>
+          <p>
+            خطوات بسيطة وسريعة ليصلك خضار اليوم طازة، مغسول ومتقطّع لباب بيتك.
+          </p>
+        </div>
 
             <form onSubmit={handlePlaceOrder} className="checkout-two-columns">
               {}
@@ -616,9 +412,9 @@ ${customerInfo.notes ? `\n- ملاحظات إضافية: ${customerInfo.notes}\n
                     </div>
                   </div>
 
-                  {}
+                  {/* Embedded Leaflet OpenStreetMap Location Picker Component */}
                   <div style={{ marginBottom: "1.5rem" }}>
-                    <LocationPicker
+                    <LeafletLocationPicker
                       height="380px"
                       onLocationSelect={(loc) => {
                         setLocationData(loc)
@@ -1109,19 +905,43 @@ ${customerInfo.notes ? `\n- ملاحظات إضافية: ${customerInfo.notes}\n
                     </div>
                   </div>
 
-                  {}
+                  {submitError && (
+                    <div
+                      style={{
+                        padding: "0.75rem 1rem",
+                        marginBottom: "1rem",
+                        background: "#fef2f2",
+                        border: "1px solid #fecaca",
+                        color: "#991b1b",
+                        borderRadius: "0.75rem",
+                        fontSize: "0.85rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      <span>⚠️ {submitError}</span>
+                    </div>
+                  )}
+
+                  {/* Main Submit Button (Disabled until location is selected) */}
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={!locationData || isSubmitting}
                     className="whatsapp-order-btn"
+                    style={{
+                      opacity: !locationData ? 0.6 : 1,
+                      cursor: !locationData ? "not-allowed" : "pointer",
+                      background: !locationData ? "#78716c" : "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                    }}
                   >
                     {isSubmitting ? (
-                      <span>جارٍ تجهيز وإرسال الطلب...</span>
+                      <span>جارٍ تسجيل وتأكيد الطلب...</span>
+                    ) : !locationData ? (
+                      <span>برجاء تحديد موقع التوصيل على الخريطة أولاً</span>
                     ) : (
                       <>
-                        <WhatsAppIcon size={24} color="#ffffff" />
+                        <CheckCircle2 size={22} color="#ffffff" />
                         <span>
-                          تأكيد وإرسال عبر واتساب ({number.format(total)} ج.م)
+                          تأكيد الطلب الآن ({number.format(total)} ج.م)
                         </span>
                       </>
                     )}
@@ -1157,8 +977,6 @@ ${customerInfo.notes ? `\n- ملاحظات إضافية: ${customerInfo.notes}\n
                 </div>
               </aside>
             </form>
-          </>
-        )}
       </div>
     </main>
   )
