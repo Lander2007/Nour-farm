@@ -168,41 +168,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        {process.env.NODE_ENV !== "production" && (
-          <div
-            style={{
-              marginTop: "1.25rem",
-              padding: "0.75rem 1rem",
-              borderRadius: "10px",
-              background: "rgba(34, 197, 94, 0.1)",
-              border: "1px solid rgba(34, 197, 94, 0.25)",
-              fontSize: "0.82rem",
-              color: "rgba(255, 255, 255, 0.85)",
-              direction: "rtl",
-              textAlign: "right",
-            }}
-          >
-            <div style={{ fontWeight: 700, color: "#4ade80", marginBottom: "0.3rem" }}>
-              بيانات الدخول (وضع التطوير):
-            </div>
-            <div style={{ fontSize: "0.8rem", color: "rgba(255, 255, 255, 0.75)" }}>
-              اسم المستخدم:{" "}
-              <code style={{ color: "#fff", background: "rgba(0,0,0,0.35)", padding: "2px 6px", borderRadius: "4px", direction: "ltr", display: "inline-block" }}>
-                admin
-              </code>
-            </div>
-            <div style={{ fontSize: "0.8rem", color: "rgba(255, 255, 255, 0.75)", marginTop: "0.3rem" }}>
-              كلمة المرور:{" "}
-              <code style={{ color: "#fff", background: "rgba(0,0,0,0.35)", padding: "2px 6px", borderRadius: "4px", direction: "ltr", display: "inline-block" }}>
-                MANU1999.KHALED
-              </code>{" "}
-              أو{" "}
-              <code style={{ color: "#fff", background: "rgba(0,0,0,0.35)", padding: "2px 6px", borderRadius: "4px", direction: "ltr", display: "inline-block" }}>
-                admin
-              </code>
-            </div>
-          </div>
-        )}
+
 
         <div style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem" }}>
           <Link
