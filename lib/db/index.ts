@@ -117,6 +117,27 @@ export async function updateSection(id: string, updates: Partial<Section>): Prom
   return data as Section
 }
 
+export async function createSection(section: Section): Promise<Section> {
+  if (!isSupabaseConfigured()) {
+    assertDatabaseConfigured()
+    return localStore.createSection(section)
+  }
+
+  const supabase = getSupabaseServerClient()!
+  const { data, error } = await supabase
+    .from("sections")
+    .upsert(section, { onConflict: "id" })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Supabase createSection error:", error)
+    if (process.env.NODE_ENV !== "production") return localStore.createSection(section)
+    throw error
+  }
+  return data as Section
+}
+
 export async function getProducts(options?: {
   sectionId?: string
   publishedOnly?: boolean

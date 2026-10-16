@@ -194,6 +194,14 @@ export const localStore = {
     writeLocalDb(state)
     return state.sections[idx]
   },
+  createSection: (section: Section): Section => {
+    const state = readLocalDb()
+    const exists = state.sections.find((s) => s.id === section.id)
+    if (exists) return exists
+    state.sections.push(section)
+    writeLocalDb(state)
+    return section
+  },
   getProducts: (options?: { sectionId?: string; publishedOnly?: boolean }): Product[] => {
     let prods = readLocalDb().products
     if (options?.publishedOnly) {

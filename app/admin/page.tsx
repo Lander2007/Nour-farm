@@ -32,7 +32,7 @@ import { farmImagePaths } from "./farm-images"
 import { resizeImageToWebP } from "@/lib/utils/image-resize"
 import "./admin.css"
 
-const SECTION_OPTIONS = [
+const DEFAULT_SECTIONS = [
   { id: "fresh-vegetables", dept: "vegetables", name: "خضار طازج" },
   { id: "herbs", dept: "vegetables", name: "الخضرة" },
   { id: "ready-vegetables", dept: "vegetables", name: "خضار متقطع ومجهّز" },
@@ -55,8 +55,15 @@ export default function AdminProductsPage() {
 
   // State
   const [products, setProducts] = useState<Product[]>([])
+  const [sections, setSections] = useState<Array<{ id: string; dept: string; name: string }>>(DEFAULT_SECTIONS)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isDevFallback, setIsDevFallback] = useState<boolean>(false)
+
+  // New Section Modal State
+  const [isNewSectionModalOpen, setIsNewSectionModalOpen] = useState<boolean>(false)
+  const [newSectionName, setNewSectionName] = useState<string>("")
+  const [newSectionDept, setNewSectionDept] = useState<"vegetables" | "fruits">("vegetables")
+  const [isCreatingSection, setIsCreatingSection] = useState<boolean>(false)
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -98,7 +105,7 @@ export default function AdminProductsPage() {
     setTimeout(() => setToastMessage(null), 3500)
   }
 
-  // Check Session & Load Products
+  // Check Session & Load Products and Sections
   const loadData = async () => {
     setIsLoading(true)
     try {
@@ -119,6 +126,29 @@ export default function AdminProductsPage() {
         const prodData = await prodRes.json()
         setProducts(prodData.products || [])
       }
+
+      // Fetch sections dynamically from DB
+      try {
+        const secRes = await fetch("/api/admin/sections")
+        if (secRes.ok) {
+          const secData = await secRes.json()
+          if (Array.isArray(secData.sections) && secData.sections.length > 0) {
+            const mapped = secData.sections.map((s: any) => ({
+              id: s.id,
+              dept: s.department_id,
+              name: s.name_ar,
+            }))
+            const mapIds = new Set(mapped.map((m: any) => m.id))
+            const merged = [...mapped]
+            for (const d of DEFAULT_SECTIONS) {
+              if (!mapIds.has(d.id)) merged.push(d)
+            }
+            setSections(merged)
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load dynamic sections:", err)
+      }
     } catch (err) {
       console.error("Failed to load admin data:", err)
     } finally {
@@ -129,6 +159,57 @@ export default function AdminProductsPage() {
   useEffect(() => {
     loadData()
   }, [])
+
+  // Handler to create a new section
+  const handleCreateSection = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = newSectionName.trim()
+    if (!trimmed) {
+      alert("يرجى كتابة اسم القسم الجديد")
+      return
+    }
+
+    setIsCreatingSection(true)
+    try {
+      const res = await fetch("/api/admin/sections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name_ar: trimmed,
+          department_id: newSectionDept,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "فشل إنشاء القسم")
+        return
+      }
+
+      const created = data.section
+      const newOpt = {
+        id: created.id,
+        dept: created.department_id,
+        name: created.name_ar,
+      }
+
+      setSections((prev) => {
+        const exists = prev.some((s) => s.id === newOpt.id)
+        return exists ? prev : [...prev, newOpt]
+      })
+
+      // If user was adding/editing product, automatically select the new section!
+      setFormData((prev) => ({ ...prev, section_id: newOpt.id }))
+      setBulkSectionId(newOpt.id)
+      showToast(`تم إنشاء قسم "${created.name_ar}" بنجاح وتحديده!`)
+      setIsNewSectionModalOpen(false)
+      setNewSectionName("")
+    } catch {
+      alert("حدث خطأ أثناء إنشاء القسم")
+    } finally {
+      setIsCreatingSection(false)
+    }
+  }
 
   // Logout
   const handleLogout = async () => {
@@ -141,7 +222,7 @@ export default function AdminProductsPage() {
     let result = [...products]
 
     if (activeDepartment !== "all") {
-      const deptSectionIds = SECTION_OPTIONS.filter((s) => s.dept === activeDepartment).map((s) => s.id)
+      const deptSectionIds = sections.filter((s) => s.dept === activeDepartment).map((s) => s.id)
       result = result.filter((p) => deptSectionIds.includes(p.section_id))
     }
 
@@ -566,6 +647,19 @@ export default function AdminProductsPage() {
 
               <button
                 type="button"
+                onClick={() => {
+                  setNewSectionName("")
+                  setIsNewSectionModalOpen(true)
+                }}
+                className="btn-secondary-action"
+                style={{ background: "#f0fdf4", borderColor: "#86efac", color: "#166534", fontWeight: 700 }}
+              >
+                <Plus size={16} />
+                <span>+ قسم جديد</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setIsBulkModalOpen(true)}
                 className="btn-secondary-action"
                 style={{ background: "#e8f5e9", borderColor: "#81c784", color: "#1b5e20", fontWeight: 700 }}
@@ -624,7 +718,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setActiveSection(e.target.value)}
               >
                 <option value="all">كل الأقسام الفرعية</option>
-                {SECTION_OPTIONS.map((s) => (
+                {sections.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>
@@ -685,7 +779,7 @@ export default function AdminProductsPage() {
             </thead>
             <tbody>
               {filteredProducts.map((p) => {
-                const sectionName = SECTION_OPTIONS.find((s) => s.id === p.section_id)?.name || p.section_id
+                const sectionName = sections.find((s) => s.id === p.section_id)?.name || p.section_id
 
                 return (
                   <tr key={p.id}>
@@ -842,13 +936,38 @@ export default function AdminProductsPage() {
 
                     <div className="form-row-2">
                       <div className="form-group">
-                        <label className="form-label">القسم *</label>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem" }}>
+                          <label className="form-label" style={{ margin: 0 }}>القسم *</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewSectionName("")
+                              setIsNewSectionModalOpen(true)
+                            }}
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "#166534",
+                              fontWeight: 700,
+                              background: "#f0fdf4",
+                              border: "1px solid #bbf7d0",
+                              borderRadius: "6px",
+                              padding: "2px 8px",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                          >
+                            <Plus size={13} />
+                            <span>+ إضافة قسم جديد</span>
+                          </button>
+                        </div>
                         <select
                           className="form-select"
                           value={formData.section_id}
                           onChange={(e) => setFormData((prev) => ({ ...prev, section_id: e.target.value }))}
                         >
-                          {SECTION_OPTIONS.map((sec) => (
+                          {sections.map((sec) => (
                             <option key={sec.id} value={sec.id}>
                               {sec.name}
                             </option>
@@ -1050,7 +1169,7 @@ export default function AdminProductsPage() {
                   onChange={(e) => setBulkSectionId(e.target.value)}
                   disabled={bulkUploading}
                 >
-                  {SECTION_OPTIONS.map((sec) => (
+                  {sections.map((sec) => (
                     <option key={sec.id} value={sec.id}>
                       {sec.name}
                     </option>
@@ -1188,6 +1307,98 @@ export default function AdminProductsPage() {
                 <span>نعم، احذف الصنف</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+         MODAL: NEW SECTION CREATION
+         ───────────────────────────────────────────────────────────── */}
+      {isNewSectionModalOpen && (
+        <div className="modal-backdrop" onClick={() => !isCreatingSection && setIsNewSectionModalOpen(false)}>
+          <div className="modal-dialog" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">إنشاء قسم جديد</h2>
+              <button
+                type="button"
+                onClick={() => setIsNewSectionModalOpen(false)}
+                className="modal-close-btn"
+                disabled={isCreatingSection}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSection}>
+              <div className="modal-body" style={{ padding: "1.25rem" }}>
+                <div className="form-group" style={{ marginBottom: "1.2rem" }}>
+                  <label className="form-label">اسم القسم الجديد بالعربية *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="مثال: تمور وعسل، عصائر طبيعية، مجمدات..."
+                    value={newSectionName}
+                    onChange={(e) => setNewSectionName(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: "1.2rem" }}>
+                  <label className="form-label">يندرج تحت أي قسم رئيسي؟ *</label>
+                  <select
+                    className="form-select"
+                    value={newSectionDept}
+                    onChange={(e) => setNewSectionDept(e.target.value as "vegetables" | "fruits")}
+                  >
+                    <option value="vegetables">قسم الخضار (Vegetables)</option>
+                    <option value="fruits">قسم الفاكهة (Fruits)</option>
+                  </select>
+                </div>
+
+                <div
+                  style={{
+                    background: "#f0fdf4",
+                    border: "1px solid #bbf7d0",
+                    borderRadius: "10px",
+                    padding: "0.75rem",
+                    fontSize: "0.82rem",
+                    color: "#166534",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  ✓ سيتم حفظ القسم فوراً في قاعدة البيانات ويظهر في القوائم وفي المتجر تلقائياً.
+                </div>
+              </div>
+
+              <div
+                className="modal-footer"
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "0.75rem",
+                  padding: "1rem 1.25rem",
+                  borderTop: "1px solid #e5e7eb",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsNewSectionModalOpen(false)}
+                  className="btn-secondary-action"
+                  disabled={isCreatingSection}
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary-add"
+                  disabled={isCreatingSection || !newSectionName.trim()}
+                >
+                  <Plus size={16} />
+                  <span>{isCreatingSection ? "جاري الحفظ..." : "حفظ واختيار القسم"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
