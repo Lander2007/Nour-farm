@@ -903,6 +903,17 @@
   transition: all 0.2s ease;
 }
 
+/* Remove spin buttons from number inputs */
+.form-input::-webkit-inner-spin-button,
+.form-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.form-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .form-input:focus,
 .form-select:focus {
   border-color: #2e7d32;

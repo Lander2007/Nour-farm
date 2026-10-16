@@ -59,6 +59,137 @@
       "sort": 2
     }
   ],
-  "products": [],
+  "products": [
+    {
+      "id": "prod-tomato",
+      "section_id": "fresh-vegetables",
+      "name_ar": "طماطم بلدي",
+      "image_url": "/noor-farm-images/IMG-20261014-WA0114.jpg",
+      "price": 20,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": true,
+      "sort": 1,
+      "created_at": "2026-10-16T15:54:04.609Z"
+    },
+    {
+      "id": "prod-cucumber",
+      "section_id": "fresh-vegetables",
+      "name_ar": "خيار بلدي",
+      "image_url": "/noor-farm-images/IMG-20261014-WA0133.jpg",
+      "price": 18,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": true,
+      "sort": 2,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-carrot",
+      "section_id": "fresh-vegetables",
+      "name_ar": "جزر أصفر",
+      "image_url": "/noor-farm-images/IMG-20261014-WA0122.jpg",
+      "price": 16,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": true,
+      "sort": 3,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-potato",
+      "section_id": "fresh-vegetables",
+      "name_ar": "بطاطس تحمير",
+      "image_url": "/noor-farm-images/IMG-20261014-WA0119.jpg",
+      "price": 25,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": true,
+      "sort": 4,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-mint",
+      "section_id": "herbs",
+      "name_ar": "نعناع بلدي",
+      "image_url": "/noor-farm-images/IMG-20261014-WA0104.jpg",
+      "price": 5,
+      "unit_type": "bunch",
+      "pack_label": null,
+      "step": 1,
+      "published": true,
+      "sort": 5,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-basil",
+      "section_id": "herbs",
+      "name_ar": "ريحان إيطالي",
+      "image_url": "/basil.webp",
+      "price": 8,
+      "unit_type": "bunch",
+      "pack_label": null,
+      "step": 1,
+      "published": true,
+      "sort": 6,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-okra-cut",
+      "section_id": "ready-vegetables",
+      "name_ar": "بامية مقمعة مجهزة",
+      "image_url": "/scenes/cut.jpg",
+      "price": 45,
+      "unit_type": "pack",
+      "pack_label": "طبق 500 جم",
+      "step": 1,
+      "published": true,
+      "sort": 7,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-green-salad-pack",
+      "section_id": "salads",
+      "name_ar": "سلطة خضراء مجهزة",
+      "image_url": "/scenes/ready.jpg",
+      "price": 30,
+      "unit_type": "pack",
+      "pack_label": "علبة عائلية",
+      "step": 1,
+      "published": true,
+      "sort": 8,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-cantaloupe",
+      "section_id": "fresh-fruits",
+      "name_ar": "كانتالوب عسلي",
+      "image_url": "/noor-farm-images/cantaloupe.jpg",
+      "price": 25,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": true,
+      "sort": 9,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    },
+    {
+      "id": "prod-fruit-salad-cup",
+      "section_id": "cut-fruits",
+      "name_ar": "سالاد فروت مشكل",
+      "image_url": "/scenes/ready.jpg",
+      "price": 45,
+      "unit_type": "pack",
+      "pack_label": "كوب كبير",
+      "step": 1,
+      "published": true,
+      "sort": 10,
+      "created_at": "2026-10-16T15:54:04.610Z"
+    }
+  ],
   "orders": []
 }
