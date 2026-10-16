@@ -10,32 +10,33 @@ export function isUsingDevFallback(): boolean {
 
 export function assertDatabaseConfigured(): void {
   if (!isSupabaseConfigured()) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "DATABASE_CONFIG_ERROR: Supabase environment variables are missing in production. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
-      )
-    }
+    console.warn(
+      "[Database] Supabase environment variables are missing. Using fallback store."
+    )
   }
 }
 
 export async function getDepartments(): Promise<Department[]> {
   if (!isSupabaseConfigured()) {
-    assertDatabaseConfigured()
     return localStore.getDepartments()
   }
 
-  const supabase = getSupabaseServerClient()!
-  const { data, error } = await supabase
-    .from("departments")
-    .select("*")
-    .order("sort", { ascending: true })
+  try {
+    const supabase = getSupabaseServerClient()!
+    const { data, error } = await supabase
+      .from("departments")
+      .select("*")
+      .order("sort", { ascending: true })
 
-  if (error) {
-    console.error("Supabase getDepartments error:", error)
-    if (process.env.NODE_ENV !== "production") return localStore.getDepartments()
-    throw error
+    if (error) {
+      console.error("Supabase getDepartments error:", error)
+      return localStore.getDepartments()
+    }
+    return data as Department[]
+  } catch (err) {
+    console.error("Supabase getDepartments exception:", err)
+    return localStore.getDepartments()
   }
-  return data as Department[]
 }
 
 export async function getDepartment(id: string): Promise<Department | null> {
@@ -60,23 +61,26 @@ export async function getDepartment(id: string): Promise<Department | null> {
 
 export async function getSections(departmentId?: string): Promise<Section[]> {
   if (!isSupabaseConfigured()) {
-    assertDatabaseConfigured()
     return localStore.getSections(departmentId)
   }
 
-  const supabase = getSupabaseServerClient()!
-  let query = supabase.from("sections").select("*").order("sort", { ascending: true })
-  if (departmentId) {
-    query = query.eq("department_id", departmentId)
-  }
+  try {
+    const supabase = getSupabaseServerClient()!
+    let query = supabase.from("sections").select("*").order("sort", { ascending: true })
+    if (departmentId) {
+      query = query.eq("department_id", departmentId)
+    }
 
-  const { data, error } = await query
-  if (error) {
-    console.error("Supabase getSections error:", error)
-    if (process.env.NODE_ENV !== "production") return localStore.getSections(departmentId)
-    throw error
+    const { data, error } = await query
+    if (error) {
+      console.error("Supabase getSections error:", error)
+      return localStore.getSections(departmentId)
+    }
+    return data as Section[]
+  } catch (err) {
+    console.error("Supabase getSections exception:", err)
+    return localStore.getSections(departmentId)
   }
-  return data as Section[]
 }
 
 export async function getSection(id: string): Promise<Section | null> {
@@ -143,27 +147,30 @@ export async function getProducts(options?: {
   publishedOnly?: boolean
 }): Promise<Product[]> {
   if (!isSupabaseConfigured()) {
-    assertDatabaseConfigured()
     return localStore.getProducts(options)
   }
 
-  const supabase = getSupabaseServerClient()!
-  let query = supabase.from("products").select("*").order("sort", { ascending: true })
+  try {
+    const supabase = getSupabaseServerClient()!
+    let query = supabase.from("products").select("*").order("sort", { ascending: true })
 
-  if (options?.publishedOnly) {
-    query = query.eq("published", true)
-  }
-  if (options?.sectionId) {
-    query = query.eq("section_id", options.sectionId)
-  }
+    if (options?.publishedOnly) {
+      query = query.eq("published", true)
+    }
+    if (options?.sectionId) {
+      query = query.eq("section_id", options.sectionId)
+    }
 
-  const { data, error } = await query
-  if (error) {
-    console.error("Supabase getProducts error:", error)
-    if (process.env.NODE_ENV !== "production") return localStore.getProducts(options)
-    throw error
+    const { data, error } = await query
+    if (error) {
+      console.error("Supabase getProducts error:", error)
+      return localStore.getProducts(options)
+    }
+    return data as Product[]
+  } catch (err) {
+    console.error("Supabase getProducts exception:", err)
+    return localStore.getProducts(options)
   }
-  return data as Product[]
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
