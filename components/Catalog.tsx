@@ -789,20 +789,23 @@ export default function Catalog() {
                 <div className="empty-icon-box">
                   <Search />
                 </div>
-                <h3>لم نعثر على أي صنف مطابق لاختياراتك</h3>
+                <h3>{products.length === 0 ? "لا توجد منتجات منشورة حالياً في المتجر" : "لم نعثر على أي صنف مطابق لاختياراتك"}</h3>
                 <p>
-                  جرّب إزالة بعض الفلاتر أو استخدام كلمات بحث مختلفة للاطلاع على
-                  تشكيلة المنتجات المتوفرة.
+                  {products.length === 0
+                    ? "تم تفريغ كافة المنتجات من قاعدة البيانات. يمكنك إضافة وتفعيل أصناف جديدة من لوحة التحكم."
+                    : "جرّب إزالة بعض الفلاتر أو استخدام كلمات بحث مختلفة للاطلاع على تشكيلة المنتجات المتوفرة."}
                 </p>
-                <div className="empty-actions">
-                  <button
-                    type="button"
-                    className="primary-button"
-                    onClick={resetAllFilters}
-                  >
-                    <RotateCcw /> عرض كل المنتجات ({products.length})
-                  </button>
-                </div>
+                {products.length > 0 && (
+                  <div className="empty-actions">
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={resetAllFilters}
+                    >
+                      <RotateCcw /> عرض كل المنتجات ({products.length})
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </main>
