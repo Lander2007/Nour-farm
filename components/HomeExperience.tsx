@@ -21,7 +21,7 @@
           5 Tiles: خضار طازج، فواكه طازجة، الخضرة، جاهز للطبخ، السلطات
           ═══════════════════════════════════════════════════════════════ */ /* Back to top floating button */ /* Unchanged Footer */
 
-import { useEffect, useRef, useCallback, useState } from "react"
+import { useEffect, useRef, useCallback } from "react"
 import { ArrowUp } from "lucide-react"
 import Lenis from "lenis"
 import gsap from "gsap"
@@ -29,27 +29,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import Header from "./Header"
 import CartDrawer from "./CartDrawer"
 import PlateFlipHero from "./PlateFlipHero"
-import ShopSection from "./ShopSection"
 import StorySection from "./StorySection"
-import CategoriesSection from "./CategoriesSection"
 import Footer from "./Footer"
 
 export default function HomeExperience() {
   const progressBarRef = useRef<HTMLDivElement>(null)
   const backToTopRef = useRef<HTMLButtonElement>(null)
-  const [handoffDone, setHandoffDone] = useState(false)
-
-  const handleHeroProgress = useCallback((p: number) => {
-    const isDone =
-      p >=
-      0.97
-    setHandoffDone((prev) =>
-      prev !==
-      isDone
-        ? isDone
-        : prev,
-    )
-  }, [])
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -99,30 +84,24 @@ export default function HomeExperience() {
 
   return (
     <main className="landing-experience-main">
-      {}
+      {/* Top Glowing Scroll Progress Bar */}
       <div
         className="scroll-progress-bar"
         ref={progressBarRef}
         aria-hidden="true"
       />
 
-      {}
+      {/* Global Header & Cart Drawer */}
       <Header />
       <CartDrawer />
 
-      {}
-      <PlateFlipHero onProgressUpdate={handleHeroProgress} />
+      {/* SECTION 1: HERO PINNED STAGE (170vh) - Plate flips and items fall into department tiles */}
+      <PlateFlipHero />
 
-      {}
-      <ShopSection handoffComplete={handoffDone} />
-
-      {}
+      {/* SECTION 2: STORY PINNED STAGE (450vh) - 3 Scenes: Wash -> Cut -> Ready */}
       <StorySection />
 
-      {}
-      <CategoriesSection />
-
-      {}
+      {/* Back to top floating button */}
       <button
         type="button"
         className="back-to-top-btn"
@@ -139,7 +118,7 @@ export default function HomeExperience() {
         <span>للأعلى</span>
       </button>
 
-      {}
+      {/* Unchanged Footer */}
       <Footer />
     </main>
   )
