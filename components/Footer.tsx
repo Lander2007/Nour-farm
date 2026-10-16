@@ -135,11 +135,6 @@ export default function Footer() {
               <li>
                 <Link href="/#shop">قطفة اليوم الأكثر طلباً</Link>
               </li>
-              <li>
-                <Link href="/admin" style={{ opacity: 0.85, color: "#a5d6a7" }}>
-                  لوحة الإدارة (Admin)
-                </Link>
-              </li>
             </ul>
           </div>
 
