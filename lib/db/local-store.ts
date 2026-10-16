@@ -329,6 +329,17 @@ export const localStore = {
   getOrder: (id: string): Order | undefined => {
     return readLocalDb().orders.find((o) => o.id === id || o.order_number === id)
   },
+  saveOrder: (order: Order): Order => {
+    const state = readLocalDb()
+    const idx = state.orders.findIndex((o) => o.id === order.id || o.order_number === order.order_number)
+    if (idx >= 0) {
+      state.orders[idx] = { ...state.orders[idx], ...order }
+    } else {
+      state.orders = [order, ...state.orders]
+    }
+    writeLocalDb(state)
+    return order
+  },
   createOrder: (order: Omit<Order, "id" | "created_at">): Order => {
     const state = readLocalDb()
     const newOrder: Order = {

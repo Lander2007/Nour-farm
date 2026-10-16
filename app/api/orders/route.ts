@@ -8,14 +8,12 @@ const EGYPT_PHONE_REGEX = /^01[0125][0-9]{8}$/
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const {
-      customer_name,
-      customer_phone,
-      area,
-      address_details,
-      location,
-      items,
-    } = body
+    const customer_name = body.customer_name || body.customerName
+    const customer_phone = body.customer_phone || body.customerPhone
+    const area = body.area
+    const address_details = body.address_details || body.addressDetails
+    const location = body.location
+    const items = body.items
 
     // 1. Validate Customer Name
     if (!customer_name || typeof customer_name !== "string" || customer_name.trim().length < 3) {
@@ -96,7 +94,7 @@ export async function POST(req: NextRequest) {
       calculatedSubtotal += line_total
       return {
         id: String(it.id),
-        name: String(it.name),
+        name: String(it.name || it.name_ar || "صنف"),
         unit: String(it.unit || "كجم"),
         qty,
         unit_price,

@@ -3,7 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Header from "@/components/Header"
-import Footer from "@/components/Footer"
+import SlimFooter from "@/components/SlimFooter"
 import NeutralProductCard from "@/components/NeutralProductCard"
 import { getDepartment, getSection, getSections, getProducts } from "@/lib/db"
 import { ChevronLeft, Layers, ShoppingBag } from "lucide-react"
@@ -159,7 +159,7 @@ export default async function DepartmentSectionPage({ params }: SectionPageProps
         )}
       </main>
 
-      <Footer />
+      <SlimFooter />
     </div>
   )
 }

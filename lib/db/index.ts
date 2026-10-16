@@ -361,9 +361,27 @@ export async function getOrders(options?: { status?: OrderStatus }): Promise<Ord
   if (error) {
     console.error("Supabase getOrders error:", error)
     if (process.env.NODE_ENV !== "production") return localStore.getOrders(options)
-    throw error
+    return localStore.getOrders(options)
   }
-  return data as Order[]
+
+  const enriched = (data || []).map((o: any) => {
+    const local = localStore.getOrder(o.id) || localStore.getOrder(o.order_number)
+    const subtotal =
+      o.subtotal_price ??
+      local?.subtotal_price ??
+      (o.items || []).reduce((s: number, it: any) => s + (Number(it.line_total) || 0), 0)
+    return {
+      ...o,
+      area: o.area || local?.area,
+      delivery_fee: o.delivery_fee !== undefined ? o.delivery_fee : local?.delivery_fee,
+      delivery_fee_status:
+        o.delivery_fee_status ||
+        local?.delivery_fee_status ||
+        (o.delivery_fee === 0 ? "free" : o.delivery_fee != null ? "set" : "pending"),
+      subtotal_price: subtotal,
+    }
+  })
+  return enriched as Order[]
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
@@ -384,11 +402,26 @@ export async function getOrder(id: string): Promise<Order | null> {
 
   const { data, error } = await query.single()
 
-  if (error) {
-    if (process.env.NODE_ENV !== "production") return localStore.getOrder(id) || null
-    return null
+  if (error || !data) {
+    return localStore.getOrder(id) || null
   }
-  return data as Order
+
+  const local = localStore.getOrder(data.id) || localStore.getOrder(data.order_number)
+  const subtotal =
+    data.subtotal_price ??
+    local?.subtotal_price ??
+    (data.items || []).reduce((s: number, it: any) => s + (Number(it.line_total) || 0), 0)
+
+  return {
+    ...data,
+    area: data.area || local?.area,
+    delivery_fee: data.delivery_fee !== undefined ? data.delivery_fee : local?.delivery_fee,
+    delivery_fee_status:
+      data.delivery_fee_status ||
+      local?.delivery_fee_status ||
+      (data.delivery_fee === 0 ? "free" : data.delivery_fee != null ? "set" : "pending"),
+    subtotal_price: subtotal,
+  } as Order
 }
 
 export const getOrderById = getOrder
@@ -421,13 +454,17 @@ export async function createOrder(
           .single()
 
         if (!legacyErr && legacyData) {
-          return { ...legacyData, area, delivery_fee, delivery_fee_status, subtotal_price } as Order
+          const finalOrder = { ...legacyData, area, delivery_fee, delivery_fee_status, subtotal_price } as Order
+          localStore.saveOrder(finalOrder)
+          return finalOrder
         }
       }
       console.warn("Supabase createOrder failed, using localOrder:", error)
       return localOrder
     }
-    return data as Order
+    const finalOrder = data as Order
+    localStore.saveOrder(finalOrder)
+    return finalOrder
   } catch (err) {
     console.error("Supabase createOrder exception:", err)
     return localOrder
@@ -512,11 +549,18 @@ export async function updateOrderDeliveryFee(
 
     const { data, error } = await updateQuery.select().single()
     if (error) {
-      console.warn("Supabase updateOrderDeliveryFee failed, using localStore:", error)
+      if (error.code === "42703" || error.message?.includes("column")) {
+        await supabase
+          .from("orders")
+          .update({ total_price: newTotal })
+          .eq(isUuid ? "id" : "order_number", id)
+      }
       return localUpdated
     }
 
-    return data as Order
+    const finalOrder = data as Order
+    localStore.saveOrder(finalOrder)
+    return finalOrder
   } catch (err) {
     console.error("Supabase updateOrderDeliveryFee exception:", err)
     return localUpdated
