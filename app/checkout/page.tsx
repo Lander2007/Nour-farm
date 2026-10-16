@@ -167,12 +167,23 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Helper to normalize Egyptian phone (Arabic digits, country codes +20/0020, spaces, dashes)
+  const normalizeEgyptianPhone = (val: string) => {
+    if (!val) return ""
+    let clean = val.trim().replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString())
+    clean = clean.replace(/[\s\-()]/g, "")
+    if (clean.startsWith("+20")) clean = clean.slice(3)
+    else if (clean.startsWith("0020")) clean = clean.slice(4)
+    else if (clean.startsWith("20") && clean.length === 12) clean = clean.slice(2)
+    return clean
+  }
+
   const validateForm = () => {
     const errs: Record<string, string> = {}
     if (!customerInfo.fullName.trim() || customerInfo.fullName.trim().length < 3) {
       errs.fullName = "يرجى كتابة الاسم بالكامل (٣ أحرف على الأقل)"
     }
-    const cleanPhone = customerInfo.phone.trim().replace(/[\s-]/g, "")
+    const cleanPhone = normalizeEgyptianPhone(customerInfo.phone)
     if (!/^01[0125][0-9]{8}$/.test(cleanPhone)) {
       errs.phone = "يرجى إدخال رقم موبايل مصري صحيح مكون من 11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015"
     }
@@ -197,7 +208,8 @@ export default function CheckoutPage() {
         errs.cardCvv = "رمز CVV مطلوب"
       }
     } else if (paymentMethod === "wallet") {
-      if (!walletPhone.trim() || walletPhone.trim().length < 10) {
+      const cleanWallet = normalizeEgyptianPhone(walletPhone)
+      if (!cleanWallet || cleanWallet.length < 10) {
         errs.walletPhone = "يرجى إدخال رقم المحفظة / إنستاباي الذي قمت بالتحويل منه"
       }
     }
@@ -210,13 +222,33 @@ export default function CheckoutPage() {
     e.preventDefault()
     setSubmitError(null)
 
-    if (!validateForm()) {
-      window.scrollTo({ top: 120, behavior: "smooth" })
+    // 1. Mandatory Location on Map
+    if (!locationData) {
+      setSubmitError("⚠️ برجاء تحديد موقع التوصيل على الخريطة أولاً لتسجيل الطلب")
+      setTimeout(() => {
+        const mapSection = document.querySelector(".leaflet-container")?.closest(".checkout-section-card")
+        if (mapSection) {
+          mapSection.scrollIntoView({ behavior: "smooth", block: "center" })
+        }
+      }, 50)
       return
     }
 
-    if (!locationData) {
-      setSubmitError("برجاء تحديد موقع التوصيل على الخريطة أولاً.")
+    // 2. Validate Contact and Address Details
+    if (!validateForm()) {
+      setSubmitError("⚠️ يرجى استكمال بيانات المستلم والعنوان بالأسفل لإتمام الطلب (الاسم، رقم الموبايل، ورقم العمارة والشقة)")
+      // Wait for React state to update error labels, then scroll smoothly to the first field that needs attention
+      setTimeout(() => {
+        const firstErrorEl = document.querySelector(".checkout-field-error")
+        if (firstErrorEl) {
+          firstErrorEl.closest(".checkout-form-field")?.scrollIntoView({ behavior: "smooth", block: "center" })
+          const input = firstErrorEl.closest(".checkout-form-field")?.querySelector("input, textarea") as HTMLElement | null
+          input?.focus()
+        } else {
+          const firstSection = document.querySelector(".checkout-section-card")
+          firstSection?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+      }, 60)
       return
     }
 
@@ -225,7 +257,7 @@ export default function CheckoutPage() {
     try {
       const orderPayload = {
         customer_name: customerInfo.fullName.trim(),
-        customer_phone: customerInfo.phone.trim().replace(/[\s-]/g, ""),
+        customer_phone: normalizeEgyptianPhone(customerInfo.phone),
         address_details: {
           building: buildingDetails.building.trim(),
           floor: buildingDetails.floor.trim(),
@@ -826,6 +858,55 @@ export default function CheckoutPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Mobile Bottom Submit Button (after user finishes steps) */}
+                <div className="checkout-mobile-bottom-submit">
+                  {submitError && (
+                    <div
+                      style={{
+                        padding: "0.85rem 1rem",
+                        marginBottom: "1rem",
+                        background: "#fef2f2",
+                        border: "1.5px solid #fca5a5",
+                        color: "#991b1b",
+                        borderRadius: "0.75rem",
+                        fontSize: "0.85rem",
+                        fontWeight: 700,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <span>{submitError}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="whatsapp-order-btn"
+                    style={{
+                      cursor: isSubmitting ? "not-allowed" : "pointer",
+                      background: !locationData
+                        ? "linear-gradient(135deg, #475569 0%, #334155 100%)"
+                        : "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <span>جارٍ تسجيل وتأكيد الطلب...</span>
+                    ) : !locationData ? (
+                      <>
+                        <MapPin size={20} color="#ffffff" />
+                        <span>حدد موقع التوصيل على الخريطة أولاً</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={22} color="#ffffff" />
+                        <span>
+                          تأكيد الطلب الآن ({number.format(total)} ج.م)
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {}
@@ -917,35 +998,43 @@ export default function CheckoutPage() {
                   {submitError && (
                     <div
                       style={{
-                        padding: "0.75rem 1rem",
+                        padding: "0.85rem 1rem",
                         marginBottom: "1rem",
                         background: "#fef2f2",
-                        border: "1px solid #fecaca",
+                        border: "1.5px solid #fca5a5",
                         color: "#991b1b",
                         borderRadius: "0.75rem",
                         fontSize: "0.85rem",
                         fontWeight: 700,
+                        lineHeight: 1.5,
                       }}
                     >
-                      <span>⚠️ {submitError}</span>
+                      <span>{submitError}</span>
                     </div>
                   )}
 
-                  {/* Main Submit Button (Disabled until location is selected) */}
+                  {/* Main Submit Button */}
                   <button
                     type="submit"
-                    disabled={!locationData || isSubmitting}
+                    disabled={isSubmitting}
                     className="whatsapp-order-btn"
                     style={{
-                      opacity: !locationData ? 0.6 : 1,
-                      cursor: !locationData ? "not-allowed" : "pointer",
-                      background: !locationData ? "#78716c" : "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                      cursor: isSubmitting ? "not-allowed" : "pointer",
+                      background: !locationData
+                        ? "linear-gradient(135deg, #475569 0%, #334155 100%)"
+                        : "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                      boxShadow: !locationData
+                        ? "0 4px 14px rgba(71, 85, 105, 0.3)"
+                        : "0 6px 20px rgba(37, 211, 102, 0.38)",
                     }}
                   >
                     {isSubmitting ? (
                       <span>جارٍ تسجيل وتأكيد الطلب...</span>
                     ) : !locationData ? (
-                      <span>برجاء تحديد موقع التوصيل على الخريطة أولاً</span>
+                      <>
+                        <MapPin size={20} color="#ffffff" />
+                        <span>حدد موقع التوصيل على الخريطة أولاً</span>
+                      </>
                     ) : (
                       <>
                         <CheckCircle2 size={22} color="#ffffff" />

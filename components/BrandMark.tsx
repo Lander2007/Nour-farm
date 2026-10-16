@@ -20,8 +20,8 @@ export default function BrandMark({
         <Image
           src="/logo-icon.png"
           alt="شعار نور فارم"
-          width={34}
-          height={34}
+          width={64}
+          height={64}
           className="brand-logo-img"
           priority
         />

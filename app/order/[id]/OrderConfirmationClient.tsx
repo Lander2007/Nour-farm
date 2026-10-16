@@ -1,52 +1,98 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import Link from "next/link"
 import {
-  CheckCircle2,
-  Clock,
   MapPin,
   Phone,
   User,
-  ShoppingBag,
   ExternalLink,
-  Copy,
-  Check,
+  Printer,
   ArrowRight,
-  PackageCheck,
   Building,
+  Check,
+  Copy,
+  MessageCircle,
 } from "lucide-react"
 import type { Order } from "@/lib/db/types"
+import ReceiptPrinter from "@/components/ReceiptPrinter"
 
 const WHATSAPP_PHONE = "201224272991"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
-const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  new: { label: "تم استلام الطلب", color: "text-blue-800", bg: "bg-blue-100" },
-  preparing: { label: "قيد التجهيز والتقطيع", color: "text-amber-800", bg: "bg-amber-100" },
-  delivered: { label: "تم تسليم الطلب", color: "text-emerald-800", bg: "bg-emerald-100" },
-  cancelled: { label: "ملغي", color: "text-rose-800", bg: "bg-rose-100" },
+// Restyled status chips using Noor Farm brand tokens (#2F3B27, #2F4A33, #D9788C, #D8402F, #55704A)
+const STATUS_LABELS: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  new: {
+    label: "تم استلام الطلب",
+    color: "text-[#2F4A33]",
+    bg: "bg-[#2F4A33]/10",
+    border: "border-[#2F4A33]/20",
+  },
+  preparing: {
+    label: "قيد التجهيز والتقطيع",
+    color: "text-[#D8402F]",
+    bg: "bg-[#D8402F]/10",
+    border: "border-[#D8402F]/20",
+  },
+  delivered: {
+    label: "تم تسليم الطلب",
+    color: "text-[#2F3B27]",
+    bg: "bg-[#55704A]/15",
+    border: "border-[#55704A]/30",
+  },
+  cancelled: {
+    label: "ملغي",
+    color: "text-[#D9788C]",
+    bg: "bg-[#D9788C]/15",
+    border: "border-[#D9788C]/30",
+  },
 }
 
 export default function OrderConfirmationClient({ order }: { order: Order }) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<any>(null)
   const [copied, setCopied] = useState(false)
 
-  // Generate formal WhatsApp message without emojis
+  const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
+
+  // Check if session shortcut applies:
+  // Must ONLY apply on reload of an order already viewed in this session,
+  // and MUST be ignored in development and when URL has ?replay=1
+  const checkShouldSkipOnMount = useCallback((): boolean => {
+    if (typeof window === "undefined") return false
+    try {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get("replay") === "1") return false
+      if (process.env.NODE_ENV !== "production") return false
+
+      const seen = window.sessionStorage.getItem(storageKey)
+      return seen === "true"
+    } catch {
+      return false
+    }
+  }, [storageKey])
+
+  const [isRevealed, setIsRevealed] = useState<boolean>(() => checkShouldSkipOnMount())
+
+  const handleAnimationComplete = useCallback(() => {
+    setIsRevealed(true)
+  }, [])
+
+  // Generate formal WhatsApp message
   const generateWhatsAppMessage = () => {
     const itemsList = order.items
-      .map(
-        (it) =>
-          `- ${it.name}: ${number.format(it.qty)} ${it.unit} (${number.format(it.line_total)} ج.م)`
-      )
+      .map((it) => {
+        const name = (it as any).name_ar || (it as any).name || "صنف"
+        return `- ${name}: ${number.format(it.qty)} ${it.unit} (${number.format(it.line_total)} ج.م)`
+      })
       .join("\n")
 
     const address = [
-      order.address_details.building ? `عمارة: ${order.address_details.building}` : "",
-      order.address_details.floor ? `الدور: ${order.address_details.floor}` : "",
-      order.address_details.apartment ? `شقة: ${order.address_details.apartment}` : "",
-      order.address_details.landmark ? `علامة مميزة: ${order.address_details.landmark}` : "",
+      order.address_details?.building ? `عمارة: ${order.address_details.building}` : "",
+      order.address_details?.floor ? `الدور: ${order.address_details.floor}` : "",
+      order.address_details?.apartment ? `شقة: ${order.address_details.apartment}` : "",
+      order.address_details?.landmark ? `علامة مميزة: ${order.address_details.landmark}` : "",
     ]
       .filter(Boolean)
       .join("، ")
@@ -79,11 +125,18 @@ ${itemsList}
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Mount Leaflet pin map
+  const handlePrint = () => {
+    if (typeof window !== "undefined") {
+      window.print()
+    }
+  }
+
+  // Mount Leaflet pin map with brand forest color
   useEffect(() => {
     let isMounted = true
     const initMap = async () => {
       if (typeof window === "undefined" || !mapContainerRef.current) return
+      if (!order?.location?.lat || !order?.location?.lng) return
 
       // Load Leaflet CSS dynamically if not present
       if (!document.getElementById("leaflet-css")) {
@@ -99,9 +152,9 @@ ${itemsList}
 
       const customPinSvg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 48" width="36" height="48">
-          <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 30 18 30s18-16.5 18-30C36 8.06 27.94 0 18 0z" fill="#2e7d32"/>
-          <circle cx="18" cy="18" r="7" fill="#ffffff"/>
-          <circle cx="18" cy="18" r="3.5" fill="#1b5e20"/>
+          <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 30 18 30s18-16.5 18-30C36 8.06 27.94 0 18 0z" fill="#2F4A33"/>
+          <circle cx="18" cy="18" r="7" fill="#F7F0E3"/>
+          <circle cx="18" cy="18" r="3.5" fill="#2F3B27"/>
         </svg>
       `
       const pinIcon = L.divIcon({
@@ -111,6 +164,18 @@ ${itemsList}
         iconAnchor: [18, 48],
       })
 
+      // Clean up previous map instance if it exists
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+
+      // If container still has Leaflet internal ID or nodes from prior render
+      if ((mapContainerRef.current as any)._leaflet_id != null) {
+        (mapContainerRef.current as any)._leaflet_id = null
+        mapContainerRef.current.innerHTML = ""
+      }
+
       const map = L.map(mapContainerRef.current, {
         center: [order.location.lat, order.location.lng],
         zoom: 15,
@@ -119,6 +184,8 @@ ${itemsList}
         dragging: false,
         scrollWheelZoom: false,
       })
+
+      mapInstanceRef.current = map
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -130,173 +197,180 @@ ${itemsList}
     initMap()
     return () => {
       isMounted = false
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
     }
-  }, [order.location])
+  }, [order.location?.lat, order.location?.lng])
 
   const statusInfo = STATUS_LABELS[order.status] || STATUS_LABELS.new
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner Card */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm text-center relative overflow-hidden">
-        <div
-          className="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center mx-auto mb-4 text-emerald-700 shadow-inner"
-          style={{ margin: "0 auto 1rem auto" }}
-        >
-          <PackageCheck className="w-9 h-9" />
-        </div>
+    <div className="w-full flex flex-col items-center gap-6">
+      {/* ═══════════════════════════════════════════════════════════════
+          RECEIPT PRINTER (MAIN ORDER CONFIRMATION EXPERIENCE)
+          ═══════════════════════════════════════════════════════════════ */}
+      <ReceiptPrinter order={order} onAnimationComplete={handleAnimationComplete} />
 
-        <h1 className="text-2xl md:text-3xl font-extrabold text-stone-900 mb-2">
-          تم استلام طلبك بنجاح
-        </h1>
-        <p
-          className="text-stone-600 text-sm md:text-base max-w-md mx-auto"
-          style={{ margin: "0 auto" }}
-        >
-          شكراً لتسوقك من نور فارم. جاري تجهيز الخضار والفاكهة الطازجة لتوصيلها إلى عنوانك.
-        </p>
-
-        {/* Order Identifier & Status */}
-        <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-3 p-3 bg-stone-50 rounded-2xl border border-stone-200/80">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-500 font-bold">رقم الطلب:</span>
-            <span className="font-mono text-base font-extrabold text-stone-900">
-              #{order.order_number}
-            </span>
-            <button
-              type="button"
-              onClick={copyOrderNumber}
-              className="p-1 hover:bg-stone-200 rounded-md transition text-stone-500 hover:text-stone-800 cursor-pointer"
-              title="نسخ رقم الطلب"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
-
-          <span className="text-stone-300">|</span>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-500 font-bold">الحالة:</span>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusInfo.bg} ${statusInfo.color}`}>
-              {statusInfo.label}
-            </span>
-          </div>
-        </div>
-
-        {/* WhatsApp Formal Action Button */}
-        <div
-          className="mt-6 max-w-md mx-auto"
-          style={{ margin: "1.5rem auto 0 auto" }}
-        >
+      {/* ═══════════════════════════════════════════════════════════════
+          ACTION BUTTONS (WhatsApp Confirmation & Window.print Action)
+          Fades up smoothly after print animation completes
+          ═══════════════════════════════════════════════════════════════ */}
+      <div
+        className="order-actions-bar w-full max-w-[420px] transition-all duration-500 ease-out flex flex-col gap-3"
+        style={{
+          opacity: isRevealed ? 1 : 0,
+          transform: isRevealed ? "translateY(0)" : "translateY(12px)",
+          pointerEvents: isRevealed ? "auto" : "none",
+        }}
+      >
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full">
+          {/* Formal WhatsApp Action Button */}
           <a
             href={`https://wa.me/${WHATSAPP_PHONE}?text=${generateWhatsAppMessage()}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl bg-[#1e7e34] hover:bg-[#155724] text-white font-bold text-sm md:text-base transition shadow-md shadow-emerald-900/10 cursor-pointer text-decoration-none"
+            className="flex-1 w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl text-white font-bold text-sm transition shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer text-decoration-none border border-white/10"
+            style={{
+              background: "linear-gradient(180deg, #25D366 0%, #128C7E 100%)",
+            }}
           >
-            <span>إرسال تأكيد الطلب لمسؤول المبيعات عبر واتساب</span>
-            <ExternalLink className="w-4 h-4" />
+            <MessageCircle className="w-4 h-4 flex-shrink-0" />
+            <span>تأكيد الطلب عبر واتساب</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-80" />
           </a>
-          <span className="text-xs text-stone-400 mt-2.5 block leading-relaxed">
-            يمكنك إرسال رسالة رسمية لتأكيد استلام الطلب وتتبع موعد وصول الشحنة
-          </span>
+
+          {/* Optional Print Receipt Button */}
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 py-3 px-4 rounded-2xl bg-white hover:bg-stone-50 active:scale-95 text-[#2F3B27] font-bold text-xs md:text-sm transition border border-[#2F3B27]/15 shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2F4A33]/30"
+            title="طباعة إيصال الطلب"
+          >
+            <Printer className="w-4 h-4 text-[#2F4A33]" />
+            <span>طباعة الإيصال</span>
+          </button>
         </div>
+
+        <span className="text-[11px] text-[#2F3B27]/60 text-center block leading-relaxed px-2">
+          يمكنك إرسال رسالة لتأكيد موعد الشحن مع فريق خدمة عملاء نور فارم
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Ordered Items Summary */}
-        <div className="bg-white rounded-3xl p-6 border border-stone-200/80 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-stone-100">
-              <ShoppingBag className="w-5 h-5 text-emerald-700" />
-              <h2 className="text-base font-extrabold text-stone-900">
-                محتويات الطلب ({order.items.length})
-              </h2>
+      {/* ═══════════════════════════════════════════════════════════════
+          DELIVERY & ADDRESS DETAILS (Map Snapshot & Coordinates)
+          Fades up with an 80ms stagger after the buttons
+          ═══════════════════════════════════════════════════════════════ */}
+      <div
+        className="order-delivery-card w-full max-w-[420px] transition-all duration-500 ease-out"
+        style={{
+          opacity: isRevealed ? 1 : 0,
+          transform: isRevealed ? "translateY(0)" : "translateY(12px)",
+          transitionDelay: checkShouldSkipOnMount() ? "0ms" : "80ms",
+          pointerEvents: isRevealed ? "auto" : "none",
+        }}
+      >
+        <div
+          className="bg-white rounded-3xl p-5 md:p-6 border border-[#2F3B27]/12 shadow-sm text-[#2F3B27]"
+          style={{
+            boxShadow: "0 8px 24px -4px rgba(47, 59, 39, 0.08)",
+          }}
+        >
+          {/* Card Header & Status Chip */}
+          <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-[#2F3B27]/10">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-[#2F4A33]/10 text-[#2F4A33] flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4" />
+              </span>
+              <h3 className="receipt-font-display text-sm font-extrabold text-[#2F3B27] m-0">
+                بيانات التوصيل والعنوان
+              </h3>
             </div>
 
-            <div className="divide-y divide-stone-100 max-h-[320px] overflow-y-auto pr-1">
-              {order.items.map((it, idx) => (
-                <div key={idx} className="py-3 flex items-center justify-between text-sm">
-                  <div>
-                    <span className="font-bold text-stone-800 block">{it.name}</span>
-                    <span className="text-xs text-stone-500">
-                      {number.format(it.qty)} {it.unit} × {number.format(it.unit_price)} ج.م
-                    </span>
-                  </div>
-                  <span className="font-bold text-stone-900">
-                    {number.format(it.line_total)} ج.م
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-4 mt-4 border-t border-stone-200 flex items-center justify-between">
-            <span className="text-sm font-bold text-stone-600">إجمالي الحساب:</span>
-            <span className="text-xl font-extrabold text-emerald-800">
-              {number.format(order.total_price)} ج.م
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusInfo.bg} ${statusInfo.color} ${statusInfo.border} border`}
+            >
+              {statusInfo.label}
             </span>
           </div>
-        </div>
 
-        {/* Customer & Delivery Location Details */}
-        <div className="bg-white rounded-3xl p-6 border border-stone-200/80 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-stone-100">
-              <MapPin className="w-5 h-5 text-emerald-700" />
-              <h2 className="text-base font-extrabold text-stone-900">
-                بيانات التوصيل والعنوان
-              </h2>
+          {/* Info Rows */}
+          <div className="space-y-2.5 text-xs text-[#2F3B27]">
+            <div className="flex items-center justify-between">
+              <span className="text-[#2F3B27]/65 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-[#2F4A33]/70" />
+                <span>العميل:</span>
+              </span>
+              <strong className="font-bold text-[#2F3B27]">
+                <bdi dir="auto">{order.customer_name}</bdi>
+              </strong>
             </div>
 
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2.5 text-stone-700">
-                <User className="w-4 h-4 text-stone-400 flex-shrink-0" />
-                <span>العميل: <strong className="text-stone-900">{order.customer_name}</strong></span>
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[#2F3B27]/65 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-[#2F4A33]/70" />
+                <span>الهاتف:</span>
+              </span>
+              <strong className="receipt-font-mono font-bold text-[#2F3B27]" dir="ltr">
+                {order.customer_phone}
+              </strong>
+            </div>
 
-              <div className="flex items-center gap-2.5 text-stone-700">
-                <Phone className="w-4 h-4 text-stone-400 flex-shrink-0" />
-                <span>الهاتف: <strong className="text-stone-900" dir="ltr">{order.customer_phone}</strong></span>
-              </div>
+            <div className="flex items-start justify-between gap-2 pt-1 border-t border-[#2F3B27]/5">
+              <span className="text-[#2F3B27]/65 flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                <Building className="w-3.5 h-3.5 text-[#2F4A33]/70" />
+                <span>العنوان:</span>
+              </span>
+              <span className="text-right font-medium leading-relaxed text-[#2F3B27]">
+                <bdi dir="auto">
+                  عمارة {order.address_details?.building}
+                  {order.address_details?.floor && `، الدور ${order.address_details.floor}`}
+                  {order.address_details?.apartment && `، شقة ${order.address_details.apartment}`}
+                  {order.address_details?.landmark && ` (${order.address_details.landmark})`}
+                </bdi>
+              </span>
+            </div>
 
-              <div className="flex items-start gap-2.5 text-stone-700">
-                <Building className="w-4 h-4 text-stone-400 flex-shrink-0 mt-0.5" />
-                <span>
-                  العنوان: عمارة {order.address_details.building}
-                  {order.address_details.floor && `، الدور ${order.address_details.floor}`}
-                  {order.address_details.apartment && `، شقة ${order.address_details.apartment}`}
-                  {order.address_details.landmark && ` (علامة مميزة: ${order.address_details.landmark})`}
+            {order.address_details?.notes && (
+              <div className="flex items-start justify-between gap-2 pt-1 border-t border-[#2F3B27]/5">
+                <span className="text-[#2F3B27]/65 flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                  <span>ملاحظات:</span>
+                </span>
+                <span className="text-right font-medium leading-relaxed text-[#2F3B27]">
+                  <bdi dir="auto">{order.address_details.notes}</bdi>
                 </span>
               </div>
-            </div>
-
-            {/* Static Leaflet map snapshot */}
-            <div className="mt-4 rounded-xl overflow-hidden border border-stone-200 relative h-36">
-              <div ref={mapContainerRef} className="w-full h-full" />
-              <a
-                href={`https://maps.google.com/?q=${order.location.lat},${order.location.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute bottom-2 left-2 bg-white/95 backdrop-blur-xs text-[11px] font-bold text-emerald-800 px-2 py-1 rounded-md shadow-xs border border-emerald-200 flex items-center gap-1 z-[1000] cursor-pointer"
-              >
-                <span>فتح في خرائط جوجل</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+            )}
           </div>
 
-          <div className="mt-4 pt-3 text-xs text-stone-400">
-            تم حفظ الموقع المحدد بنجاح بدقة إحداثيات ({order.location.lat}, {order.location.lng})
+          {/* Static Leaflet map snapshot */}
+          <div className="mt-3.5 rounded-xl overflow-hidden border border-[#2F3B27]/15 relative h-32">
+            <div ref={mapContainerRef} className="w-full h-full" />
+            <a
+              href={`https://maps.google.com/?q=${order.location.lat},${order.location.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-2 left-2 bg-white/95 backdrop-blur-xs text-[10px] font-bold text-[#2F4A33] px-2 py-1 rounded-md shadow-xs border border-[#2F4A33]/25 flex items-center gap-1 z-[1000] cursor-pointer hover:bg-white"
+            >
+              <span>فتح في خرائط جوجل</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          <div className="mt-2.5 text-[10px] text-[#2F3B27]/50 text-center">
+            إحداثيات التوصيل المحددة: ({order.location.lat.toFixed(4)}, {order.location.lng.toFixed(4)})
           </div>
         </div>
       </div>
 
-      {/* Navigation Return Button */}
-      <div className="text-center pt-4">
+      {/* ═══════════════════════════════════════════════════════════════
+          RETURN NAVIGATION BUTTON
+          ═══════════════════════════════════════════════════════════════ */}
+      <div className="order-return-nav text-center pt-2 pb-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-sm transition"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/80 hover:bg-white active:scale-95 text-[#2F3B27] font-bold text-xs md:text-sm transition border border-[#2F3B27]/15 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#2F4A33]/30"
         >
           <span>العودة إلى الصفحة الرئيسية</span>
           <ArrowRight className="w-4 h-4" />
