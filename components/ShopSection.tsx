@@ -1,6 +1,6 @@
 "use client" /* Section Heading */ /* 10 Product Cards Grid */ /* Visual Target Slot for Hero Sprite Landing */ /* Subtle ground shadow under the item */ /* Native Card Image: opacity 0 until handoff at p >= 0.97 */ /* Card Content: Name, Unit, Price, Add-To-Cart */ /* Store CTA Card ("عرض المزيد") */ /* Four Trust Badges Strip */
 
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { heroProduceItems, type Product } from "@/data/products"
+import { useActiveProducts } from "@/store/products"
 import { useCart } from "@/store/cart"
 
 interface ShopSectionProps {
@@ -23,9 +24,40 @@ interface ShopSectionProps {
 export default function ShopSection({
   handoffComplete = false,
 }: ShopSectionProps) {
+  const activeProducts = useActiveProducts()
   const cartItems = useCart((state) => state.items)
   const addToCart = useCart((state) => state.add)
   const changeQty = useCart((state) => state.change)
+
+  // Map the landing page produce cards dynamically to live database items!
+  const displayProducts = useMemo(() => {
+    if (!activeProducts || activeProducts.length === 0) {
+      return heroProduceItems
+    }
+
+    return heroProduceItems.map((defaultItem) => {
+      const defId = defaultItem.id.toLowerCase()
+      const dbMatch = activeProducts.find((p) => {
+        const pId = p.id.toLowerCase()
+        return (
+          pId === defId ||
+          pId === `prod-${defId}` ||
+          p.slug === defId ||
+          p.name === defaultItem.name ||
+          p.name.includes(defaultItem.name.split(" ")[0])
+        )
+      })
+
+      if (dbMatch) {
+        return {
+          ...dbMatch,
+          tint: defaultItem.tint,
+        }
+      }
+
+      return defaultItem
+    })
+  }, [activeProducts])
 
   const handleAdd = useCallback(
     (product: Product, e: React.MouseEvent) => {
@@ -55,8 +87,12 @@ export default function ShopSection({
 
         {}
         <div className="hero-produce-grid">
-          {heroProduceItems.map((product, idx) => {
-            const qty = cartItems[product.id] || 0
+          {displayProducts.map((product, idx) => {
+            const qty =
+              cartItems[product.id] ??
+              cartItems[product.id.replace(/^prod-/, "")] ??
+              cartItems[`prod-${product.id}`] ??
+              0
 
             return (
               <article
