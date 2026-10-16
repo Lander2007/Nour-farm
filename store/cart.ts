@@ -10,6 +10,7 @@ type CartState = {
   add: (product: Product) => void
   change: (product: Product, delta: number) => void
   setOpen: (open: boolean) => void
+  clear: () => void
 }
 
 export const useCart = create<CartState>()(
@@ -30,6 +31,7 @@ export const useCart = create<CartState>()(
           return { items }
         }),
       setOpen: (open) => set({ open }),
+      clear: () => set({ items: {} }),
     }),
     {
       name: "noor-farm-cart",
