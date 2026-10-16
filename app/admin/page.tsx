@@ -25,6 +25,7 @@ import {
   ShoppingBag,
   Clock,
   Sparkles,
+  Settings,
 } from "lucide-react"
 
 import type { Product, Section, DepartmentId } from "@/lib/db/types"
@@ -726,6 +727,11 @@ export default function AdminProductsPage() {
             >
               <ShoppingBag size={16} />
               <span>إدارة الطلبات</span>
+            </Link>
+
+            <Link href="/admin/settings" className="admin-action-btn-ghost">
+              <Settings size={16} />
+              <span>إعدادات المتجر</span>
             </Link>
 
             <Link href="/" target="_blank" className="admin-action-btn-ghost">

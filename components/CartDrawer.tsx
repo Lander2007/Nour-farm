@@ -9,9 +9,13 @@ import BrandMark from "./BrandMark"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
+import { useStoreSettings } from "@/store/settings"
+
 export default function CartDrawer() {
   const products = useActiveProducts()
   const { items, open, setOpen, change } = useCart()
+  const settings = useStoreSettings()
+
   const getQty = (product: Product) => {
     return (
       items[product.id] ??
@@ -96,8 +100,58 @@ export default function CartDrawer() {
           </div>
         )}
         <div className="drawer-total">
-          <span>الإجمالي</span>
-          <strong>{number.format(total)} ج.م</strong>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              marginBottom: "0.35rem",
+              color: "var(--ink)",
+            }}
+          >
+            <span>إجمالي المنتجات:</span>
+            <strong>{number.format(total)} ج.م</strong>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: "0.8rem",
+              marginBottom: "0.5rem",
+              color: "var(--forest)",
+            }}
+          >
+            <span>التوصيل:</span>
+            {settings.freeDeliveryActive ? (
+              <span style={{ fontWeight: 700, color: "#2e7d32" }}>
+                {settings.freeDeliveryText ? `${settings.freeDeliveryText} (مجاني)` : "مجاني"}
+              </span>
+            ) : (
+              <span style={{ color: "#78716c", fontWeight: 600 }}>
+                بيتحدد حسب المسافة وهيتأكد معاك
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingTop: "0.5rem",
+              borderTop: "1px dashed var(--line)",
+              marginBottom: "0.75rem",
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>
+              {settings.freeDeliveryActive
+                ? "الإجمالي:"
+                : "الإجمالي (بدون التوصيل):"}
+            </span>
+            <strong style={{ fontSize: "1.15rem", color: "var(--forest)" }}>
+              {number.format(total)} ج.م
+            </strong>
+          </div>
           {selected.length > 0 ? (
             <Link href="/checkout" onClick={() => setOpen(false)}>
               إتمام الطلب
@@ -112,3 +166,4 @@ export default function CartDrawer() {
     </>
   )
 }
+

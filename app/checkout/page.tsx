@@ -54,6 +54,7 @@ import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { useCart } from "@/store/cart"
 import { useActiveProducts } from "@/store/products"
+import { useStoreSettings } from "@/store/settings"
 import { type Product } from "@/data/products"
 import type { LocationData } from "@/components/checkout/LeafletLocationPicker"
 
@@ -99,12 +100,23 @@ export default function CheckoutPage() {
   const products = useActiveProducts()
   const items = useCart((state) => state.items)
   const change = useCart((state) => state.change)
+  const storeSettings = useStoreSettings()
 
   const [mounted, setMounted] = useState(false)
+  const [selectedArea, setSelectedArea] = useState("")
+
+  const enabledAreas = (storeSettings.serviceAreas || []).filter((a) => a.enabled)
+
   useEffect(() => {
     void useCart.persist.rehydrate()
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!selectedArea && enabledAreas.length > 0) {
+      setSelectedArea(enabledAreas[0].name)
+    }
+  }, [enabledAreas, selectedArea])
 
   const getQty = (p: { id: string }) => {
     return (
@@ -133,14 +145,8 @@ export default function CheckoutPage() {
           1),
     0,
   )
-  const deliveryFee =
-    subtotal >
-    150
-      ? 0
-      : 25
-  const total =
-    subtotal +
-    deliveryFee
+  const isFreeDelivery = Boolean(storeSettings.freeDeliveryActive)
+  const total = subtotal
   const router = useRouter()
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
@@ -186,6 +192,9 @@ export default function CheckoutPage() {
     const cleanPhone = normalizeEgyptianPhone(customerInfo.phone)
     if (!/^01[0125][0-9]{8}$/.test(cleanPhone)) {
       errs.phone = "يرجى إدخال رقم موبايل مصري صحيح مكون من 11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015"
+    }
+    if (!selectedArea.trim()) {
+      errs.area = "يرجى اختيار منطقة التوصيل من القائمة"
     }
     if (!locationData || typeof locationData.lat !== "number" || typeof locationData.lng !== "number") {
       errs.location = "تحديد موقع التوصيل على الخريطة إلزامي لإتمام الطلب"
@@ -258,6 +267,7 @@ export default function CheckoutPage() {
       const orderPayload = {
         customer_name: customerInfo.fullName.trim(),
         customer_phone: normalizeEgyptianPhone(customerInfo.phone),
+        area: selectedArea.trim(),
         address_details: {
           building: buildingDetails.building.trim(),
           floor: buildingDetails.floor.trim(),
@@ -507,9 +517,49 @@ export default function CheckoutPage() {
                       <div>
                         <div className="doorstep-badge-tag">خدمة التوصيل حتى باب الشقة</div>
                         <p style={{ margin: 0, fontWeight: 600, color: "var(--forest)" }}>
-                          يرجى تسجيل رقم العمارة ورقم الشقة بدقة ليتمكن المندوب من الصعود حتى باب شقتك مباشرة.
+                          يرجى تسجيل منطقة التوصيل، رقم العمارة ورقم الشقة بدقة ليتمكن المندوب من الصعود حتى باب شقتك مباشرة.
                         </p>
                       </div>
+                    </div>
+
+                    {/* Delivery Area Select - REQUIRED */}
+                    <div className="checkout-form-field" style={{ marginBottom: "1rem" }}>
+                      <label htmlFor="checkout-area-select" style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                        منطقة التوصيل <span style={{ color: "var(--tomato)" }}>*</span>
+                      </label>
+                      <select
+                        id="checkout-area-select"
+                        value={selectedArea}
+                        onChange={(e) => {
+                          setSelectedArea(e.target.value)
+                          if (errors.area) {
+                            setErrors((prev) => ({ ...prev, area: "" }))
+                          }
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "0.8rem 1rem",
+                          borderRadius: "0.75rem",
+                          border: errors.area ? "1.5px solid var(--tomato)" : "1.5px solid #d6d3d1",
+                          background: "#ffffff",
+                          fontSize: "0.95rem",
+                          fontWeight: 700,
+                          color: "#1c1917",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="">-- اختر منطقة التوصيل المعتمدة --</option>
+                        {enabledAreas.map((area) => (
+                          <option key={area.id} value={area.name}>
+                            {area.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.area && (
+                        <span className="checkout-field-error">
+                          {errors.area}
+                        </span>
+                      )}
                     </div>
 
                     <div className="checkout-form-grid">
@@ -901,7 +951,9 @@ export default function CheckoutPage() {
                       <>
                         <CheckCircle2 size={22} color="#ffffff" />
                         <span>
-                          تأكيد الطلب الآن ({number.format(total)} ج.م)
+                          {isFreeDelivery
+                            ? `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`
+                            : `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`}
                         </span>
                       </>
                     )}
@@ -961,37 +1013,26 @@ export default function CheckoutPage() {
                   {}
                   <div className="checkout-totals-block">
                     <div className="totals-row">
-                      <span>مجموع المنتجات:</span>
+                      <span>إجمالي المنتجات:</span>
                       <strong>{number.format(subtotal)} ج.م</strong>
                     </div>
 
                     <div className="totals-row">
-                      <span>
-                        رسوم التوصيل السريع:
-                        {subtotal > 150 && (
-                          <span
-                            style={{
-                              marginRight: "0.5rem",
-                              background: "#e8f5e9",
-                              color: "#2e7d32",
-                              fontSize: "0.72rem",
-                              fontWeight: 700,
-                              padding: "0.15rem 0.45rem",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            مجاناً
-                          </span>
-                        )}
-                      </span>
-                      <strong>
-                        {deliveryFee === 0 ? "مجاناً" : `${deliveryFee} ج.م`}
-                      </strong>
+                      <span>التوصيل:</span>
+                      {isFreeDelivery ? (
+                        <strong style={{ color: "#2e7d32" }}>
+                          {storeSettings.freeDeliveryText ? `${storeSettings.freeDeliveryText} - ` : ""}مجاني
+                        </strong>
+                      ) : (
+                        <span style={{ fontSize: "0.82rem", color: "#78716c", fontWeight: 600 }}>
+                          بيتحدد حسب المسافة وهيتأكد معاك
+                        </span>
+                      )}
                     </div>
 
                     <div className="totals-row grand-total">
-                      <span>الإجمالي المستحق:</span>
-                      <span>{number.format(total)} ج.م</span>
+                      <span>{isFreeDelivery ? "الإجمالي:" : "الإجمالي (بدون التوصيل):"}</span>
+                      <span>{number.format(subtotal)} ج.م</span>
                     </div>
                   </div>
 
@@ -1039,7 +1080,9 @@ export default function CheckoutPage() {
                       <>
                         <CheckCircle2 size={22} color="#ffffff" />
                         <span>
-                          تأكيد الطلب الآن ({number.format(total)} ج.م)
+                          {isFreeDelivery
+                            ? `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`
+                            : `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`}
                         </span>
                       </>
                     )}

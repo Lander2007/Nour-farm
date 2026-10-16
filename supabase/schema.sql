@@ -38,7 +38,18 @@ create table if not exists public.products (
   created_at timestamptz not null default now()
 );
 
--- 5. ORDERS TABLE
+-- 5. SETTINGS TABLE
+create table if not exists public.settings (
+  id text primary key default 'store_settings',
+  store_address text not null default 'أكتوبر – الحي المتميز – السياحية الأولى',
+  service_areas jsonb not null default '[{"id":"area-1","name":"أكتوبر – الحي المتميز","enabled":true},{"id":"area-2","name":"أكتوبر – غرب سوميد","enabled":true}]'::jsonb,
+  whatsapp_number text not null default '01224272991',
+  free_delivery_active boolean not null default false,
+  free_delivery_text text not null default 'التوصيل مجاني في عروض الافتتاح',
+  updated_at timestamptz not null default now()
+);
+
+-- 6. ORDERS TABLE
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   order_number text not null unique,
@@ -48,6 +59,10 @@ create table if not exists public.orders (
   location jsonb not null,
   items jsonb not null,
   total_price numeric(10, 2) not null,
+  subtotal_price numeric(10, 2) not null default 0,
+  area text not null default '',
+  delivery_fee numeric(10, 2) default null,
+  delivery_fee_status text not null default 'pending' check (delivery_fee_status in ('pending', 'free', 'set')),
   status text not null default 'new' check (status in ('new', 'preparing', 'delivered', 'cancelled')),
   created_at timestamptz not null default now()
 );
@@ -88,6 +103,19 @@ alter table public.departments enable row level security;
 alter table public.sections enable row level security;
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
+alter table public.settings enable row level security;
+
+-- Settings: Public can read
+create policy "Public can read store settings"
+  on public.settings for select
+  using (true);
+
+-- Settings: Authenticated admin can manage
+create policy "Authenticated admin can manage settings"
+  on public.settings for all
+  to authenticated
+  using (true)
+  with check (true);
 
 -- Departments: Public can read
 create policy "Public can read departments"

@@ -1,6 +1,14 @@
 import fs from "node:fs"
 import path from "node:path"
-import type { Department, Section, Product, Order, OrderStatus } from "./types"
+import type {
+  Department,
+  Section,
+  Product,
+  Order,
+  OrderStatus,
+  StoreSettings,
+  DeliveryFeeStatus,
+} from "./types"
 import { products as oldDemoProducts } from "@/data/products"
 
 interface LocalDatabaseState {
@@ -8,6 +16,18 @@ interface LocalDatabaseState {
   sections: Section[]
   products: Product[]
   orders: Order[]
+  settings: StoreSettings
+}
+
+export const DEFAULT_SETTINGS: StoreSettings = {
+  storeAddress: "أكتوبر – الحي المتميز – السياحية الأولى",
+  serviceAreas: [
+    { id: "area-1", name: "أكتوبر – الحي المتميز", enabled: true },
+    { id: "area-2", name: "أكتوبر – غرب سوميد", enabled: true },
+  ],
+  whatsappNumber: "01224272991",
+  freeDeliveryActive: false,
+  freeDeliveryText: "التوصيل مجاني في عروض الافتتاح",
 }
 
 const DB_FILE_PATH = path.join(process.cwd(), "data", "local-db.json")
@@ -127,6 +147,7 @@ function initializeDefaultData(): LocalDatabaseState {
     sections: DEFAULT_SECTIONS,
     products: draftProducts,
     orders: [],
+    settings: { ...DEFAULT_SETTINGS },
   }
 }
 
@@ -139,6 +160,10 @@ function readLocalDb(): LocalDatabaseState {
     if (fs.existsSync(DB_FILE_PATH)) {
       const content = fs.readFileSync(DB_FILE_PATH, "utf8")
       cachedState = JSON.parse(content)
+      if (cachedState && !cachedState.settings) {
+        cachedState.settings = { ...DEFAULT_SETTINGS }
+        writeLocalDb(cachedState)
+      }
       return cachedState!
     }
   } catch (err) {
@@ -322,6 +347,40 @@ export const localStore = {
     state.orders[idx].status = status
     writeLocalDb(state)
     return state.orders[idx]
+  },
+  updateOrderDeliveryFee: (
+    id: string,
+    deliveryFee: number | null,
+    deliveryFeeStatus: DeliveryFeeStatus
+  ): Order | null => {
+    const state = readLocalDb()
+    const idx = state.orders.findIndex((o) => o.id === id || o.order_number === id)
+    if (idx === -1) return null
+    const ord = state.orders[idx]
+    const subtotal =
+      ord.subtotal_price ??
+      ord.items.reduce((sum, item) => sum + (item.line_total || 0), 0)
+
+    ord.subtotal_price = subtotal
+    ord.delivery_fee = deliveryFee
+    ord.delivery_fee_status = deliveryFeeStatus
+    ord.total_price =
+      deliveryFeeStatus === "set" && deliveryFee != null
+        ? Number((subtotal + deliveryFee).toFixed(2))
+        : Number(subtotal.toFixed(2))
+
+    writeLocalDb(state)
+    return ord
+  },
+  getSettings: (): StoreSettings => {
+    const state = readLocalDb()
+    return state.settings || { ...DEFAULT_SETTINGS }
+  },
+  updateSettings: (updates: Partial<StoreSettings>): StoreSettings => {
+    const state = readLocalDb()
+    state.settings = { ...(state.settings || DEFAULT_SETTINGS), ...updates }
+    writeLocalDb(state)
+    return state.settings
   },
   resetDraftCatalog: (): void => {
     const fresh = initializeDefaultData()

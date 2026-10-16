@@ -396,40 +396,212 @@ export const getOrderById = getOrder
 export async function createOrder(
   order: Omit<Order, "id" | "created_at">
 ): Promise<Order> {
+  const localOrder = localStore.createOrder(order)
+
   if (!isSupabaseConfigured()) {
     assertDatabaseConfigured()
-    return localStore.createOrder(order)
+    return localOrder
   }
 
   const supabase = getSupabaseServerClient()!
-  const { data, error } = await supabase
-    .from("orders")
-    .insert(order)
-    .select()
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .insert(order)
+      .select()
+      .single()
 
-  if (error) throw error
-  return data as Order
+    if (error) {
+      if (error.code === "42703" || error.message?.includes("column")) {
+        const { area, delivery_fee, delivery_fee_status, subtotal_price, ...legacyOrder } = order as any
+        const { data: legacyData, error: legacyErr } = await supabase
+          .from("orders")
+          .insert(legacyOrder)
+          .select()
+          .single()
+
+        if (!legacyErr && legacyData) {
+          return { ...legacyData, area, delivery_fee, delivery_fee_status, subtotal_price } as Order
+        }
+      }
+      console.warn("Supabase createOrder failed, using localOrder:", error)
+      return localOrder
+    }
+    return data as Order
+  } catch (err) {
+    console.error("Supabase createOrder exception:", err)
+    return localOrder
+  }
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order | null> {
+  const localUpdated = localStore.updateOrderStatus(id, status)
+
   if (!isSupabaseConfigured()) {
     assertDatabaseConfigured()
-    return localStore.updateOrderStatus(id, status)
+    return localUpdated
   }
 
-  const supabase = getSupabaseServerClient()!
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  try {
+    const supabase = getSupabaseServerClient()!
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
-  let query = supabase.from("orders").update({ status })
-  if (isUuid) {
-    query = query.eq("id", id)
-  } else {
-    query = query.eq("order_number", id)
+    let query = supabase.from("orders").update({ status })
+    if (isUuid) {
+      query = query.eq("id", id)
+    } else {
+      query = query.eq("order_number", id)
+    }
+
+    const { data, error } = await query.select().single()
+    if (error) {
+      console.warn("Supabase updateOrderStatus failed, using localStore:", error)
+      return localUpdated
+    }
+    return data as Order
+  } catch (err) {
+    console.error("Supabase updateOrderStatus exception:", err)
+    return localUpdated
+  }
+}
+
+export async function updateOrderDeliveryFee(
+  id: string,
+  deliveryFee: number | null,
+  deliveryFeeStatus: DeliveryFeeStatus
+): Promise<Order | null> {
+  const localUpdated = localStore.updateOrderDeliveryFee(id, deliveryFee, deliveryFeeStatus)
+
+  if (!isSupabaseConfigured()) {
+    return localUpdated
   }
 
-  const { data, error } = await query.select().single()
+  try {
+    const supabase = getSupabaseServerClient()!
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
-  if (error) throw error
-  return data as Order
+    let orderQuery = supabase.from("orders").select("*")
+    if (isUuid) orderQuery = orderQuery.eq("id", id)
+    else orderQuery = orderQuery.eq("order_number", id)
+
+    const { data: existing, error: fetchErr } = await orderQuery.single()
+    if (fetchErr || !existing) {
+      return localUpdated
+    }
+
+    const subtotal = existing.subtotal_price ?? (existing.items || []).reduce(
+      (sum: number, it: any) => sum + (Number(it.line_total) || 0),
+      0
+    )
+    const newTotal =
+      deliveryFeeStatus === "set" && deliveryFee != null
+        ? Number((subtotal + deliveryFee).toFixed(2))
+        : Number(subtotal.toFixed(2))
+
+    let updateQuery = supabase
+      .from("orders")
+      .update({
+        subtotal_price: subtotal,
+        delivery_fee: deliveryFee,
+        delivery_fee_status: deliveryFeeStatus,
+        total_price: newTotal,
+      })
+
+    if (isUuid) updateQuery = updateQuery.eq("id", id)
+    else updateQuery = updateQuery.eq("order_number", id)
+
+    const { data, error } = await updateQuery.select().single()
+    if (error) {
+      console.warn("Supabase updateOrderDeliveryFee failed, using localStore:", error)
+      return localUpdated
+    }
+
+    return data as Order
+  } catch (err) {
+    console.error("Supabase updateOrderDeliveryFee exception:", err)
+    return localUpdated
+  }
+}
+
+export async function getSettings(): Promise<StoreSettings> {
+  if (!isSupabaseConfigured()) {
+    return localStore.getSettings()
+  }
+
+  try {
+    const supabase = getSupabaseServerClient()!
+    const { data, error } = await supabase
+      .from("settings")
+      .select("*")
+      .eq("id", "store_settings")
+      .single()
+
+    if (error || !data) {
+      return localStore.getSettings()
+    }
+
+    return {
+      storeAddress: data.store_address,
+      serviceAreas: data.service_areas || [],
+      whatsappNumber: data.whatsapp_number,
+      freeDeliveryActive: Boolean(data.free_delivery_active),
+      freeDeliveryText: data.free_delivery_text,
+    }
+  } catch (err) {
+    console.error("Supabase getSettings exception:", err)
+    return localStore.getSettings()
+  }
+}
+
+export async function getPublicSettings(): Promise<StoreSettings> {
+  const settings = await getSettings()
+  return {
+    ...settings,
+    serviceAreas: (settings.serviceAreas || []).filter((a) => a.enabled),
+  }
+}
+
+export async function updateSettings(
+  updates: Partial<StoreSettings>
+): Promise<StoreSettings> {
+  const localUpdated = localStore.updateSettings(updates)
+
+  if (!isSupabaseConfigured()) {
+    return localUpdated
+  }
+
+  try {
+    const supabase = getSupabaseServerClient()!
+    const toUpsert: Record<string, any> = {
+      id: "store_settings",
+      updated_at: new Date().toISOString(),
+    }
+    if (updates.storeAddress !== undefined) toUpsert.store_address = updates.storeAddress
+    if (updates.serviceAreas !== undefined) toUpsert.service_areas = updates.serviceAreas
+    if (updates.whatsappNumber !== undefined) toUpsert.whatsapp_number = updates.whatsappNumber
+    if (updates.freeDeliveryActive !== undefined) toUpsert.free_delivery_active = updates.freeDeliveryActive
+    if (updates.freeDeliveryText !== undefined) toUpsert.free_delivery_text = updates.freeDeliveryText
+
+    const { data, error } = await supabase
+      .from("settings")
+      .upsert(toUpsert)
+      .select()
+      .single()
+
+    if (error) {
+      console.warn("Supabase updateSettings failed, using localStore:", error)
+      return localUpdated
+    }
+
+    return {
+      storeAddress: data.store_address,
+      serviceAreas: data.service_areas || [],
+      whatsappNumber: data.whatsapp_number,
+      freeDeliveryActive: Boolean(data.free_delivery_active),
+      freeDeliveryText: data.free_delivery_text,
+    }
+  } catch (err) {
+    console.error("Supabase updateSettings exception:", err)
+    return localUpdated
+  }
 }

@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     const {
       customer_name,
       customer_phone,
+      area,
       address_details,
       location,
       items,
@@ -33,7 +34,28 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 3. Mandatory Location on Map (Leaflet / OpenStreetMap)
+    // 3. Validate Delivery Area (Required and must be an enabled service area)
+    if (!area || typeof area !== "string" || !area.trim()) {
+      return NextResponse.json(
+        { error: "منطقة التوصيل مطلوبة، يرجى اختيار منطقة التوصيل من القائمة" },
+        { status: 400 }
+      )
+    }
+
+    const { getSettings } = await import("@/lib/db")
+    const storeSettings = await getSettings()
+    const validArea = (storeSettings.serviceAreas || []).find(
+      (a) => a.enabled && a.name.trim() === area.trim()
+    )
+
+    if (!validArea) {
+      return NextResponse.json(
+        { error: "منطقة التوصيل المختارة غير مدعومة أو غير مفعلة حالياً" },
+        { status: 400 }
+      )
+    }
+
+    // 4. Mandatory Location on Map (Leaflet / OpenStreetMap)
     if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
       return NextResponse.json(
         { error: "تحديد موقع التوصيل على الخريطة إلزامي لإتمام الطلب" },
@@ -41,7 +63,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 4. Strict Egyptian Bounding Box
+    // 5. Strict Egyptian Bounding Box
     if (!isWithinEgypt(location.lat, location.lng)) {
       return NextResponse.json(
         { error: "موقع التوصيل المختار خارج جمهورية مصر العربية" },
@@ -49,7 +71,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 5. Validate Address Details
+    // 6. Validate Address Details
     if (!address_details || !address_details.building || !address_details.apartment) {
       return NextResponse.json(
         { error: "برجاء كتابة رقم أو اسم العمارة ورقم الشقة" },
@@ -57,7 +79,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 6. Validate Items
+    // 7. Validate Items
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "سلة التسوق فارغة، برجاء إضافة منتجات أولاً" },
@@ -65,13 +87,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Calculate total price server-side
-    let calculatedTotal = 0
+    // Calculate subtotal price server-side
+    let calculatedSubtotal = 0
     const sanitizedItems = items.map((it: any) => {
       const qty = Number(it.qty) || 1
       const unit_price = Number(it.unit_price) || 0
       const line_total = Number((qty * unit_price).toFixed(2))
-      calculatedTotal += line_total
+      calculatedSubtotal += line_total
       return {
         id: String(it.id),
         name: String(it.name),
@@ -82,6 +104,14 @@ export async function POST(req: NextRequest) {
       }
     })
 
+    const subtotal_price = Number(calculatedSubtotal.toFixed(2))
+
+    // Determine delivery fee status & fee based on server store settings
+    const freeDelivery = Boolean(storeSettings.freeDeliveryActive)
+    const delivery_fee = freeDelivery ? 0 : null
+    const delivery_fee_status = freeDelivery ? "free" : "pending"
+    const total_price = subtotal_price
+
     // Generate readable order number
     const randomSuffix = Math.floor(1000 + Math.random() * 9000)
     const order_number = `NF-${randomSuffix}`
@@ -90,6 +120,11 @@ export async function POST(req: NextRequest) {
       order_number,
       customer_name: customer_name.trim(),
       customer_phone: cleanPhone,
+      area: validArea.name,
+      delivery_fee,
+      delivery_fee_status,
+      subtotal_price,
+      total_price,
       address_details: {
         street: address_details.street || "",
         building: String(address_details.building).trim(),
@@ -105,7 +140,6 @@ export async function POST(req: NextRequest) {
         address_text: location.address_text || "",
       },
       items: sanitizedItems,
-      total_price: Number(calculatedTotal.toFixed(2)),
       status: "new",
     })
 

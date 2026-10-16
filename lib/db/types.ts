@@ -59,6 +59,22 @@ export type OrderAddressDetails = {
   notes?: string
 }
 
+export type ServiceArea = {
+  id: string
+  name: string
+  enabled: boolean
+}
+
+export type StoreSettings = {
+  storeAddress: string
+  serviceAreas: ServiceArea[]
+  whatsappNumber: string
+  freeDeliveryActive: boolean
+  freeDeliveryText: string
+}
+
+export type DeliveryFeeStatus = "pending" | "free" | "set"
+
 export type Order = {
   id: string
   order_number: string
@@ -68,6 +84,10 @@ export type Order = {
   location: OrderLocation
   items: OrderItemSnapshot[]
   total_price: number
+  subtotal_price?: number
+  area?: string
+  delivery_fee?: number | null
+  delivery_fee_status?: DeliveryFeeStatus
   status: OrderStatus
   created_at: string
 }
