@@ -3837,10 +3837,19 @@ button {
   box-shadow: 0 10px 28px rgba(37, 211, 102, 0.48);
 }
 
+.whatsapp-order-btn:active:not(:disabled) {
+  transform: scale(0.98);
+  filter: brightness(0.97);
+}
+
 .whatsapp-order-btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
   transform: none;
+}
+
+.checkout-mobile-bottom-submit {
+  display: none;
 }
 
 .whatsapp-info-hint {
@@ -4037,6 +4046,11 @@ button {
 
   .checkout-section-card {
     padding: 1.5rem 1.25rem;
+  }
+
+  .checkout-mobile-bottom-submit {
+    display: block;
+    margin-top: 1.5rem;
   }
 }
 
