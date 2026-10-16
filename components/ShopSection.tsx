@@ -8,10 +8,6 @@ import {
   Plus,
   Minus,
   ShoppingBag,
-  Leaf,
-  ShieldCheck,
-  Clock,
-  CheckCircle2,
 } from "lucide-react"
 import { heroProduceItems, type Product } from "@/data/products"
 import { useActiveProducts } from "@/store/products"
@@ -210,46 +206,6 @@ export default function ShopSection({
             <span>تصفّح كل الأصناف في المتجر</span>
             <ArrowLeft size={18} />
           </Link>
-        </div>
-
-        {}
-        <div className="home-trust-ribbon">
-          <div className="trust-ribbon-item">
-            <span className="trust-icon">
-              <Leaf size={20} />
-            </span>
-            <div>
-              <strong>قطفة الصباح الطازجة</strong>
-              <span>تصلك في أوج نضارتها وجودتها</span>
-            </div>
-          </div>
-          <div className="trust-ribbon-item">
-            <span className="trust-icon">
-              <ShieldCheck size={20} />
-            </span>
-            <div>
-              <strong>مغسولة ومجهزة فوراً</strong>
-              <span>نظيفة ومعقمة توفر وقتك ومجهودك</span>
-            </div>
-          </div>
-          <div className="trust-ribbon-item">
-            <span className="trust-icon">
-              <Clock size={20} />
-            </span>
-            <div>
-              <strong>توصيل مبرد سريع</strong>
-              <span>سيارات مجهزة للحفاظ على البرودة</span>
-            </div>
-          </div>
-          <div className="trust-ribbon-item">
-            <span className="trust-icon">
-              <CheckCircle2 size={20} />
-            </span>
-            <div>
-              <strong>ضمان استرجاع كامل</strong>
-              <span>لو في أي ملاحظة بنبدلهالك فوراً</span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
