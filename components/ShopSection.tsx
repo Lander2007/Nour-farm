@@ -32,31 +32,14 @@ export default function ShopSection({
   // Map the landing page produce cards dynamically to live database items!
   const displayProducts = useMemo(() => {
     if (!activeProducts || activeProducts.length === 0) {
-      return heroProduceItems
+      return []
     }
 
-    return heroProduceItems.map((defaultItem) => {
-      const defId = defaultItem.id.toLowerCase()
-      const dbMatch = activeProducts.find((p) => {
-        const pId = p.id.toLowerCase()
-        return (
-          pId === defId ||
-          pId === `prod-${defId}` ||
-          p.slug === defId ||
-          p.name === defaultItem.name ||
-          p.name.includes(defaultItem.name.split(" ")[0])
-        )
-      })
-
-      if (dbMatch) {
-        return {
-          ...dbMatch,
-          tint: defaultItem.tint,
-        }
-      }
-
-      return defaultItem
-    })
+    const tints: Array<"emerald" | "amber" | "lime"> = ["emerald", "amber", "lime"]
+    return activeProducts.slice(0, 10).map((p, idx) => ({
+      ...p,
+      tint: tints[idx % 3],
+    }))
   }, [activeProducts])
 
   const handleAdd = useCallback(
@@ -86,102 +69,133 @@ export default function ShopSection({
         </div>
 
         {}
-        <div className="hero-produce-grid">
-          {displayProducts.map((product, idx) => {
-            const qty =
-              cartItems[product.id] ??
-              cartItems[product.id.replace(/^prod-/, "")] ??
-              cartItems[`prod-${product.id}`] ??
-              0
+        {displayProducts.length > 0 ? (
+          <div className="hero-produce-grid">
+            {displayProducts.map((product, idx) => {
+              const qty =
+                cartItems[product.id] ??
+                cartItems[product.id.replace(/^prod-/, "")] ??
+                cartItems[`prod-${product.id}`] ??
+                0
 
-            return (
-              <article
-                key={product.id}
-                className={`produce-card tint-${product.tint}`}
-                data-card-index={idx}
-                data-product-id={product.id}
-              >
-                {}
-                <div
-                  className="card-visual-slot shop-card-visual-slot"
-                  data-visual-slot={product.id}
+              return (
+                <article
+                  key={product.id}
+                  className={`produce-card tint-${product.tint}`}
+                  data-card-index={idx}
+                  data-product-id={product.id}
                 >
-                  {}
-                  <div className="card-item-shadow" aria-hidden="true" />
-
-                  {}
                   <div
-                    className="card-real-image-wrap"
-                    style={{
-                      opacity: handoffComplete ? 1 : 0,
-                    }}
-                    data-handoff-image={product.id}
+                    className="card-visual-slot shop-card-visual-slot"
+                    data-visual-slot={product.id}
                   >
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
-                      className="card-product-img"
-                      priority
-                    />
-                  </div>
-                </div>
-
-                {}
-                <div className="card-body">
-                  <h3 className="card-title">{product.name}</h3>
-
-                  <div className="card-bottom-row">
-                    <div className="card-price-col">
-                      <span className="price-val">{product.price} ج.م</span>
-                      <span className="price-unit">/ {product.unit}</span>
+                    <div className="card-item-shadow" aria-hidden="true" />
+                    <div
+                      className="card-real-image-wrap"
+                      style={{
+                        opacity: handoffComplete ? 1 : 0,
+                      }}
+                      data-handoff-image={product.id}
+                    >
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
+                        className="card-product-img"
+                        priority
+                      />
                     </div>
-
-                    {qty === 0 ? (
-                      <button
-                        type="button"
-                        className="hero-card-add-btn"
-                        onClick={(e) => handleAdd(product, e)}
-                        aria-label={`أضف ${product.name} إلى السلة`}
-                      >
-                        <ShoppingBag size={14} />
-                        <span>أضف</span>
-                      </button>
-                    ) : (
-                      <div
-                        className="hero-card-stepper"
-                        aria-label={`الكمية ${qty}`}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            changeQty(product, product.step)
-                          }}
-                          aria-label="زيادة"
-                        >
-                          <Plus size={12} />
-                        </button>
-                        <b>{qty}</b>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            changeQty(product, -product.step)
-                          }}
-                          aria-label="إنقاص"
-                        >
-                          <Minus size={12} />
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </div>
-              </article>
-            )
-          })}
-        </div>
+
+                  <div className="card-body">
+                    <h3 className="card-title">{product.name}</h3>
+
+                    <div className="card-bottom-row">
+                      <div className="card-price-col">
+                        <span className="price-val">{product.price} ج.م</span>
+                        <span className="price-unit">/ {product.unit}</span>
+                      </div>
+
+                      {qty === 0 ? (
+                        <button
+                          type="button"
+                          className="hero-card-add-btn"
+                          onClick={(e) => handleAdd(product, e)}
+                          aria-label={`أضف ${product.name} إلى السلة`}
+                        >
+                          <ShoppingBag size={14} />
+                          <span>أضف</span>
+                        </button>
+                      ) : (
+                        <div
+                          className="hero-card-stepper"
+                          aria-label={`الكمية ${qty}`}
+                        >
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              changeQty(product, product.step)
+                            }}
+                            aria-label="زيادة"
+                          >
+                            <Plus size={12} />
+                          </button>
+                          <b>{qty}</b>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              changeQty(product, -product.step)
+                            }}
+                            aria-label="إنقاص"
+                          >
+                            <Minus size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "3.5rem 1.5rem",
+              background: "rgba(255, 255, 255, 0.8)",
+              borderRadius: "1.5rem",
+              border: "1px dashed #d6d3d1",
+              margin: "1.5rem auto 2.5rem",
+              maxWidth: "540px",
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                background: "#f0fdf4",
+                color: "#166534",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1rem",
+              }}
+            >
+              <ShoppingBag size={24} />
+            </div>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#1c1917", marginBottom: "0.4rem" }}>
+              لا توجد منتجات معروضة حالياً
+            </h3>
+            <p style={{ fontSize: "0.92rem", color: "#78716c", lineHeight: 1.6 }}>
+              تم تفريغ كافة المنتجات من قاعدة البيانات. يمكنك إضافة محاصيل جديدة من لوحة التحكم في أي وقت.
+            </p>
+          </div>
+        )}
 
         {}
         <div className="home-store-cta-card">

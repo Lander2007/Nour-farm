@@ -51,7 +51,7 @@ type ProductsState = {
 export const useProductsStore = create<ProductsState>()(
   persist(
     (set) => ({
-      products: defaultProducts,
+      products: [],
       isHydrated: false,
       setHydrated: (val: boolean) => set({ isHydrated: val }),
       addProduct: (newProduct) =>
@@ -79,7 +79,7 @@ export const useProductsStore = create<ProductsState>()(
         })),
       resetToDefault: () =>
         set(() => ({
-          products: defaultProducts,
+          products: [],
         })),
       setProducts: (newProducts) =>
         set(() => ({
@@ -90,7 +90,7 @@ export const useProductsStore = create<ProductsState>()(
           const res = await fetch("/api/products")
           if (!res.ok) return
           const data = await res.json()
-          if (Array.isArray(data.products) && data.products.length > 0) {
+          if (Array.isArray(data.products)) {
             const mapped = data.products.map(mapDbProductToProduct)
             set({ products: mapped })
           }
@@ -100,7 +100,7 @@ export const useProductsStore = create<ProductsState>()(
       },
     }),
     {
-      name: "noor-farm-catalog-v2",
+      name: "noor-farm-catalog-v3",
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)
       },
@@ -108,18 +108,13 @@ export const useProductsStore = create<ProductsState>()(
   )
 )
 
-let hasFetchedFromDb = false
-
 export function useActiveProducts(): Product[] {
   const products = useProductsStore((state) => state.products)
   const fetchFromDb = useProductsStore((state) => state.fetchFromDb)
 
   useEffect(() => {
-    if (!hasFetchedFromDb) {
-      hasFetchedFromDb = true
-      void fetchFromDb()
-    }
+    void fetchFromDb()
   }, [fetchFromDb])
 
-  return products && products.length > 0 ? products : defaultProducts
+  return products
 }
