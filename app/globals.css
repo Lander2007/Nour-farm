@@ -5203,6 +5203,52 @@ button {
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth-h)) no-repeat;
 }
 
+/* Mechanical paper feed animation with clip-path reveal and 2px settle */
+@keyframes paper-feed {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-10px);
+  }
+  92% {
+    clip-path: inset(0 0 0 0);
+    transform: translateY(2px);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes paperFade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.paper-idle {
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(-10px);
+}
+
+.paper-feeding {
+  animation: paper-feed 2.6s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+  will-change: clip-path, transform;
+}
+
+.paper-done {
+  clip-path: inset(0 0 0 0);
+  transform: translateY(0);
+}
+
+.paper-reduced-motion {
+  clip-path: inset(0 0 0 0);
+  transform: translateY(0);
+  animation: paperFade 250ms ease-out both;
+}
+
 /* Screen and typography resets for receipts */
 .receipt-font-mono {
   font-family: var(--font-mono, monospace);

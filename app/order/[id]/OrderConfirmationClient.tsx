@@ -55,19 +55,24 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
 
   const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
 
-  // Determine if animation was already completed or reduced motion is requested
-  const isImmediate = useRef<boolean>(false)
-  if (typeof window !== "undefined" && !isImmediate.current) {
+  // Check if session shortcut applies:
+  // Must ONLY apply on reload of an order already viewed in this session,
+  // and MUST be ignored in development and when URL has ?replay=1
+  const checkShouldSkipOnMount = useCallback((): boolean => {
+    if (typeof window === "undefined") return false
     try {
-      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      const seen = window.sessionStorage.getItem(storageKey) === "true"
-      isImmediate.current = isReduced || seen
-    } catch {
-      // fallback
-    }
-  }
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get("replay") === "1") return false
+      if (process.env.NODE_ENV !== "production") return false
 
-  const [isRevealed, setIsRevealed] = useState<boolean>(() => isImmediate.current)
+      const seen = window.sessionStorage.getItem(storageKey)
+      return seen === "true"
+    } catch {
+      return false
+    }
+  }, [storageKey])
+
+  const [isRevealed, setIsRevealed] = useState<boolean>(() => checkShouldSkipOnMount())
 
   const handleAnimationComplete = useCallback(() => {
     setIsRevealed(true)
@@ -242,7 +247,7 @@ ${itemsList}
         style={{
           opacity: isRevealed ? 1 : 0,
           transform: isRevealed ? "translateY(0)" : "translateY(12px)",
-          transitionDelay: isImmediate.current ? "0ms" : "80ms",
+          transitionDelay: checkShouldSkipOnMount() ? "0ms" : "80ms",
           pointerEvents: isRevealed ? "auto" : "none",
         }}
       >
@@ -277,7 +282,9 @@ ${itemsList}
                 <User className="w-3.5 h-3.5 text-[#2F4A33]/70" />
                 <span>العميل:</span>
               </span>
-              <strong className="font-bold text-[#2F3B27]">{order.customer_name}</strong>
+              <strong className="font-bold text-[#2F3B27]">
+                <bdi dir="auto">{order.customer_name}</bdi>
+              </strong>
             </div>
 
             <div className="flex items-center justify-between">
@@ -296,12 +303,25 @@ ${itemsList}
                 <span>العنوان:</span>
               </span>
               <span className="text-right font-medium leading-relaxed text-[#2F3B27]">
-                عمارة {order.address_details?.building}
-                {order.address_details?.floor && `، الدور ${order.address_details.floor}`}
-                {order.address_details?.apartment && `، شقة ${order.address_details.apartment}`}
-                {order.address_details?.landmark && ` (${order.address_details.landmark})`}
+                <bdi dir="auto">
+                  عمارة {order.address_details?.building}
+                  {order.address_details?.floor && `، الدور ${order.address_details.floor}`}
+                  {order.address_details?.apartment && `، شقة ${order.address_details.apartment}`}
+                  {order.address_details?.landmark && ` (${order.address_details.landmark})`}
+                </bdi>
               </span>
             </div>
+
+            {order.address_details?.notes && (
+              <div className="flex items-start justify-between gap-2 pt-1 border-t border-[#2F3B27]/5">
+                <span className="text-[#2F3B27]/65 flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                  <span>ملاحظات:</span>
+                </span>
+                <span className="text-right font-medium leading-relaxed text-[#2F3B27]">
+                  <bdi dir="auto">{order.address_details.notes}</bdi>
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Static Leaflet map snapshot */}

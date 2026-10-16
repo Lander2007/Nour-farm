@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Check, Home } from "lucide-react"
@@ -46,11 +46,9 @@ function DeterministicBarcode({ code }: { code: string }) {
     }
 
     const pattern: { width: number; space: number }[] = []
-    // Start Guard Bars
     pattern.push({ width: 2.2, space: 1.5 })
     pattern.push({ width: 1.2, space: 2.2 })
 
-    // Data bars (~26 bars)
     for (let i = 0; i < 26; i++) {
       const r1 = lcg()
       const r2 = lcg()
@@ -59,7 +57,6 @@ function DeterministicBarcode({ code }: { code: string }) {
       pattern.push({ width, space })
     }
 
-    // End Guard Bars
     pattern.push({ width: 1.4, space: 1.8 })
     pattern.push({ width: 2.2, space: 1.5 })
 
@@ -106,47 +103,91 @@ export default function ReceiptPrinter({
 }: ReceiptPrinterProps) {
   const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
 
-  // Check if animation should be skipped (seen before or prefers-reduced-motion)
-  const initialSkip = useRef<boolean>(false)
-  if (typeof window !== "undefined" && !initialSkip.current) {
+  // Check if session shortcut applies:
+  // Must ONLY apply on reload of an order already viewed in this session,
+  // and MUST be ignored in development and when URL has ?replay=1
+  const checkShouldSkipOnMount = useCallback((): boolean => {
+    if (typeof window === "undefined") return false
     try {
-      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      const seen = window.sessionStorage.getItem(storageKey) === "true"
-      initialSkip.current = isReduced || seen
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get("replay") === "1") return false
+      if (process.env.NODE_ENV !== "production") return false
+
+      const seen = window.sessionStorage.getItem(storageKey)
+      return seen === "true"
     } catch {
-      // Safe fallback if sessionStorage is inaccessible
+      return false
     }
-  }
+  }, [storageKey])
 
   const [phase, setPhase] = useState<AnimationPhase>(() =>
-    initialSkip.current ? "complete" : "entering"
+    checkShouldSkipOnMount() ? "complete" : "entering"
   )
   const [displayTotal, setDisplayTotal] = useState<number>(() =>
-    initialSkip.current ? order.total_price : 0
+    checkShouldSkipOnMount() ? order.total_price : 0
   )
+  const [reducedMotion, setReducedMotion] = useState<boolean>(false)
 
-  // Notify parent if initialized as complete
+  const paperRef = useRef<HTMLDivElement>(null)
+  const animationCompletedRef = useRef<boolean>(false)
+
+  // Detect reduced motion safely
   useEffect(() => {
-    if (initialSkip.current && onAnimationComplete) {
+    if (typeof window !== "undefined") {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+      setReducedMotion(mq.matches)
+
+      const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
+      mq.addEventListener("change", handler)
+      return () => mq.removeEventListener("change", handler)
+    }
+  }, [])
+
+  // Final completion handler (fired onAnimationEnd or fallback timer)
+  const handleDone = useCallback(() => {
+    if (animationCompletedRef.current) return
+    animationCompletedRef.current = true
+
+    setPhase("complete")
+    setDisplayTotal(order.total_price)
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (process.env.NODE_ENV === "production" && urlParams.get("replay") !== "1") {
+        window.sessionStorage.setItem(storageKey, "true")
+      }
+    } catch {
+      // safe fallback
+    }
+
+    if (onAnimationComplete) {
       onAnimationComplete()
     }
-  }, [onAnimationComplete])
+  }, [order.total_price, storageKey, onAnimationComplete])
 
-  // Sequence orchestrator with React StrictMode resilience
+  // If already skipped on initial mount
   useEffect(() => {
-    if (initialSkip.current) return
+    if (checkShouldSkipOnMount() && onAnimationComplete) {
+      onAnimationComplete()
+    }
+  }, [checkShouldSkipOnMount, onAnimationComplete])
 
+  // Sequence state machine with full StrictMode double-invocation safety
+  useEffect(() => {
+    if (checkShouldSkipOnMount()) return
+
+    animationCompletedRef.current = false
     let isMounted = true
     let countRafId: number | null = null
     const timers: NodeJS.Timeout[] = []
 
-    // 1. Enter (0 - 0.7s)
+    // 0 - 0.7s: Entering phase
     timers.push(
       setTimeout(() => {
         if (!isMounted) return
         setPhase("processing")
 
-        // 2. Count up total during processing (0.7s - 2.0s: ~1.2s duration)
+        // 0.7s - 2.0s: Total counting up over ~1.2s
         const startTime = performance.now()
         const duration = 1200
         const startVal = 0
@@ -156,7 +197,6 @@ export default function ReceiptPrinter({
           if (!isMounted) return
           const elapsed = now - startTime
           const progress = Math.min(1, elapsed / duration)
-          // Cubic ease-out curve
           const easeOut = 1 - Math.pow(1 - progress, 3)
           const current = Math.round(startVal + easeOut * (endVal - startVal))
           setDisplayTotal(current)
@@ -171,29 +211,20 @@ export default function ReceiptPrinter({
       }, 700)
     )
 
-    // 3. Print feed begins (2.0s - 4.2s: 2.2s duration)
+    // 2.0s: Printing phase begins (paper-feed animation runs for 2.6s)
     timers.push(
       setTimeout(() => {
         if (!isMounted) return
         setPhase("printing")
-      }, 2000)
-    )
 
-    // 4. Print finishes, complete state (4.2s)
-    timers.push(
-      setTimeout(() => {
-        if (!isMounted) return
-        setPhase("complete")
-        setDisplayTotal(order.total_price)
-        try {
-          window.sessionStorage.setItem(storageKey, "true")
-        } catch {
-          // ignore storage error
-        }
-        if (onAnimationComplete) {
-          onAnimationComplete()
-        }
-      }, 4200)
+        // Fallback timer: duration (2.6s) + 300ms = 2.9s after printing starts
+        timers.push(
+          setTimeout(() => {
+            if (!isMounted) return
+            handleDone()
+          }, 2900)
+        )
+      }, 2000)
     )
 
     return () => {
@@ -203,7 +234,7 @@ export default function ReceiptPrinter({
         cancelAnimationFrame(countRafId)
       }
     }
-  }, [order.total_price, storageKey, onAnimationComplete])
+  }, [order.total_price, checkShouldSkipOnMount, handleDone])
 
   // Formatted date string in ar-EG
   const formattedDateTime = useMemo(() => {
@@ -222,7 +253,7 @@ export default function ReceiptPrinter({
     }
   }, [order.created_at])
 
-  // Address line representation
+  // Address line representation wrapped in BiDi isolator
   const addressLine = useMemo(() => {
     const details = order.address_details || {}
     const parts = [
@@ -256,7 +287,6 @@ export default function ReceiptPrinter({
       }
     }
 
-    // entering or processing
     return {
       text: "جاري تجهيز طلبك…",
       icon: (
@@ -274,10 +304,20 @@ export default function ReceiptPrinter({
     }
   }, [phase])
 
-  // Mechanical feed translation percentage:
-  // Hidden up inside printer during "entering" & "processing", feeds down to 0% in "printing" & "complete"
-  const isPaperFed = phase === "printing" || phase === "complete"
-  const paperTranslate = isPaperFed ? "translateY(0%)" : "translateY(-100%)"
+  // Determine CSS animation class for the paper
+  const paperClass = useMemo(() => {
+    if (phase === "complete") return "paper-done"
+    if (phase === "printing") {
+      return reducedMotion ? "paper-reduced-motion" : "paper-feeding"
+    }
+    return "paper-idle"
+  }, [phase, reducedMotion])
+
+  const handleAnimationEnd = (e: React.AnimationEvent<HTMLDivElement>) => {
+    if (e.animationName === "paper-feed" || e.animationName === "paperFade") {
+      handleDone()
+    }
+  }
 
   return (
     <div className="receipt-printer-wrapper max-w-[420px] w-[min(92vw,420px)] mx-auto flex flex-col items-center">
@@ -287,7 +327,7 @@ export default function ReceiptPrinter({
       <div
         className={`printer-body w-full rounded-[26px] z-20 relative text-[#F7F0E3] ${
           phase === "entering" ? "printer-entering" : ""
-        } ${phase === "printing" ? "printer-vibrating" : ""}`}
+        } ${phase === "printing" && !reducedMotion ? "printer-vibrating" : ""}`}
         style={{
           background: "linear-gradient(180deg, #2F3B27 0%, #2F4A33 100%)",
           boxShadow:
@@ -297,7 +337,7 @@ export default function ReceiptPrinter({
         }}
       >
         <div className="p-4 md:p-5">
-          {/* Top Bar: Brand Logo & Title on Right, Home Button on Left */}
+          {/* Top Bar: Brand Logo on Right, Home Button on Left */}
           <div className="flex items-center justify-between gap-3 mb-3.5 pb-2.5 border-b border-white/10">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full overflow-hidden bg-white/15 p-0.5 border border-white/20 flex-shrink-0 flex items-center justify-center">
@@ -389,22 +429,17 @@ export default function ReceiptPrinter({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          2. RECEIPT PAPER VIEWPORT (Downwards Slide Behind Slot Mask)
+          2. RECEIPT PAPER VIEWPORT (In-DOM, Full Height Reserved)
+          Gradual downward reveal via CSS clip-path @keyframes paper-feed
           ═══════════════════════════════════════════════════════════════ */}
-      <div className="receipt-paper-viewport w-[88%] relative overflow-hidden -mt-2 z-10">
+      <div className="receipt-paper-viewport w-[88%] relative overflow-visible -mt-2 z-10">
         <div
-          className="receipt-paper w-full bg-[#FBF6EA] text-[#2F3B27] p-5 md:p-6 receipt-zigzag-mask relative"
+          ref={paperRef}
+          onAnimationEnd={handleAnimationEnd}
+          className={`receipt-paper w-full bg-[#FBF6EA] text-[#2F3B27] p-5 md:p-6 receipt-zigzag-mask relative ${paperClass}`}
           style={{
             boxShadow:
               "0 12px 28px -6px rgba(47, 59, 39, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08)",
-            transform: paperTranslate,
-            transition:
-              phase === "printing"
-                ? "transform 2.2s cubic-bezier(0.22, 1, 0.36, 1)"
-                : phase === "complete"
-                ? "none"
-                : "none",
-            willChange: phase === "printing" ? "transform" : "auto",
             paddingBottom: "1.75rem",
           }}
         >
@@ -459,7 +494,7 @@ export default function ReceiptPrinter({
                 <div key={idx} className="text-xs flex items-start justify-between gap-2">
                   <div className="flex-1 text-right">
                     <span className="receipt-font-body font-bold text-[#2F3B27] block leading-snug">
-                      {itemName}
+                      <bdi dir="auto">{itemName}</bdi>
                     </span>
                     <span className="text-[11px] text-[#2F3B27]/70 font-medium block mt-0.5">
                       {formatArabicNumber(it.qty, { maximumFractionDigits: 1 })} {unit} ×{" "}
@@ -492,11 +527,13 @@ export default function ReceiptPrinter({
           {/* Dashed Separator */}
           <div className="border-b-2 border-dashed border-[#2F3B27]/25 my-3" />
 
-          {/* Meta Rows: Customer name, phone, address, location saved */}
+          {/* Meta Rows: Wrapped in <bdi dir="auto"> to isolate BiDi strings */}
           <div className="space-y-1.5 text-[11px] text-[#2F3B27]/85 font-medium">
             <div className="flex items-center justify-between">
               <span className="text-[#2F3B27]/60">العميل:</span>
-              <span className="font-bold text-[#2F3B27]">{order.customer_name}</span>
+              <span className="font-bold text-[#2F3B27]">
+                <bdi dir="auto">{order.customer_name}</bdi>
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -509,9 +546,18 @@ export default function ReceiptPrinter({
             <div className="flex items-start justify-between gap-2">
               <span className="text-[#2F3B27]/60 flex-shrink-0">العنوان:</span>
               <span className="font-semibold text-right leading-tight text-[#2F3B27]">
-                {addressLine}
+                <bdi dir="auto">{addressLine}</bdi>
               </span>
             </div>
+
+            {order.address_details?.notes && (
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-[#2F3B27]/60 flex-shrink-0">ملاحظات:</span>
+                <span className="font-semibold text-right leading-tight text-[#2F3B27]">
+                  <bdi dir="auto">{order.address_details.notes}</bdi>
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-1">
               <span className="text-[#2F3B27]/60">حالة الإحداثيات:</span>
