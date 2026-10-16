@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     const newProduct = await createProduct({
-      id: body.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: body.id || `prod-${Math.floor(1000 + Math.random() * 9000)}`,
       section_id,
       name_ar: name_ar.trim(),
       image_url: image_url || null,

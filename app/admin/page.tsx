@@ -687,7 +687,7 @@ export default function AdminProductsPage() {
               <input
                 type="text"
                 className="toolbar-search-input"
-                placeholder="ابحث بالاسم العربي، المعرّف، أو الوحدة..."
+                placeholder="ابحث باسم المنتج..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -867,7 +867,6 @@ export default function AdminProductsPage() {
 
                     <td>
                       <div className="product-name-title">{p.name_ar}</div>
-                      <div className="product-name-slug">{p.id}</div>
                     </td>
 
                     <td>
