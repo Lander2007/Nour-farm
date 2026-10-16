@@ -72,8 +72,7 @@ export const STORY_SCENES: StorySceneData[] = [
     image: "/scenes/ready.jpg",
     range: [0.67, 1.0],
     ctaText: "تسوّق الخضار المجهّز",
-    ctaHref:
-      "/products?category=%D8%AC%D8%A7%D9%87%D8%B2%20%D9%84%D9%84%D8%B7%D8%A8%D8%AE",
+    ctaHref: "/vegetables/ready-vegetables",
   },
 ]
 
