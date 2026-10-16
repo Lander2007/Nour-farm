@@ -99,6 +99,22 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
 
     const mapsLink = `https://maps.google.com/?q=${order.location.lat},${order.location.lng}`
 
+    const subtotal =
+      order.subtotal_price ??
+      order.items.reduce((s, it) => s + (it.line_total || 0), 0)
+
+    const feeText =
+      order.delivery_fee_status === "free"
+        ? "مجاني"
+        : order.delivery_fee_status === "set" && order.delivery_fee != null
+        ? `${number.format(order.delivery_fee)} جنيه مصري`
+        : "بيتحدد حسب المسافة"
+
+    const totalLabel =
+      order.delivery_fee_status === "free" || order.delivery_fee_status === "set"
+        ? "الإجمالي"
+        : "الإجمالي (بدون التوصيل)"
+
     return encodeURIComponent(
       `السلام عليكم ورحمة الله وبركاته،
 تأكيد طلب من نور فارم
@@ -108,13 +124,17 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
 بيانات العميل:
 الاسم: ${order.customer_name}
 الهاتف: ${order.customer_phone}
+منطقة التوصيل: ${order.area || "غير محددة"}
 العنوان: ${address}
 موقع التوصيل: ${mapsLink}
 
 تفاصيل الطلب:
 ${itemsList}
 
-إجمالي الحساب: ${number.format(order.total_price)} جنيه مصري
+إجمالي المنتجات: ${number.format(subtotal)} جنيه مصري
+التوصيل: ${feeText}
+${totalLabel}: ${number.format(order.total_price)} جنيه مصري
+
 شكراً لتعاملكم مع نور فارم.`
     )
   }
@@ -316,6 +336,18 @@ ${itemsList}
                 {order.customer_phone}
               </strong>
             </div>
+
+            {order.area && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#2F3B27]/65 flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-[#2F4A33]/70" />
+                  <span>منطقة التوصيل:</span>
+                </span>
+                <strong className="font-bold text-[#2F4A33] bg-[#2F4A33]/10 px-2 py-0.5 rounded-md text-xs">
+                  <bdi dir="auto">{order.area}</bdi>
+                </strong>
+              </div>
+            )}
 
             <div className="flex items-start justify-between gap-2 pt-1 border-t border-[#2F3B27]/5">
               <span className="text-[#2F3B27]/65 flex items-center gap-1.5 flex-shrink-0 mt-0.5">

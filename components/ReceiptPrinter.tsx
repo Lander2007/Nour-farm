@@ -553,15 +553,47 @@ export default function ReceiptPrinter({
           {/* Dashed Separator */}
           <div className="border-b-2 border-dashed border-[#2F3B27]/25 my-3" />
 
-          {/* Large Total Row */}
-          <div className="flex items-center justify-between py-1">
-            <span className="receipt-font-display text-base md:text-lg font-extrabold text-[#2F3B27]">
-              الإجمالي
-            </span>
-            <span className="receipt-font-display text-lg md:text-xl font-extrabold text-[#2F4A33] tracking-tight">
-              {formatArabicNumber(order.total_price)}{" "}
-              <span className="text-xs font-bold text-[#2F3B27]/80">ج.م</span>
-            </span>
+          {/* Breakdown & Large Total Rows */}
+          <div className="space-y-1.5 py-1">
+            <div className="flex items-center justify-between text-xs text-[#2F3B27]/80">
+              <span className="font-medium">إجمالي المنتجات</span>
+              <span className="receipt-font-mono font-bold text-[#2F3B27]">
+                {formatArabicNumber(
+                  order.subtotal_price ??
+                    order.items.reduce((s, it) => s + (it.line_total || 0), 0)
+                )}{" "}
+                <span className="text-[10px]">ج.م</span>
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-[#2F3B27]/80">
+              <span className="font-medium">التوصيل</span>
+              <span className="font-bold text-[#2F3B27]">
+                {order.delivery_fee_status === "free" ? (
+                  <span className="text-[#15803D]">مجاني</span>
+                ) : order.delivery_fee_status === "set" && order.delivery_fee != null ? (
+                  <span className="receipt-font-mono">
+                    {formatArabicNumber(order.delivery_fee)} <span className="text-[10px]">ج.م</span>
+                  </span>
+                ) : (
+                  <span className="text-[#B45309] font-medium text-[11px]">
+                    بيتحدد حسب المسافة
+                  </span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-[#2F3B27]/15 mt-1">
+              <span className="receipt-font-display text-sm md:text-base font-extrabold text-[#2F3B27]">
+                {order.delivery_fee_status === "free" || order.delivery_fee_status === "set"
+                  ? "الإجمالي"
+                  : "الإجمالي (بدون التوصيل)"}
+              </span>
+              <span className="receipt-font-display text-base md:text-lg font-extrabold text-[#2F4A33] tracking-tight">
+                {formatArabicNumber(order.total_price)}{" "}
+                <span className="text-xs font-bold text-[#2F3B27]/80">ج.م</span>
+              </span>
+            </div>
           </div>
 
           {/* Dashed Separator */}
@@ -582,6 +614,15 @@ export default function ReceiptPrinter({
                 {order.customer_phone}
               </span>
             </div>
+
+            {order.area && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#2F3B27]/60">منطقة التوصيل:</span>
+                <span className="font-bold text-[#2F3B27]">
+                  <bdi dir="auto">{order.area}</bdi>
+                </span>
+              </div>
+            )}
 
             <div className="flex items-start justify-between gap-2">
               <span className="text-[#2F3B27]/60 flex-shrink-0">العنوان:</span>

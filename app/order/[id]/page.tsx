@@ -6,6 +6,9 @@ import { getOrderById } from "@/lib/db"
 import BrandMark from "@/components/BrandMark"
 import OrderConfirmationClient from "./OrderConfirmationClient"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 interface OrderPageProps {
   params: Promise<{ id: string }>
 }
