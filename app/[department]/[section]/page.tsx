@@ -115,19 +115,6 @@ export default async function DepartmentSectionPage({ params }: SectionPageProps
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             {siblingSections.map((sec) => {
               const isActive = sec.id === currentSection.id
-              const isComingSoon = sec.id === "mixes"
-
-              if (isComingSoon) {
-                return (
-                  <span
-                    key={sec.id}
-                    className="shrink-0 px-4 py-2 rounded-xl text-xs font-medium bg-stone-100 text-stone-700 border border-stone-200 cursor-not-allowed inline-flex items-center gap-1.5"
-                  >
-                    <span>{sec.name_ar}</span>
-                    <span className="text-[10px] bg-stone-200 px-1.5 py-0.2 rounded font-bold">قريباً</span>
-                  </span>
-                )
-              }
 
               return (
                 <Link
