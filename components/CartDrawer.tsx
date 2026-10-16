@@ -12,9 +12,17 @@ const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 export default function CartDrawer() {
   const products = useActiveProducts()
   const { items, open, setOpen, change } = useCart()
-  const selected = products.filter((product) => items[product.id])
+  const getQty = (product: Product) => {
+    return (
+      items[product.id] ??
+      items[product.id.replace(/^prod-/, "")] ??
+      items[`prod-${product.id}`] ??
+      0
+    )
+  }
+  const selected = products.filter((product) => getQty(product) > 0)
   const total = selected.reduce(
-    (sum, product) => sum + product.price * items[product.id],
+    (sum, product) => sum + product.price * getQty(product),
     0,
   )
 
@@ -74,7 +82,7 @@ export default function CartDrawer() {
                   >
                     <Plus />
                   </button>
-                  <b>{number.format(items[product.id])}</b>
+                  <b>{number.format(getQty(product))}</b>
                   <button
                     type="button"
                     aria-label="نقصان"

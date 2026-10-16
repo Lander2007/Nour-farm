@@ -106,7 +106,16 @@ export default function CheckoutPage() {
     setMounted(true)
   }, [])
 
-  const actualSelected = products.filter((p) => items[p.id])
+  const getQty = (p: { id: string }) => {
+    return (
+      items[p.id] ??
+      items[p.id.replace(/^prod-/, "")] ??
+      items[`prod-${p.id}`] ??
+      0
+    )
+  }
+
+  const actualSelected = products.filter((p) => getQty(p) > 0)
   const isDemoCart =
     mounted &&
     actualSelected.length ===
@@ -120,7 +129,7 @@ export default function CheckoutPage() {
     (sum, p) =>
       sum +
       p.price *
-        (items[p.id] ||
+        (getQty(p) ||
           1),
     0,
   )
