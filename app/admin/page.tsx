@@ -33,12 +33,12 @@ import { resizeImageToWebP } from "@/lib/utils/image-resize"
 import "./admin.css"
 
 const DEFAULT_SECTIONS = [
-  { id: "fresh-vegetables", dept: "vegetables", name: "خضار طازج" },
-  { id: "herbs", dept: "vegetables", name: "الخضرة" },
-  { id: "ready-vegetables", dept: "vegetables", name: "خضار متقطع ومجهّز" },
-  { id: "salads", dept: "vegetables", name: "السلطات" },
-  { id: "fresh-fruits", dept: "fruits", name: "فاكهة طازجة" },
-  { id: "cut-fruits", dept: "fruits", name: "فاكهة متقطعة ومجهّزة" },
+  { id: "fresh-vegetables", dept: "vegetables", name: "خضار طازج", cover_image: "/noor-farm-images/IMG-20261014-WA0114.jpg" },
+  { id: "herbs", dept: "vegetables", name: "الخضرة", cover_image: "/basil.webp" },
+  { id: "ready-vegetables", dept: "vegetables", name: "خضار متقطع ومجهّز", cover_image: "/scenes/cut.jpg" },
+  { id: "salads", dept: "vegetables", name: "السلطات", cover_image: "/scenes/ready.jpg" },
+  { id: "fresh-fruits", dept: "fruits", name: "فاكهة طازجة", cover_image: "/noor-farm-images/red-plum.jpg" },
+  { id: "cut-fruits", dept: "fruits", name: "فاكهة متقطعة ومجهّزة", cover_image: "/noor-farm-images/cantaloupe.jpg" },
 ]
 
 const UNIT_OPTIONS = [
@@ -54,7 +54,7 @@ export default function AdminProductsPage() {
 
   // State
   const [products, setProducts] = useState<Product[]>([])
-  const [sections, setSections] = useState<Array<{ id: string; dept: string; name: string }>>(DEFAULT_SECTIONS)
+  const [sections, setSections] = useState<Array<{ id: string; dept: string; name: string; cover_image?: string | null }>>(DEFAULT_SECTIONS)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isDevFallback, setIsDevFallback] = useState<boolean>(false)
 
@@ -62,7 +62,12 @@ export default function AdminProductsPage() {
   const [isNewSectionModalOpen, setIsNewSectionModalOpen] = useState<boolean>(false)
   const [newSectionName, setNewSectionName] = useState<string>("")
   const [newSectionDept, setNewSectionDept] = useState<"vegetables" | "fruits">("vegetables")
+  const [newSectionImage, setNewSectionImage] = useState<string | null>(null)
   const [isCreatingSection, setIsCreatingSection] = useState<boolean>(false)
+  const [galleryTarget, setGalleryTarget] = useState<{
+    type: "product" | "newSection" | "editSection"
+    sectionId?: string
+  }>({ type: "product" })
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -139,6 +144,7 @@ export default function AdminProductsPage() {
               id: s.id,
               dept: s.department_id,
               name: s.name_ar,
+              cover_image: s.cover_image || null,
             }))
             setSections(mapped)
           } else {
@@ -189,6 +195,84 @@ export default function AdminProductsPage() {
     }
   }
 
+  // Update section cover image directly in DB
+  const handleUpdateSectionImage = async (sectionId: string, imageUrl: string | null) => {
+    try {
+      showToast("جاري تحديث صورة القسم...")
+      const res = await fetch("/api/admin/sections", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: sectionId,
+          cover_image: imageUrl,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "فشل تحديث صورة القسم")
+      }
+      setSections((prev) =>
+        prev.map((s) => (s.id === sectionId ? { ...s, cover_image: imageUrl } : s))
+      )
+      showToast("تم تحديث صورة القسم بنجاح!")
+    } catch (err: any) {
+      alert(err.message || "حدث خطأ أثناء تحديث صورة القسم")
+    }
+  }
+
+  // Upload image for section (converts to WebP automatically)
+  const handleSectionImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    targetSectionId?: string
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      showToast("جاري ضغط وتحويل الصورة إلى WebP...")
+      const webpFile = await resizeImageToWebP(file, 1200, 0.85)
+
+      const bodyData = new FormData()
+      bodyData.append("file", webpFile)
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: bodyData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "فشل رفع الصورة")
+        return
+      }
+
+      if (targetSectionId) {
+        await handleUpdateSectionImage(targetSectionId, data.url)
+      } else {
+        setNewSectionImage(data.url)
+        showToast("تم رفع صورة القسم الجديد بنجاح!")
+      }
+    } catch (err: any) {
+      alert("خطأ أثناء معالجة الصورة: " + err.message)
+    }
+  }
+
+  // Generic handler for selecting an image from farm gallery
+  const handleSelectGalleryImage = async (imgPath: string) => {
+    if (galleryTarget.type === "product") {
+      setFormData((prev) => ({ ...prev, image_url: imgPath }))
+      setIsGalleryOpen(false)
+      showToast("تم اختيار صورة المنتج بنجاح!")
+    } else if (galleryTarget.type === "newSection") {
+      setNewSectionImage(imgPath)
+      setIsGalleryOpen(false)
+      showToast("تم اختيار صورة القسم بنجاح!")
+    } else if (galleryTarget.type === "editSection" && galleryTarget.sectionId) {
+      setIsGalleryOpen(false)
+      await handleUpdateSectionImage(galleryTarget.sectionId, imgPath)
+    }
+  }
+
   // Handler to create a new section
   const handleCreateSection = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -206,6 +290,7 @@ export default function AdminProductsPage() {
         body: JSON.stringify({
           name_ar: trimmed,
           department_id: newSectionDept,
+          cover_image: newSectionImage || null,
         }),
       })
 
@@ -220,6 +305,7 @@ export default function AdminProductsPage() {
         id: created.id,
         dept: created.department_id,
         name: created.name_ar,
+        cover_image: created.cover_image || null,
       }
 
       setSections((prev) => {
@@ -233,6 +319,7 @@ export default function AdminProductsPage() {
       showToast(`تم إنشاء قسم "${created.name_ar}" بنجاح وتحديده!`)
       setIsNewSectionModalOpen(false)
       setNewSectionName("")
+      setNewSectionImage(null)
     } catch {
       alert("حدث خطأ أثناء إنشاء القسم")
     } finally {
@@ -1224,7 +1311,10 @@ export default function AdminProductsPage() {
 
                         <button
                           type="button"
-                          onClick={() => setIsGalleryOpen(true)}
+                          onClick={() => {
+                            setGalleryTarget({ type: "product" })
+                            setIsGalleryOpen(true)
+                          }}
                           className="btn-secondary-action"
                           style={{ width: "100%", justifyContent: "center", padding: "0.65rem", fontSize: "0.85rem" }}
                         >
@@ -1363,19 +1453,24 @@ export default function AdminProductsPage() {
                 تنبيه: لا تقم باستخدام نفس الصورة لمنتجين مختلفين. يجب أن تطابق الصورة المنتج تماماً.
               </div>
               <div className="gallery-grid">
-                {farmImagePaths.map((imgPath) => (
-                  <div
-                    key={imgPath}
-                    onClick={() => {
-                      setFormData((prev) => ({ ...prev, image_url: imgPath }))
-                      setIsGalleryOpen(false)
-                      showToast("تم اختيار الصورة بنجاح!")
-                    }}
-                    className={`gallery-item ${formData.image_url === imgPath ? "selected" : ""}`}
-                  >
-                    <img src={imgPath} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  </div>
-                ))}
+                {farmImagePaths.map((imgPath) => {
+                  const isSelected =
+                    galleryTarget.type === "product"
+                      ? formData.image_url === imgPath
+                      : galleryTarget.type === "newSection"
+                      ? newSectionImage === imgPath
+                      : sections.find((s) => s.id === galleryTarget.sectionId)?.cover_image === imgPath
+
+                  return (
+                    <div
+                      key={imgPath}
+                      onClick={() => handleSelectGalleryImage(imgPath)}
+                      className={`gallery-item ${isSelected ? "selected" : ""}`}
+                    >
+                      <img src={imgPath} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -1505,11 +1600,11 @@ export default function AdminProductsPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-         MODAL: SECTIONS MANAGEMENT (VIEW, DELETE, ADD)
+         MODAL: SECTIONS MANAGEMENT (VIEW, DELETE, ADD, IMAGES)
          ───────────────────────────────────────────────────────────── */}
       {isNewSectionModalOpen && (
         <div className="modal-backdrop" onClick={() => !isCreatingSection && setIsNewSectionModalOpen(false)}>
-          <div className="modal-dialog" style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-dialog" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                 <div
@@ -1527,7 +1622,7 @@ export default function AdminProductsPage() {
                 </div>
                 <div>
                   <h2 className="modal-title" style={{ fontSize: "1.15rem", margin: 0 }}>
-                    إدارة أقسام المتجر
+                    إدارة أقسام المتجر والصور
                   </h2>
                   <p style={{ margin: 0, fontSize: "0.78rem", color: "#6b7280" }}>
                     إجمالي {sections.length} قسم متاح بالمتجر
@@ -1556,16 +1651,16 @@ export default function AdminProductsPage() {
                   }}
                 >
                   <label className="form-label" style={{ margin: 0, fontWeight: 700, color: "#1e3322" }}>
-                    الأقسام الحالية:
+                    الأقسام الحالية وصورها:
                   </label>
                   <span style={{ fontSize: "0.76rem", color: "#6b7280" }}>
-                    لحذف أي قسم اضغط على زر الحذف
+                    يمكنك تغيير صورة أي قسم أو رفعه مباشرة
                   </span>
                 </div>
 
                 <div
                   style={{
-                    maxHeight: "230px",
+                    maxHeight: "260px",
                     overflowY: "auto",
                     border: "1px solid #e5e7eb",
                     borderRadius: "10px",
@@ -1596,53 +1691,140 @@ export default function AdminProductsPage() {
                             background: "#ffffff",
                             border: "1px solid #f0ece3",
                             borderRadius: "8px",
-                            transition: "all 0.15s ease",
+                            gap: "0.75rem",
+                            flexWrap: "wrap",
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                            <span
+                          {/* Image & Info */}
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                            {/* Section Image Thumbnail */}
+                            <div
                               style={{
-                                fontSize: "0.72rem",
-                                fontWeight: 700,
-                                padding: "2px 8px",
-                                borderRadius: "6px",
-                                background: isVeg ? "#e8f5e9" : "#fff3e0",
-                                color: isVeg ? "#2e7d32" : "#e65100",
-                                border: isVeg ? "1px solid #c8e6c9" : "1px solid #ffe0b2",
+                                width: 44,
+                                height: 44,
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                                border: "1px solid #e5e7eb",
+                                background: "#f3f4f6",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
                               }}
                             >
-                              {isVeg ? "خضار" : "فاكهة"}
-                            </span>
-                            <span style={{ fontWeight: 600, color: "#1f2937", fontSize: "0.9rem" }}>
-                              {sec.name}
-                            </span>
-                            <span style={{ fontSize: "0.76rem", color: "#6b7280" }}>
-                              ({count} منتج)
-                            </span>
+                              {sec.cover_image ? (
+                                <img
+                                  src={sec.cover_image}
+                                  alt={sec.name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <ImageIcon size={20} color="#9ca3af" />
+                              )}
+                            </div>
+
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", marginBottom: "0.15rem" }}>
+                                <span
+                                  style={{
+                                    fontSize: "0.7rem",
+                                    fontWeight: 700,
+                                    padding: "1px 6px",
+                                    borderRadius: "4px",
+                                    background: isVeg ? "#e8f5e9" : "#fff3e0",
+                                    color: isVeg ? "#2e7d32" : "#e65100",
+                                    border: isVeg ? "1px solid #c8e6c9" : "1px solid #ffe0b2",
+                                  }}
+                                >
+                                  {isVeg ? "خضار" : "فاكهة"}
+                                </span>
+                                <span style={{ fontWeight: 700, color: "#1f2937", fontSize: "0.9rem" }}>
+                                  {sec.name}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: "0.74rem", color: "#6b7280" }}>
+                                ({count} منتج) {sec.cover_image ? "• صورة مفعلة" : "• بدون صورة"}
+                              </span>
+                            </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteSection(sec.id, sec.name)}
-                            style={{
-                              border: "1px solid #fecaca",
-                              background: "#fef2f2",
-                              color: "#dc2626",
-                              cursor: "pointer",
-                              padding: "4px 8px",
-                              borderRadius: "6px",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              fontSize: "0.78rem",
-                              fontWeight: 600,
-                              transition: "all 0.15s ease",
-                            }}
-                            title={`حذف قسم ${sec.name}`}
-                          >
-                            <Trash2 size={13} />
-                            <span>حذف</span>
-                          </button>
+                          {/* Image Actions & Delete */}
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            <label
+                              className="btn-secondary-action"
+                              style={{
+                                padding: "3px 7px",
+                                fontSize: "0.74rem",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                              }}
+                              title="رفع صورة جديدة للقسم من جهازك"
+                            >
+                              <Upload size={12} />
+                              <span>رفع صورة</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleSectionImageUpload(e, sec.id)}
+                                style={{ display: "none" }}
+                              />
+                            </label>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setGalleryTarget({ type: "editSection", sectionId: sec.id })
+                                setIsGalleryOpen(true)
+                              }}
+                              className="btn-secondary-action"
+                              style={{ padding: "3px 7px", fontSize: "0.74rem", display: "inline-flex", alignItems: "center", gap: "3px" }}
+                              title="اختيار صورة من مكتبة صور المزرعة"
+                            >
+                              <ImageIcon size={12} />
+                              <span>المعرض</span>
+                            </button>
+
+                            {sec.cover_image && (
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateSectionImage(sec.id, null)}
+                                className="btn-secondary-action"
+                                style={{
+                                  padding: "3px 6px",
+                                  color: "#b91c1c",
+                                  borderColor: "#fecaca",
+                                  background: "#fef2f2",
+                                }}
+                                title="إزالة صورة الغلاف"
+                              >
+                                <X size={12} />
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSection(sec.id, sec.name)}
+                              style={{
+                                border: "1px solid #fecaca",
+                                background: "#fef2f2",
+                                color: "#dc2626",
+                                cursor: "pointer",
+                                padding: "3px 7px",
+                                borderRadius: "6px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                                fontSize: "0.74rem",
+                                fontWeight: 600,
+                              }}
+                              title={`حذف قسم ${sec.name}`}
+                            >
+                              <Trash2 size={12} />
+                              <span>حذف</span>
+                            </button>
+                          </div>
                         </div>
                       )
                     })
@@ -1689,6 +1871,101 @@ export default function AdminProductsPage() {
                     </select>
                   </div>
 
+                  {/* SECTION COVER IMAGE OPTION */}
+                  <div className="form-group" style={{ marginBottom: "1rem" }}>
+                    <label className="form-label">صورة الغلاف للقسم (اختياري - زي المنتجات)</label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.85rem",
+                        padding: "0.75rem",
+                        background: "#f9fafb",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 54,
+                          height: 54,
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          border: "1px solid #d1d5db",
+                          background: "#e5e7eb",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {newSectionImage ? (
+                          <img
+                            src={newSectionImage}
+                            alt="معاينة صورة القسم"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <div style={{ textAlign: "center", color: "#9ca3af", fontSize: "0.7rem", fontWeight: 600 }}>
+                            بدون صورة
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", flex: 1 }}>
+                        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                          <label
+                            className="btn-primary-add"
+                            style={{
+                              padding: "4px 10px",
+                              fontSize: "0.78rem",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                            }}
+                          >
+                            <Upload size={13} />
+                            <span>رفع صورة</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleSectionImageUpload(e)}
+                              style={{ display: "none" }}
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGalleryTarget({ type: "newSection" })
+                              setIsGalleryOpen(true)
+                            }}
+                            className="btn-secondary-action"
+                            style={{ padding: "4px 10px", fontSize: "0.78rem", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <ImageIcon size={13} />
+                            <span>مكتبة الصور</span>
+                          </button>
+
+                          {newSectionImage && (
+                            <button
+                              type="button"
+                              onClick={() => setNewSectionImage(null)}
+                              className="btn-secondary-action"
+                              style={{ padding: "4px 8px", fontSize: "0.78rem", color: "#dc2626", borderColor: "#fca5a5" }}
+                            >
+                              إزالة
+                            </button>
+                          )}
+                        </div>
+                        <span style={{ fontSize: "0.72rem", color: "#6b7280" }}>
+                          تظهر كصورة غلاف بارزة للقسم في صفحات المتجر وتساعد العملاء في التصفح
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div
                     style={{
                       background: "#f0fdf4",
@@ -1701,7 +1978,7 @@ export default function AdminProductsPage() {
                       lineHeight: 1.5,
                     }}
                   >
-                    ✓ إضافة أو حذف أي قسم يتحدث فورياً في قاعدة البيانات ويظهر للعملاء في المتجر.
+                    ✓ إضافة وتعديل الأقسام وصورها يتحدث فورياً في قاعدة البيانات ويظهر للعملاء في المتجر.
                   </div>
 
                   <div
