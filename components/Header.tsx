@@ -355,13 +355,6 @@ export default function Header({ solid = true }: { solid?: boolean }) {
               >
                 جميع الأصناف
               </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-emerald-700 font-bold"
-              >
-                لوحة الإدارة
-              </Link>
             </div>
           </nav>
         </div>
