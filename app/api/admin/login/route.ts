@@ -74,15 +74,7 @@ export async function POST(req: NextRequest) {
     passwordMatch = verifyPassword(password, expectedPasswordHash) || verifyPassword(password.trim(), expectedPasswordHash)
   }
 
-  // In development, also allow convenient dev credentials if entered
-  if (process.env.NODE_ENV !== "production") {
-    if (cleanInputUser.toLowerCase() === "admin") {
-      usernameMatch = true
-      if (password === "2026" || password === "admin" || password === "demo1234" || password === "MANU1999.KHALED") {
-        passwordMatch = true
-      }
-    }
-  }
+
 
   if (!usernameMatch || !passwordMatch) {
     recordFailedLogin(ip)
