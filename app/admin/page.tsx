@@ -140,12 +140,9 @@ export default function AdminProductsPage() {
               dept: s.department_id,
               name: s.name_ar,
             }))
-            const mapIds = new Set(mapped.map((m: any) => m.id))
-            const merged = [...mapped]
-            for (const d of DEFAULT_SECTIONS) {
-              if (!mapIds.has(d.id)) merged.push(d)
-            }
-            setSections(merged)
+            setSections(mapped)
+          } else {
+            setSections(DEFAULT_SECTIONS)
           }
         }
       } catch (err) {
@@ -161,6 +158,36 @@ export default function AdminProductsPage() {
   useEffect(() => {
     loadData()
   }, [])
+
+  // Handler to delete a section
+  const handleDeleteSection = async (sectionId: string, sectionName: string) => {
+    const prodsCount = products.filter((p) => p.section_id === sectionId).length
+    const warningMsg = prodsCount > 0
+      ? `تحذير هام:\nقسم "${sectionName}" يحتوي على (${prodsCount}) منتج.\nحذف هذا القسم سيؤدي أيضاً إلى حذف كافة المنتجات التابعة له نهائياً من المتجر وقاعدة البيانات!\n\nهل أنت متأكد من حذف قسم "${sectionName}"؟`
+      : `هل أنت متأكد من حذف قسم "${sectionName}" نهائياً من المتجر؟`
+
+    if (!confirm(warningMsg)) return
+
+    try {
+      const res = await fetch(`/api/admin/sections?id=${encodeURIComponent(sectionId)}`, {
+        method: "DELETE",
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "فشل حذف القسم")
+        return
+      }
+
+      showToast(`تم حذف قسم "${sectionName}" بنجاح!`)
+      setSections((prev) => prev.filter((s) => s.id !== sectionId))
+      if (activeSection === sectionId) {
+        setActiveSection("all")
+      }
+      loadData()
+    } catch {
+      alert("حدث خطأ أثناء حذف القسم")
+    }
+  }
 
   // Handler to create a new section
   const handleCreateSection = async (e: React.FormEvent) => {
@@ -647,13 +674,15 @@ export default function AdminProductsPage() {
 
           <div className="kpi-card">
             <div className="kpi-card-header">
-              <span className="kpi-card-title">الأقسام الرئيسية</span>
+              <span className="kpi-card-title">الأقسام المتاحة</span>
               <div className="kpi-card-icon" style={{ background: "#e0f2f1", color: "#00695c" }}>
                 <Layers size={22} />
               </div>
             </div>
-            <div className="kpi-card-value">٧</div>
-            <div className="kpi-card-subline">٤ للخضار و ٣ للفاكهة</div>
+            <div className="kpi-card-value">{sections.length}</div>
+            <div className="kpi-card-subline">
+              {sections.filter((s) => s.dept === "vegetables").length} للخضار و {sections.filter((s) => s.dept === "fruits").length} للفاكهة
+            </div>
           </div>
 
           <div className="kpi-card">
@@ -707,9 +736,10 @@ export default function AdminProductsPage() {
                 }}
                 className="btn-secondary-action"
                 style={{ background: "#f0fdf4", borderColor: "#86efac", color: "#166534", fontWeight: 700 }}
+                title="عرض وتعديل وحذف أقسام المتجر"
               >
-                <Plus size={16} />
-                <span>قسم جديد</span>
+                <Layers size={16} />
+                <span>إدارة الأقسام</span>
               </button>
 
 
@@ -750,7 +780,7 @@ export default function AdminProductsPage() {
                 }}
                 className={`category-tab-btn ${activeDepartment === "vegetables" && activeSection === "all" ? "active" : ""}`}
               >
-                <span>الخضار (٤ أقسام)</span>
+                <span>الخضار ({sections.filter((s) => s.dept === "vegetables").length} أقسام)</span>
               </button>
 
               <button
@@ -761,25 +791,50 @@ export default function AdminProductsPage() {
                 }}
                 className={`category-tab-btn ${activeDepartment === "fruits" && activeSection === "all" ? "active" : ""}`}
               >
-                <span>الفاكهة (٣ أقسام)</span>
+                <span>الفاكهة ({sections.filter((s) => s.dept === "fruits").length} أقسام)</span>
               </button>
             </div>
 
-            <div className="view-controls">
+            <div className="view-controls" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
               {/* SUB-SECTION FILTER */}
-              <select
-                className="form-select"
-                style={{ padding: "0.45rem 0.85rem", fontSize: "0.85rem", width: "auto" }}
-                value={activeSection}
-                onChange={(e) => setActiveSection(e.target.value)}
-              >
-                <option value="all">كل الأقسام الفرعية</option>
-                {sections.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <select
+                  className="form-select"
+                  style={{ padding: "0.45rem 0.85rem", fontSize: "0.85rem", width: "auto" }}
+                  value={activeSection}
+                  onChange={(e) => setActiveSection(e.target.value)}
+                >
+                  <option value="all">كل الأقسام الفرعية</option>
+                  {sections.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+
+                {activeSection !== "all" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sec = sections.find((s) => s.id === activeSection)
+                      if (sec) handleDeleteSection(sec.id, sec.name)
+                    }}
+                    className="btn-secondary-action"
+                    style={{
+                      background: "#fef2f2",
+                      borderColor: "#fca5a5",
+                      color: "#dc2626",
+                      padding: "0.45rem 0.65rem",
+                      fontSize: "0.82rem",
+                      fontWeight: 600,
+                    }}
+                    title="حذف هذا القسم بالكامل"
+                  >
+                    <Trash2 size={14} />
+                    <span>حذف القسم</span>
+                  </button>
+                )}
+              </div>
 
               {/* STATUS FILTER */}
               <select
@@ -1450,13 +1505,35 @@ export default function AdminProductsPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-         MODAL: NEW SECTION CREATION
+         MODAL: SECTIONS MANAGEMENT (VIEW, DELETE, ADD)
          ───────────────────────────────────────────────────────────── */}
       {isNewSectionModalOpen && (
         <div className="modal-backdrop" onClick={() => !isCreatingSection && setIsNewSectionModalOpen(false)}>
-          <div className="modal-dialog" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-dialog" style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">إنشاء قسم جديد</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "10px",
+                    background: "#e8f5e9",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#2e7d32",
+                  }}
+                >
+                  <Layers size={20} />
+                </div>
+                <div>
+                  <h2 className="modal-title" style={{ fontSize: "1.15rem", margin: 0 }}>
+                    إدارة أقسام المتجر
+                  </h2>
+                  <p style={{ margin: 0, fontSize: "0.78rem", color: "#6b7280" }}>
+                    إجمالي {sections.length} قسم متاح بالمتجر
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsNewSectionModalOpen(false)}
@@ -1467,76 +1544,193 @@ export default function AdminProductsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateSection}>
-              <div className="modal-body" style={{ padding: "1.25rem" }}>
-                <div className="form-group" style={{ marginBottom: "1.2rem" }}>
-                  <label className="form-label">اسم القسم الجديد بالعربية *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="مثال: تمور وعسل، عصائر طبيعية، مجمدات..."
-                    value={newSectionName}
-                    onChange={(e) => setNewSectionName(e.target.value)}
-                    autoFocus
-                    required
-                  />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: "1.2rem" }}>
-                  <label className="form-label">يندرج تحت أي قسم رئيسي؟ *</label>
-                  <select
-                    className="form-select"
-                    value={newSectionDept}
-                    onChange={(e) => setNewSectionDept(e.target.value as "vegetables" | "fruits")}
-                  >
-                    <option value="vegetables">قسم الخضار (Vegetables)</option>
-                    <option value="fruits">قسم الفاكهة (Fruits)</option>
-                  </select>
+            <div className="modal-body" style={{ padding: "1.25rem" }}>
+              {/* LIST OF EXISTING SECTIONS */}
+              <div style={{ marginBottom: "1.5rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.6rem",
+                  }}
+                >
+                  <label className="form-label" style={{ margin: 0, fontWeight: 700, color: "#1e3322" }}>
+                    الأقسام الحالية:
+                  </label>
+                  <span style={{ fontSize: "0.76rem", color: "#6b7280" }}>
+                    لحذف أي قسم اضغط على زر الحذف
+                  </span>
                 </div>
 
                 <div
                   style={{
-                    background: "#f0fdf4",
-                    border: "1px solid #bbf7d0",
+                    maxHeight: "230px",
+                    overflowY: "auto",
+                    border: "1px solid #e5e7eb",
                     borderRadius: "10px",
-                    padding: "0.75rem",
-                    fontSize: "0.82rem",
-                    color: "#166534",
-                    lineHeight: 1.5,
+                    background: "#fcfbf9",
+                    padding: "0.4rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.4rem",
                   }}
                 >
-                  ✓ سيتم حفظ القسم فوراً في قاعدة البيانات ويظهر في القوائم وفي المتجر تلقائياً.
+                  {sections.length === 0 ? (
+                    <div style={{ padding: "1rem", textAlign: "center", color: "#9ca3af", fontSize: "0.85rem" }}>
+                      لا توجد أقسام حالياً
+                    </div>
+                  ) : (
+                    sections.map((sec) => {
+                      const count = products.filter((p) => p.section_id === sec.id).length
+                      const isVeg = sec.dept === "vegetables"
+
+                      return (
+                        <div
+                          key={sec.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "0.55rem 0.75rem",
+                            background: "#ffffff",
+                            border: "1px solid #f0ece3",
+                            borderRadius: "8px",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                            <span
+                              style={{
+                                fontSize: "0.72rem",
+                                fontWeight: 700,
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                background: isVeg ? "#e8f5e9" : "#fff3e0",
+                                color: isVeg ? "#2e7d32" : "#e65100",
+                                border: isVeg ? "1px solid #c8e6c9" : "1px solid #ffe0b2",
+                              }}
+                            >
+                              {isVeg ? "خضار" : "فاكهة"}
+                            </span>
+                            <span style={{ fontWeight: 600, color: "#1f2937", fontSize: "0.9rem" }}>
+                              {sec.name}
+                            </span>
+                            <span style={{ fontSize: "0.76rem", color: "#6b7280" }}>
+                              ({count} منتج)
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSection(sec.id, sec.name)}
+                            style={{
+                              border: "1px solid #fecaca",
+                              background: "#fef2f2",
+                              color: "#dc2626",
+                              cursor: "pointer",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              fontSize: "0.78rem",
+                              fontWeight: 600,
+                              transition: "all 0.15s ease",
+                            }}
+                            title={`حذف قسم ${sec.name}`}
+                          >
+                            <Trash2 size={13} />
+                            <span>حذف</span>
+                          </button>
+                        </div>
+                      )
+                    })
+                  )}
                 </div>
               </div>
 
+              {/* SECTION CREATION FORM */}
               <div
-                className="modal-footer"
                 style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "0.75rem",
-                  padding: "1rem 1.25rem",
-                  borderTop: "1px solid #e5e7eb",
+                  borderTop: "1px dashed #d1d5db",
+                  paddingTop: "1.2rem",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setIsNewSectionModalOpen(false)}
-                  className="btn-secondary-action"
-                  disabled={isCreatingSection}
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary-add"
-                  disabled={isCreatingSection || !newSectionName.trim()}
-                >
-                  <Plus size={16} />
-                  <span>{isCreatingSection ? "جاري الحفظ..." : "حفظ واختيار القسم"}</span>
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.85rem" }}>
+                  <Plus size={16} color="#2e7d32" />
+                  <span style={{ fontWeight: 700, fontSize: "0.92rem", color: "#1e3322" }}>
+                    إضافة قسم جديد
+                  </span>
+                </div>
+
+                <form onSubmit={handleCreateSection}>
+                  <div className="form-group" style={{ marginBottom: "1rem" }}>
+                    <label className="form-label">اسم القسم الجديد بالعربية *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="مثال: تمور وعسل، عصائر طبيعية، مجمدات..."
+                      value={newSectionName}
+                      onChange={(e) => setNewSectionName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: "1rem" }}>
+                    <label className="form-label">يندرج تحت أي قسم رئيسي؟ *</label>
+                    <select
+                      className="form-select"
+                      value={newSectionDept}
+                      onChange={(e) => setNewSectionDept(e.target.value as "vegetables" | "fruits")}
+                    >
+                      <option value="vegetables">قسم الخضار (Vegetables)</option>
+                      <option value="fruits">قسم الفاكهة (Fruits)</option>
+                    </select>
+                  </div>
+
+                  <div
+                    style={{
+                      background: "#f0fdf4",
+                      border: "1px solid #bbf7d0",
+                      borderRadius: "8px",
+                      padding: "0.6rem 0.8rem",
+                      fontSize: "0.78rem",
+                      color: "#166534",
+                      marginBottom: "1rem",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    ✓ إضافة أو حذف أي قسم يتحدث فورياً في قاعدة البيانات ويظهر للعملاء في المتجر.
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      gap: "0.75rem",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setIsNewSectionModalOpen(false)}
+                      className="btn-secondary-action"
+                      disabled={isCreatingSection}
+                    >
+                      إغلاق
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-primary-add"
+                      disabled={isCreatingSection || !newSectionName.trim()}
+                    >
+                      <Plus size={16} />
+                      <span>{isCreatingSection ? "جاري الحفظ..." : "حفظ القسم الجديد"}</span>
+                    </button>
+                  </div>
+                </form>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

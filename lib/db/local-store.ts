@@ -195,6 +195,17 @@ export const localStore = {
     writeLocalDb(state)
     return section
   },
+  deleteSection: (id: string): boolean => {
+    const state = readLocalDb()
+    const initialLen = state.sections.length
+    state.sections = state.sections.filter((s) => s.id !== id)
+    state.products = state.products.filter((p) => p.section_id !== id)
+    if (state.sections.length !== initialLen) {
+      writeLocalDb(state)
+      return true
+    }
+    return false
+  },
   getProducts: (options?: { sectionId?: string; publishedOnly?: boolean }): Product[] => {
     let prods = readLocalDb().products
     if (options?.publishedOnly) {

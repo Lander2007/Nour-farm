@@ -142,6 +142,27 @@ export async function createSection(section: Section): Promise<Section> {
   return data as Section
 }
 
+export async function deleteSection(id: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    assertDatabaseConfigured()
+    return localStore.deleteSection(id)
+  }
+
+  const supabase = getSupabaseServerClient()!
+  // Delete any products belonging to this section first to prevent foreign key errors
+  await supabase.from("products").delete().eq("section_id", id)
+
+  const { error } = await supabase.from("sections").delete().eq("id", id)
+  if (error) {
+    console.error("Supabase deleteSection error:", error)
+    if (process.env.NODE_ENV !== "production") return localStore.deleteSection(id)
+    throw error
+  }
+
+  localStore.deleteSection(id)
+  return true
+}
+
 export async function getProducts(options?: {
   sectionId?: string
   publishedOnly?: boolean

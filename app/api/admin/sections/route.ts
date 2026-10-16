@@ -63,3 +63,38 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const isAuth = await isAuthenticatedAdmin()
+  if (!isAuth) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+  }
+
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get("id")
+
+    if (!id) {
+      return NextResponse.json({ error: "معرّف القسم مطلوب" }, { status: 400 })
+    }
+
+    const { deleteSection } = await import("@/lib/db")
+    await deleteSection(id)
+
+    // Revalidate paths
+    revalidatePath("/")
+    revalidatePath("/vegetables")
+    revalidatePath("/fruits")
+    revalidatePath("/products")
+    revalidatePath("/admin")
+
+    return NextResponse.json({ success: true, message: "تم حذف القسم بنجاح" })
+  } catch (err: any) {
+    console.error("DELETE /api/admin/sections error:", err)
+    return NextResponse.json(
+      { error: err.message || "فشل حذف القسم" },
+      { status: 500 }
+    )
+  }
+}
+
