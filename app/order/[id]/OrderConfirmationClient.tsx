@@ -139,14 +139,20 @@ ${itemsList}
     <div className="space-y-6">
       {/* Top Banner Card */}
       <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm text-center relative overflow-hidden">
-        <div className="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center mx-auto mb-4 text-emerald-700 shadow-inner">
+        <div
+          className="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center mx-auto mb-4 text-emerald-700 shadow-inner"
+          style={{ margin: "0 auto 1rem auto" }}
+        >
           <PackageCheck className="w-9 h-9" />
         </div>
 
         <h1 className="text-2xl md:text-3xl font-extrabold text-stone-900 mb-2">
           تم استلام طلبك بنجاح
         </h1>
-        <p className="text-stone-600 text-sm md:text-base max-width-md mx-auto">
+        <p
+          className="text-stone-600 text-sm md:text-base max-w-md mx-auto"
+          style={{ margin: "0 auto" }}
+        >
           شكراً لتسوقك من نور فارم. جاري تجهيز الخضار والفاكهة الطازجة لتوصيلها إلى عنوانك.
         </p>
 
@@ -178,7 +184,10 @@ ${itemsList}
         </div>
 
         {/* WhatsApp Formal Action Button */}
-        <div className="mt-6 max-w-md mx-auto">
+        <div
+          className="mt-6 max-w-md mx-auto"
+          style={{ margin: "1.5rem auto 0 auto" }}
+        >
           <a
             href={`https://wa.me/${WHATSAPP_PHONE}?text=${generateWhatsAppMessage()}`}
             target="_blank"
@@ -188,7 +197,7 @@ ${itemsList}
             <span>إرسال تأكيد الطلب لمسؤول المبيعات عبر واتساب</span>
             <ExternalLink className="w-4 h-4" />
           </a>
-          <span className="text-xs text-stone-400 mt-2 block">
+          <span className="text-xs text-stone-400 mt-2.5 block leading-relaxed">
             يمكنك إرسال رسالة رسمية لتأكيد استلام الطلب وتتبع موعد وصول الشحنة
           </span>
         </div>

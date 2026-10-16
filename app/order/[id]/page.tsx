@@ -31,10 +31,16 @@ export default async function OrderPage({ params }: OrderPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf6ee] text-[#1a2a1d] font-sans antialiased" dir="rtl">
+    <div
+      className="min-h-screen bg-[#faf6ee] text-[#1a2a1d] font-sans antialiased flex flex-col items-center justify-start w-full"
+      dir="rtl"
+    >
       {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200 py-3.5 px-4 md:px-8">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-stone-200 py-3.5 px-4 md:px-8 flex items-center justify-center">
+        <div
+          className="w-full max-w-4xl flex items-center justify-between"
+          style={{ maxWidth: "896px", margin: "0 auto", width: "100%" }}
+        >
           <Link href="/" className="inline-flex items-center gap-2">
             <BrandMark />
           </Link>
@@ -45,7 +51,10 @@ export default async function OrderPage({ params }: OrderPageProps) {
       </header>
 
       {/* Main Order View */}
-      <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <main
+        className="w-full max-w-4xl px-4 py-8 md:py-12"
+        style={{ maxWidth: "896px", margin: "0 auto", width: "100%" }}
+      >
         <OrderConfirmationClient order={order} />
       </main>
     </div>

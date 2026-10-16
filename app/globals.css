@@ -33,10 +33,12 @@
   --shadow-dish: 0 30px 80px rgba(30, 51, 34, 0.22);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  *, ::before, ::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 html {
