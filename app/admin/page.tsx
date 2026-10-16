@@ -712,27 +712,6 @@ export default function AdminProductsPage() {
                 <span>قسم جديد</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => setIsBulkModalOpen(true)}
-                className="btn-secondary-action"
-                style={{ background: "#e8f5e9", borderColor: "#81c784", color: "#1b5e20", fontWeight: 700 }}
-              >
-                <Upload size={16} />
-                <span>استيراد جماعي بالصور (Bulk)</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isResequencing}
-                onClick={handleResequence}
-                className="btn-secondary-action"
-                style={{ background: "#f8fafc", borderColor: "#cbd5e1", color: "#334155", fontWeight: 600 }}
-                title="إعادة ترقيم جميع المنتجات تصاعدياً 1، 2، 3... بدون أي تكرار"
-              >
-                <Layers size={16} />
-                <span>{isResequencing ? "جاري الترقيم..." : "إعادة ترقيم تسلسلي"}</span>
-              </button>
 
               <button
                 type="button"
