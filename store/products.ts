@@ -1,8 +1,39 @@
 "use client"
 
+import { useEffect } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { products as defaultProducts, type Product } from "@/data/products"
+import type { Product as DbProduct } from "@/lib/db/types"
+
+export function mapDbProductToProduct(db: DbProduct): Product {
+  let unit = "كيلو"
+  if (db.unit_type === "bunch") unit = "حزمة"
+  else if (db.unit_type === "piece") unit = "واحدة"
+  else if (db.unit_type === "box") unit = db.pack_label || "صندوق"
+  else if (db.unit_type === "pack") unit = db.pack_label || "طبق"
+
+  return {
+    id: db.id,
+    slug: db.id,
+    name: db.name_ar,
+    section: (db.section_id === "herbs"
+      ? "الخضرة"
+      : db.section_id === "ready-vegetables"
+      ? "جاهز للطبخ"
+      : db.section_id === "salads"
+      ? "السلطات"
+      : db.section_id === "fresh-fruits" || db.section_id === "cut-fruits"
+      ? "فواكه طازجة"
+      : "خضار طازج") as Product["section"],
+    unit,
+    step: db.step || (db.unit_type === "kg" ? 0.5 : 1),
+    price: db.price || 0,
+    image: db.image_url || "/noor-farm-images/IMG-20261014-WA0114.jpg",
+    tint: "emerald",
+    featured: false,
+  }
+}
 
 type ProductsState = {
   products: Product[]
@@ -14,6 +45,7 @@ type ProductsState = {
   toggleFeatured: (id: string) => void
   resetToDefault: () => void
   setProducts: (products: Product[]) => void
+  fetchFromDb: () => Promise<void>
 }
 
 export const useProductsStore = create<ProductsState>()(
@@ -53,9 +85,22 @@ export const useProductsStore = create<ProductsState>()(
         set(() => ({
           products: newProducts,
         })),
+      fetchFromDb: async () => {
+        try {
+          const res = await fetch("/api/products")
+          if (!res.ok) return
+          const data = await res.json()
+          if (Array.isArray(data.products) && data.products.length > 0) {
+            const mapped = data.products.map(mapDbProductToProduct)
+            set({ products: mapped })
+          }
+        } catch {
+          // ignore network failures, keep cached/default
+        }
+      },
     }),
     {
-      name: "noor-farm-catalog-v1",
+      name: "noor-farm-catalog-v2",
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)
       },
@@ -63,13 +108,18 @@ export const useProductsStore = create<ProductsState>()(
   )
 )
 
-/**
- * Hook to get the active products list safely with fallback to defaultProducts
- * to ensure SSR / initial mount consistency.
- */
+let hasFetchedFromDb = false
+
 export function useActiveProducts(): Product[] {
   const products = useProductsStore((state) => state.products)
-  const isHydrated = useProductsStore((state) => state.isHydrated)
-  // If not hydrated yet on client, return store products (or default)
+  const fetchFromDb = useProductsStore((state) => state.fetchFromDb)
+
+  useEffect(() => {
+    if (!hasFetchedFromDb) {
+      hasFetchedFromDb = true
+      void fetchFromDb()
+    }
+  }, [fetchFromDb])
+
   return products && products.length > 0 ? products : defaultProducts
 }

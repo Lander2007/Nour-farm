@@ -102,35 +102,14 @@ export default function Header({ solid = true }: { solid?: boolean }) {
           <Link href="/" className="nav-item">
             الرئيسية
           </Link>
-          <Link
-            href={`/products?category=${encodeURIComponent("خضار طازج")}`}
-            className="nav-item"
-          >
-            خضار طازج
+          <Link href="/vegetables" className="nav-item">
+            قسم الخضار
           </Link>
-          <Link
-            href={`/products?category=${encodeURIComponent("الخضرة")}`}
-            className="nav-item"
-          >
-            الخضرة
+          <Link href="/fruits" className="nav-item">
+            قسم الفاكهة
           </Link>
-          <Link
-            href={`/products?category=${encodeURIComponent("جاهز للطبخ")}`}
-            className="nav-item"
-          >
-            جاهز للطبخ
-          </Link>
-          <Link
-            href={`/products?category=${encodeURIComponent("السلطات")}`}
-            className="nav-item"
-          >
-            السلطات
-          </Link>
-          <Link
-            href={`/products?category=${encodeURIComponent("فواكه طازجة")}`}
-            className="nav-item"
-          >
-            فواكه طازجة
+          <Link href="/products" className="nav-item">
+            جميع الأصناف
           </Link>
         </nav>
 
@@ -359,34 +338,29 @@ export default function Header({ solid = true }: { solid?: boolean }) {
                 الرئيسية
               </Link>
               <Link
-                href={`/products?category=${encodeURIComponent("خضار طازج")}`}
+                href="/vegetables"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                خضار طازج
+                قسم الخضار
               </Link>
               <Link
-                href={`/products?category=${encodeURIComponent("الخضرة")}`}
+                href="/fruits"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                الخضرة
+                قسم الفاكهة
               </Link>
               <Link
-                href={`/products?category=${encodeURIComponent("جاهز للطبخ")}`}
+                href="/products"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                جاهز للطبخ
+                جميع الأصناف
               </Link>
               <Link
-                href={`/products?category=${encodeURIComponent("السلطات")}`}
+                href="/admin"
                 onClick={() => setMobileMenuOpen(false)}
+                className="text-emerald-700 font-bold"
               >
-                السلطات
-              </Link>
-              <Link
-                href={`/products?category=${encodeURIComponent("فواكه طازجة")}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                فواكه طازجة
+                لوحة الإدارة
               </Link>
             </div>
           </nav>
