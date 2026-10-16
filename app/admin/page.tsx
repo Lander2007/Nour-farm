@@ -1110,13 +1110,22 @@ export default function AdminProductsPage() {
                       <div className="form-group">
                         <label className="form-label">الترتيب</label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           className="form-input"
-                          value={formData.sort ?? 0}
-                          onChange={(e) => setFormData((prev) => ({ ...prev, sort: Number(e.target.value) }))}
+                          placeholder="مثال: 1"
+                          value={formData.sort !== undefined && formData.sort !== null ? formData.sort : ""}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "")
+                            setFormData((prev) => ({
+                              ...prev,
+                              sort: val === "" ? ("" as any) : Number(val),
+                            }))
+                          }}
                         />
                         <span style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.25rem", display: "block" }}>
-                          * يبدأ تلقائياً من بعد آخر رقم مسجل
+                          * يمكنك كتابة رقم الترتيب يدوياً كما تحب
                         </span>
                       </div>
 
