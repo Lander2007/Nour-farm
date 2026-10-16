@@ -59,3 +59,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message || "فشل إنشاء المنتج" }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const isAuth = await isAuthenticatedAdmin()
+  if (!isAuth) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+  }
+
+  try {
+    const { deleteAllProducts } = await import("@/lib/db")
+    await deleteAllProducts()
+
+    // Revalidate all pages
+    revalidatePath("/")
+    revalidatePath("/vegetables")
+    revalidatePath("/fruits")
+    revalidatePath("/products")
+    revalidatePath("/admin")
+
+    return NextResponse.json({ success: true, message: "تم حذف جميع المنتجات بنجاح" })
+  } catch (err: any) {
+    console.error("Delete all products error:", err)
+    return NextResponse.json({ error: err.message || "فشل حذف المنتجات" }, { status: 500 })
+  }
+}
