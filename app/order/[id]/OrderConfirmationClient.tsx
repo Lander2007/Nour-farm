@@ -51,6 +51,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string; 
 
 export default function OrderConfirmationClient({ order }: { order: Order }) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<any>(null)
   const [copied, setCopied] = useState(false)
 
   const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
@@ -135,6 +136,7 @@ ${itemsList}
     let isMounted = true
     const initMap = async () => {
       if (typeof window === "undefined" || !mapContainerRef.current) return
+      if (!order?.location?.lat || !order?.location?.lng) return
 
       // Load Leaflet CSS dynamically if not present
       if (!document.getElementById("leaflet-css")) {
@@ -162,6 +164,18 @@ ${itemsList}
         iconAnchor: [18, 48],
       })
 
+      // Clean up previous map instance if it exists
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+
+      // If container still has Leaflet internal ID or nodes from prior render
+      if ((mapContainerRef.current as any)._leaflet_id != null) {
+        (mapContainerRef.current as any)._leaflet_id = null
+        mapContainerRef.current.innerHTML = ""
+      }
+
       const map = L.map(mapContainerRef.current, {
         center: [order.location.lat, order.location.lng],
         zoom: 15,
@@ -170,6 +184,8 @@ ${itemsList}
         dragging: false,
         scrollWheelZoom: false,
       })
+
+      mapInstanceRef.current = map
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -181,8 +197,12 @@ ${itemsList}
     initMap()
     return () => {
       isMounted = false
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
     }
-  }, [order.location])
+  }, [order.location?.lat, order.location?.lng])
 
   const statusInfo = STATUS_LABELS[order.status] || STATUS_LABELS.new
 
