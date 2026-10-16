@@ -3,7 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Metadata } from "next"
 import Header from "@/components/Header"
-import Footer from "@/components/Footer"
+import SlimFooter from "@/components/SlimFooter"
 import { getSections, getProducts } from "@/lib/db"
 import { ArrowLeft, ChevronLeft, Sparkles, Apple, Clock, Layers } from "lucide-react"
 
@@ -160,7 +160,7 @@ export default async function FruitsDepartmentPage() {
         </div>
       </main>
 
-      <Footer />
+      <SlimFooter />
     </div>
   )
 }

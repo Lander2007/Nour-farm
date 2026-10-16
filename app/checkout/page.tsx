@@ -29,6 +29,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import SlimFooter from "@/components/SlimFooter"
 import {
   ArrowLeft,
   Banknote,
@@ -1118,7 +1119,8 @@ export default function CheckoutPage() {
                 </div>
               </aside>
             </form>
-      </div>
-    </main>
-  )
+        </div>
+        <SlimFooter />
+      </main>
+    )
 }
