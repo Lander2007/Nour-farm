@@ -56,13 +56,13 @@ export async function POST(req: NextRequest) {
   const expectedUsername = rawExpectedUser ? rawExpectedUser.replace(/^["']|["']$/g, "").trim() : null
   const expectedPasswordHash = process.env.ADMIN_PASSWORD_HASH
 
-  const cleanInputUser = username.trim()
+  const cleanInputUser = username.trim().toLowerCase()
 
-  // Constant-time check for username
+  // Constant-time check for username (case-insensitive)
   let usernameMatch = false
   if (expectedUsername) {
     const userBuf = Buffer.from(cleanInputUser)
-    const expBuf = Buffer.from(expectedUsername)
+    const expBuf = Buffer.from(expectedUsername.toLowerCase())
     if (userBuf.length === expBuf.length && crypto.timingSafeEqual(userBuf, expBuf)) {
       usernameMatch = true
     }
