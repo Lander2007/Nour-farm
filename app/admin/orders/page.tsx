@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ShoppingBag,
   Search,
@@ -55,6 +56,7 @@ const STATUS_CONFIG: Record<
 }
 
 export default function AdminOrdersPage() {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -66,6 +68,10 @@ export default function AdminOrdersPage() {
     try {
       setLoading(true)
       const res = await fetch("/api/admin/orders")
+      if (res.status === 401) {
+        router.push("/admin/login")
+        return
+      }
       if (res.ok) {
         const data = await res.json()
         setOrders(data.orders || [])
