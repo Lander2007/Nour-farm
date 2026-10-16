@@ -655,7 +655,7 @@ export default function AdminProductsPage() {
                 style={{ background: "#f0fdf4", borderColor: "#86efac", color: "#166534", fontWeight: 700 }}
               >
                 <Plus size={16} />
-                <span>+ قسم جديد</span>
+                <span>قسم جديد</span>
               </button>
 
               <button
@@ -959,7 +959,7 @@ export default function AdminProductsPage() {
                             }}
                           >
                             <Plus size={13} />
-                            <span>+ إضافة قسم جديد</span>
+                            <span>إضافة قسم جديد</span>
                           </button>
                         </div>
                         <select
