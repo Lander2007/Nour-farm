@@ -78,6 +78,7 @@ export default function AdminProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState<boolean>(false)
   const [isDeletingAll, setIsDeletingAll] = useState<boolean>(false)
+  const [isResequencing, setIsResequencing] = useState<boolean>(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState<boolean>(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState<boolean>(false)
 
@@ -265,6 +266,11 @@ export default function AdminProductsPage() {
   // Open Modal for Add
   const handleOpenAdd = () => {
     setEditingProduct(null)
+    const maxSort =
+      products.length > 0
+        ? Math.max(...products.map((p) => Number(p.sort) || 0), 0)
+        : 0
+
     setFormData({
       name_ar: "",
       section_id: activeSection !== "all" ? activeSection : "fresh-vegetables",
@@ -274,7 +280,7 @@ export default function AdminProductsPage() {
       pack_label: null,
       step: 0.5,
       published: false,
-      sort: products.length + 1,
+      sort: maxSort + 1,
     })
     setIsModalOpen(true)
   }
@@ -414,6 +420,30 @@ export default function AdminProductsPage() {
       alert(err.message || "حدث خطأ أثناء حذف المنتجات")
     } finally {
       setIsDeletingAll(false)
+    }
+  }
+
+  // Resequence all products 1, 2, 3...
+  const handleResequence = async () => {
+    if (!confirm("هل تريد إعادة ترقيم جميع المنتجات تسلسلياً (1، 2، 3...) وفق الأقسام وترتيبها الحالي لتفادي أي تكرار؟")) return
+    setIsResequencing(true)
+    try {
+      const res = await fetch("/api/admin/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resequence: true }),
+      })
+      if (!res.ok) throw new Error("فشل إعادة الترقيم")
+      const data = await res.json()
+      if (data.products) {
+        setProducts(data.products)
+      }
+      showToast("تمت إعادة الترقيم التسلسلي لجميع المنتجات بنجاح")
+      loadData()
+    } catch {
+      alert("حدث خطأ أثناء إعادة الترقيم")
+    } finally {
+      setIsResequencing(false)
     }
   }
 
@@ -690,6 +720,18 @@ export default function AdminProductsPage() {
               >
                 <Upload size={16} />
                 <span>استيراد جماعي بالصور (Bulk)</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isResequencing}
+                onClick={handleResequence}
+                className="btn-secondary-action"
+                style={{ background: "#f8fafc", borderColor: "#cbd5e1", color: "#334155", fontWeight: 600 }}
+                title="إعادة ترقيم جميع المنتجات تصاعدياً 1، 2، 3... بدون أي تكرار"
+              >
+                <Layers size={16} />
+                <span>{isResequencing ? "جاري الترقيم..." : "إعادة ترقيم تسلسلي"}</span>
               </button>
 
               <button
@@ -1066,13 +1108,16 @@ export default function AdminProductsPage() {
 
                     <div className="form-row-2">
                       <div className="form-group">
-                        <label className="form-label">الترتيب في القسم</label>
+                        <label className="form-label">الترتيب</label>
                         <input
                           type="number"
                           className="form-input"
                           value={formData.sort ?? 0}
                           onChange={(e) => setFormData((prev) => ({ ...prev, sort: Number(e.target.value) }))}
                         />
+                        <span style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.25rem", display: "block" }}>
+                          * يبدأ تلقائياً من بعد آخر رقم مسجل
+                        </span>
                       </div>
 
                       <div className="form-group" style={{ display: "flex", alignItems: "flex-end", paddingBottom: "0.6rem" }}>
