@@ -8,6 +8,11 @@ const SESSION_DURATION_SECONDS = 12 * 60 * 60 // 12 hours
 const loginAttempts = new Map<string, { count: number; resetAt: number }>()
 
 export function checkRateLimit(ip: string): { allowed: boolean; remainingMinutes: number } {
+  // In development, do not lock out localhost
+  if (process.env.NODE_ENV !== "production" && (ip === "127.0.0.1" || ip === "::1" || ip === "localhost")) {
+    return { allowed: true, remainingMinutes: 0 }
+  }
+
   const now = Date.now()
   const record = loginAttempts.get(ip)
 

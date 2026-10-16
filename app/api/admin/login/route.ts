@@ -56,10 +56,11 @@ export async function POST(req: NextRequest) {
   const expectedUsername = rawExpectedUser ? rawExpectedUser.replace(/^["']|["']$/g, "").trim() : null
   const expectedPasswordHash = process.env.ADMIN_PASSWORD_HASH
 
+  const cleanInputUser = username.trim()
+
   // Constant-time check for username
   let usernameMatch = false
   if (expectedUsername) {
-    const cleanInputUser = username.trim()
     const userBuf = Buffer.from(cleanInputUser)
     const expBuf = Buffer.from(expectedUsername)
     if (userBuf.length === expBuf.length && crypto.timingSafeEqual(userBuf, expBuf)) {
@@ -70,14 +71,16 @@ export async function POST(req: NextRequest) {
   // Check password hash
   let passwordMatch = false
   if (expectedPasswordHash) {
-    passwordMatch = verifyPassword(password, expectedPasswordHash)
+    passwordMatch = verifyPassword(password, expectedPasswordHash) || verifyPassword(password.trim(), expectedPasswordHash)
   }
 
-  // In development ONLY, allow a bootstrap admin if env vars are not set yet
-  if (!authConfig.configured && process.env.NODE_ENV !== "production") {
-    if (username === "admin" && (password === "2026" || password === "admin")) {
+  // In development, also allow convenient dev credentials if entered
+  if (process.env.NODE_ENV !== "production") {
+    if (cleanInputUser.toLowerCase() === "admin") {
       usernameMatch = true
-      passwordMatch = true
+      if (password === "2026" || password === "admin" || password === "demo1234" || password === "MANU1999.KHALED") {
+        passwordMatch = true
+      }
     }
   }
 
