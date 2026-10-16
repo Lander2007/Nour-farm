@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import type { Order } from "@/lib/db/types"
 
-const WHATSAPP_PHONE = "201102740002"
+const WHATSAPP_PHONE = "201224272991"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 

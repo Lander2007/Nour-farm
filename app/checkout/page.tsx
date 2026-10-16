@@ -71,8 +71,8 @@ const LeafletLocationPicker = dynamic(
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
-const WHATSAPP_DISPLAY = "01102740002"
-const WHATSAPP_INTL = "201102740002"
+const WHATSAPP_DISPLAY = "01224272991"
+const WHATSAPP_INTL = "201224272991"
 
 function WhatsAppIcon({ size = 22, color = "#25D366" }: { size?: number; color?: string }) {
   return (
