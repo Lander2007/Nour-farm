@@ -10,6 +10,7 @@
   --font-display: "Readex Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-accent: "Aref Ruqaa", serif;
   --font-body: "IBM Plex Sans Arabic", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Curated organic color palette */
   --cream: #f7f0e3;
@@ -5112,6 +5113,158 @@ button {
 
   .story-scene-title {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RECEIPT PRINTER (ORDER CONFIRMATION /order/[id])
+   Deep forest green body, mechanical feed animation, warm cream paper
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes printerEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes printerVibrate {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(0.5px, -0.4px);
+  }
+  50% {
+    transform: translate(-0.5px, 0.3px);
+  }
+  75% {
+    transform: translate(0.4px, 0.5px);
+  }
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spinnerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.printer-entering {
+  animation: printerEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.printer-vibrating {
+  animation: printerVibrate 90ms infinite ease-in-out;
+}
+
+.check-pop-icon {
+  animation: checkPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.receipt-spinner {
+  animation: spinnerRotate 0.8s linear infinite;
+}
+
+/* Authentic serrated / zig-zag bottom cut on receipt paper */
+.receipt-zigzag-mask {
+  --tooth-w: 14px;
+  --tooth-h: 7px;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #000 90deg, transparent 0) 50% 100% / var(--tooth-w) var(--tooth-h) repeat-x,
+                linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth-h)) no-repeat;
+  mask: conic-gradient(from -45deg at bottom, #000 90deg, transparent 0) 50% 100% / var(--tooth-w) var(--tooth-h) repeat-x,
+        linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth-h)) no-repeat;
+}
+
+/* Screen and typography resets for receipts */
+.receipt-font-mono {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt-font-accent {
+  font-family: var(--font-accent, serif);
+}
+
+.receipt-font-display {
+  font-family: var(--font-display, sans-serif);
+}
+
+.receipt-font-body {
+  font-family: var(--font-body, sans-serif);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA PRINT STYLES (Prints only the clean receipt paper)
+   ═══════════════════════════════════════════════════════════════ */
+@media print {
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  header,
+  footer,
+  .printer-body,
+  .printer-slot-bar,
+  .order-delivery-card,
+  .order-actions-bar,
+  .order-return-nav,
+  .back-to-top-btn,
+  .scroll-progress-bar {
+    display: none !important;
+  }
+
+  .receipt-printer-wrapper {
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  .receipt-paper-viewport {
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    margin: 0 auto !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .receipt-paper {
+    transform: none !important;
+    box-shadow: none !important;
+    border: 1px solid #e5e5e5 !important;
+    background: #ffffff !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }
 
