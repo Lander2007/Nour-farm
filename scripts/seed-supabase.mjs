@@ -157,7 +157,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 1,
+    sort: 11,
   },
   {
     id: "prod-basil",
@@ -169,7 +169,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 2,
+    sort: 12,
   },
   {
     id: "prod-parsley",
@@ -181,7 +181,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 3,
+    sort: 13,
   },
   {
     id: "prod-coriander",
@@ -193,7 +193,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 4,
+    sort: 14,
   },
   {
     id: "prod-dill",
@@ -205,7 +205,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 5,
+    sort: 15,
   },
   {
     id: "prod-arugula",
@@ -217,7 +217,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 6,
+    sort: 16,
   },
 
   // 3. Ready Vegetables
@@ -231,7 +231,7 @@ const products = [
     pack_label: "طبق 500 جم",
     step: 1,
     published: true,
-    sort: 1,
+    sort: 17,
   },
   {
     id: "prod-saute-mix",
@@ -243,7 +243,7 @@ const products = [
     pack_label: "طبق 500 جم",
     step: 1,
     published: true,
-    sort: 2,
+    sort: 18,
   },
   {
     id: "prod-onion-chopped",
@@ -255,7 +255,7 @@ const products = [
     pack_label: "طبق 400 جم",
     step: 1,
     published: true,
-    sort: 3,
+    sort: 19,
   },
 
   // 4. Salads
@@ -269,7 +269,7 @@ const products = [
     pack_label: "علبة عائلية",
     step: 1,
     published: true,
-    sort: 1,
+    sort: 20,
   },
   {
     id: "prod-coleslaw-pack",
@@ -281,7 +281,7 @@ const products = [
     pack_label: "علبة 350 جم",
     step: 1,
     published: true,
-    sort: 2,
+    sort: 21,
   },
 
   // 5. Fresh Fruits
@@ -295,7 +295,7 @@ const products = [
     pack_label: null,
     step: 0.5,
     published: true,
-    sort: 1,
+    sort: 22,
   },
   {
     id: "prod-peach",
@@ -307,7 +307,7 @@ const products = [
     pack_label: null,
     step: 0.5,
     published: true,
-    sort: 2,
+    sort: 23,
   },
   {
     id: "prod-cantaloupe",
@@ -319,7 +319,7 @@ const products = [
     pack_label: null,
     step: 0.5,
     published: true,
-    sort: 3,
+    sort: 24,
   },
   {
     id: "prod-lemon",
@@ -331,7 +331,7 @@ const products = [
     pack_label: null,
     step: 0.5,
     published: true,
-    sort: 4,
+    sort: 25,
   },
   {
     id: "prod-avocado",
@@ -343,7 +343,7 @@ const products = [
     pack_label: null,
     step: 1,
     published: true,
-    sort: 5,
+    sort: 26,
   },
 
   // 6. Cut Fruits
@@ -357,7 +357,7 @@ const products = [
     pack_label: "كوب كبير",
     step: 1,
     published: true,
-    sort: 1,
+    sort: 27,
   },
   {
     id: "prod-cantaloupe-cubes",
@@ -369,7 +369,7 @@ const products = [
     pack_label: "علبة 500 جم",
     step: 1,
     published: true,
-    sort: 2,
+    sort: 28,
   },
 ]
 

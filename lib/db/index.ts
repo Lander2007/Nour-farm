@@ -259,6 +259,44 @@ export async function deleteAllProducts(): Promise<boolean> {
   return true
 }
 
+export async function resequenceProducts(): Promise<Product[]> {
+  if (!isSupabaseConfigured()) {
+    assertDatabaseConfigured()
+    return localStore.resequenceProducts()
+  }
+
+  const supabase = getSupabaseServerClient()!
+  const { data: allProds, error } = await supabase.from("products").select("*")
+  if (error) throw error
+
+  const sectionOrder: Record<string, number> = {
+    "fresh-vegetables": 1,
+    "herbs": 2,
+    "ready-vegetables": 3,
+    "salads": 4,
+    "fresh-fruits": 5,
+    "cut-fruits": 6,
+  }
+
+  const sorted = [...(allProds || [])].sort((a, b) => {
+    const secA = sectionOrder[a.section_id] ?? 99
+    const secB = sectionOrder[b.section_id] ?? 99
+    if (secA !== secB) return secA - secB
+    return (Number(a.sort) || 0) - (Number(b.sort) || 0)
+  })
+
+  for (let i = 0; i < sorted.length; i++) {
+    const newSort = i + 1
+    if (sorted[i].sort !== newSort) {
+      await supabase.from("products").update({ sort: newSort }).eq("id", sorted[i].id)
+      sorted[i].sort = newSort
+    }
+  }
+
+  localStore.resequenceProducts()
+  return sorted
+}
+
 export async function bulkCreateDraftProducts(
   items: { name_ar: string; image_url: string; section_id: string }[]
 ): Promise<Product[]> {

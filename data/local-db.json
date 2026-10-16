@@ -126,19 +126,6 @@
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
-      "id": "lemon",
-      "section_id": "fresh-fruits",
-      "name_ar": "ليمون بلدي",
-      "image_url": "/lemon.webp",
-      "price": 15,
-      "unit_type": "kg",
-      "pack_label": null,
-      "step": 0.5,
-      "published": false,
-      "sort": 6,
-      "created_at": "2026-10-16T08:07:39.043Z"
-    },
-    {
       "id": "avocado",
       "section_id": "fresh-vegetables",
       "name_ar": "أفوكادو هاس",
@@ -148,46 +135,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 7,
-      "created_at": "2026-10-16T08:07:39.043Z"
-    },
-    {
-      "id": "pomegranate",
-      "section_id": "fresh-fruits",
-      "name_ar": "رمان بلدي",
-      "image_url": "/pomegranate.webp",
-      "price": 28,
-      "unit_type": "piece",
-      "pack_label": null,
-      "step": 1,
-      "published": false,
-      "sort": 8,
-      "created_at": "2026-10-16T08:07:39.043Z"
-    },
-    {
-      "id": "orange",
-      "section_id": "fresh-fruits",
-      "name_ar": "برتقال أبو سرة",
-      "image_url": "/orange.webp",
-      "price": 22,
-      "unit_type": "kg",
-      "pack_label": null,
-      "step": 0.5,
-      "published": false,
-      "sort": 9,
-      "created_at": "2026-10-16T08:07:39.043Z"
-    },
-    {
-      "id": "basil",
-      "section_id": "herbs",
-      "name_ar": "ريحان طازج",
-      "image_url": "/basil.webp",
-      "price": 10,
-      "unit_type": "bunch",
-      "pack_label": null,
-      "step": 1,
-      "published": false,
-      "sort": 10,
+      "sort": 6,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -200,7 +148,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 11,
+      "sort": 7,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -213,7 +161,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 12,
+      "sort": 8,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -226,7 +174,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 13,
+      "sort": 9,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -239,7 +187,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 14,
+      "sort": 10,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -252,7 +200,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 15,
+      "sort": 11,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -265,7 +213,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 16,
+      "sort": 12,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -278,7 +226,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 17,
+      "sort": 13,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -291,7 +239,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 18,
+      "sort": 14,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -304,7 +252,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 19,
+      "sort": 15,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -317,7 +265,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 20,
+      "sort": 16,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -330,7 +278,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 21,
+      "sort": 17,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -343,7 +291,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 22,
+      "sort": 18,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -356,7 +304,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 23,
+      "sort": 19,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -369,7 +317,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 24,
+      "sort": 20,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -382,7 +330,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 25,
+      "sort": 21,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -395,7 +343,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 26,
+      "sort": 22,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -408,7 +356,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 27,
+      "sort": 23,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -421,7 +369,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 28,
+      "sort": 24,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -434,7 +382,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 29,
+      "sort": 25,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -447,7 +395,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 30,
+      "sort": 26,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -460,7 +408,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 31,
+      "sort": 27,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -473,7 +421,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 32,
+      "sort": 28,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -486,7 +434,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 33,
+      "sort": 29,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -499,7 +447,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 34,
+      "sort": 30,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -512,7 +460,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 35,
+      "sort": 31,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -525,7 +473,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 36,
+      "sort": 32,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -538,7 +486,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 37,
+      "sort": 33,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -551,7 +499,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 38,
+      "sort": 34,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -564,7 +512,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 39,
+      "sort": 35,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -577,7 +525,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 40,
+      "sort": 36,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -590,7 +538,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 41,
+      "sort": 37,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -603,7 +551,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 42,
+      "sort": 38,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -616,7 +564,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 43,
+      "sort": 39,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -629,7 +577,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 44,
+      "sort": 40,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -642,7 +590,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 45,
+      "sort": 41,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -655,7 +603,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 46,
+      "sort": 42,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -668,7 +616,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 47,
+      "sort": 43,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -681,7 +629,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 48,
+      "sort": 44,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -694,7 +642,7 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 49,
+      "sort": 45,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -707,7 +655,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 50,
+      "sort": 46,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -720,7 +668,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 51,
+      "sort": 47,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -733,7 +681,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 52,
+      "sort": 48,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -746,7 +694,20 @@
       "pack_label": null,
       "step": 0.5,
       "published": false,
-      "sort": 53,
+      "sort": 49,
+      "created_at": "2026-10-16T08:07:39.043Z"
+    },
+    {
+      "id": "basil",
+      "section_id": "herbs",
+      "name_ar": "ريحان طازج",
+      "image_url": "/basil.webp",
+      "price": 10,
+      "unit_type": "bunch",
+      "pack_label": null,
+      "step": 1,
+      "published": false,
+      "sort": 50,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -759,7 +720,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 54,
+      "sort": 51,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -772,7 +733,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 55,
+      "sort": 52,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -785,7 +746,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 56,
+      "sort": 53,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -798,7 +759,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 57,
+      "sort": 54,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -811,7 +772,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 58,
+      "sort": 55,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -824,7 +785,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 59,
+      "sort": 56,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -837,7 +798,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 60,
+      "sort": 57,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -850,7 +811,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 61,
+      "sort": 58,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -863,7 +824,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 62,
+      "sort": 59,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -876,7 +837,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 63,
+      "sort": 60,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -889,7 +850,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 64,
+      "sort": 61,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -902,7 +863,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 65,
+      "sort": 62,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -915,7 +876,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 66,
+      "sort": 63,
       "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
@@ -928,7 +889,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 67,
+      "sort": 64,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -941,7 +902,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 68,
+      "sort": 65,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -954,7 +915,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 69,
+      "sort": 66,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -967,7 +928,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 70,
+      "sort": 67,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -980,7 +941,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 71,
+      "sort": 68,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -993,7 +954,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 72,
+      "sort": 69,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1006,7 +967,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 73,
+      "sort": 70,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1019,7 +980,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 74,
+      "sort": 71,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1032,7 +993,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 75,
+      "sort": 72,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1045,7 +1006,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 76,
+      "sort": 73,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1058,7 +1019,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 77,
+      "sort": 74,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1071,7 +1032,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 78,
+      "sort": 75,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1084,7 +1045,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 79,
+      "sort": 76,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1097,7 +1058,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 80,
+      "sort": 77,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1110,7 +1071,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 81,
+      "sort": 78,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1123,7 +1084,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 82,
+      "sort": 79,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1136,7 +1097,7 @@
       "pack_label": "طبق ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 83,
+      "sort": 80,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1149,7 +1110,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 84,
+      "sort": 81,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1162,7 +1123,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 85,
+      "sort": 82,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1175,7 +1136,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 86,
+      "sort": 83,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1188,7 +1149,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 87,
+      "sort": 84,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1201,7 +1162,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 88,
+      "sort": 85,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1214,7 +1175,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 89,
+      "sort": 86,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1227,7 +1188,7 @@
       "pack_label": "علبة ٥٠٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 90,
+      "sort": 87,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1240,7 +1201,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 91,
+      "sort": 88,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1253,7 +1214,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 92,
+      "sort": 89,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1266,7 +1227,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 93,
+      "sort": 90,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1279,7 +1240,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 94,
+      "sort": 91,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1292,7 +1253,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 95,
+      "sort": 92,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1305,7 +1266,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 96,
+      "sort": 93,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1318,7 +1279,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 97,
+      "sort": 94,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1331,7 +1292,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 98,
+      "sort": 95,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1344,7 +1305,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 99,
+      "sort": 96,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1357,7 +1318,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 100,
+      "sort": 97,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1370,7 +1331,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 101,
+      "sort": 98,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1383,7 +1344,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 102,
+      "sort": 99,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1396,7 +1357,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 103,
+      "sort": 100,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1409,7 +1370,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 104,
+      "sort": 101,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1422,7 +1383,7 @@
       "pack_label": null,
       "step": 1,
       "published": false,
-      "sort": 105,
+      "sort": 102,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1435,7 +1396,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 106,
+      "sort": 103,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1448,7 +1409,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 107,
+      "sort": 104,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1461,7 +1422,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 108,
+      "sort": 105,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1474,7 +1435,7 @@
       "pack_label": "طبق ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 109,
+      "sort": 106,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1487,7 +1448,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 110,
+      "sort": 107,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1500,7 +1461,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 111,
+      "sort": 108,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1513,7 +1474,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 112,
+      "sort": 109,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1526,7 +1487,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 113,
+      "sort": 110,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1539,7 +1500,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 114,
+      "sort": 111,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1552,7 +1513,7 @@
       "pack_label": "علبة ٢٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 115,
+      "sort": 112,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1565,7 +1526,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 116,
+      "sort": 113,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1578,7 +1539,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 117,
+      "sort": 114,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1591,7 +1552,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 118,
+      "sort": 115,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1604,7 +1565,7 @@
       "pack_label": "طبق ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 119,
+      "sort": 116,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1617,7 +1578,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 120,
+      "sort": 117,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1630,7 +1591,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 121,
+      "sort": 118,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1643,7 +1604,7 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 122,
+      "sort": 119,
       "created_at": "2026-10-16T08:07:39.044Z"
     },
     {
@@ -1656,8 +1617,47 @@
       "pack_label": "علبة ١٥٠ جرام",
       "step": 1,
       "published": false,
-      "sort": 123,
+      "sort": 120,
       "created_at": "2026-10-16T08:07:39.044Z"
+    },
+    {
+      "id": "lemon",
+      "section_id": "fresh-fruits",
+      "name_ar": "ليمون بلدي",
+      "image_url": "/lemon.webp",
+      "price": 15,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": false,
+      "sort": 121,
+      "created_at": "2026-10-16T08:07:39.043Z"
+    },
+    {
+      "id": "pomegranate",
+      "section_id": "fresh-fruits",
+      "name_ar": "رمان بلدي",
+      "image_url": "/pomegranate.webp",
+      "price": 28,
+      "unit_type": "piece",
+      "pack_label": null,
+      "step": 1,
+      "published": false,
+      "sort": 122,
+      "created_at": "2026-10-16T08:07:39.043Z"
+    },
+    {
+      "id": "orange",
+      "section_id": "fresh-fruits",
+      "name_ar": "برتقال أبو سرة",
+      "image_url": "/orange.webp",
+      "price": 22,
+      "unit_type": "kg",
+      "pack_label": null,
+      "step": 0.5,
+      "published": false,
+      "sort": 123,
+      "created_at": "2026-10-16T08:07:39.043Z"
     },
     {
       "id": "local-orange",

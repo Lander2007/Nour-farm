@@ -242,6 +242,28 @@ export const localStore = {
     writeLocalDb(state)
     return true
   },
+  resequenceProducts: (): Product[] => {
+    const state = readLocalDb()
+    const sectionOrder: Record<string, number> = {
+      "fresh-vegetables": 1,
+      "herbs": 2,
+      "ready-vegetables": 3,
+      "salads": 4,
+      "fresh-fruits": 5,
+      "cut-fruits": 6,
+    }
+    state.products.sort((a, b) => {
+      const secA = sectionOrder[a.section_id] ?? 99
+      const secB = sectionOrder[b.section_id] ?? 99
+      if (secA !== secB) return secA - secB
+      return (Number(a.sort) || 0) - (Number(b.sort) || 0)
+    })
+    state.products.forEach((p, idx) => {
+      p.sort = idx + 1
+    })
+    writeLocalDb(state)
+    return state.products
+  },
   bulkCreateDrafts: (items: { name_ar: string; image_url: string; section_id: string }[]): Product[] => {
     const state = readLocalDb()
     const newProds: Product[] = items.map((item, i) => ({

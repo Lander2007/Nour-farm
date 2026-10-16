@@ -83,3 +83,37 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: err.message || "فشل حذف المنتجات" }, { status: 500 })
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  const isAuth = await isAuthenticatedAdmin()
+  if (!isAuth) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+  }
+
+  try {
+    const body = await req.json().catch(() => ({}))
+    const { resequenceProducts, updateProduct } = await import("@/lib/db")
+
+    if (body.resequence) {
+      const updated = await resequenceProducts()
+      revalidatePath("/")
+      revalidatePath("/vegetables")
+      revalidatePath("/fruits")
+      revalidatePath("/products")
+      revalidatePath("/admin")
+      return NextResponse.json({ success: true, products: updated })
+    }
+
+    if (body.id && body.sort !== undefined) {
+      const prod = await updateProduct(body.id, { sort: Number(body.sort) })
+      revalidatePath("/admin")
+      return NextResponse.json({ success: true, product: prod })
+    }
+
+    return NextResponse.json({ error: "إجراء غير معروف" }, { status: 400 })
+  } catch (err: any) {
+    console.error("Patch products error:", err)
+    return NextResponse.json({ error: err.message || "فشل تحديث الترتيب" }, { status: 500 })
+  }
+}
+
