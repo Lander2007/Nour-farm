@@ -5162,17 +5162,11 @@ button {
 }
 
 @keyframes printerVibrate {
-  0%, 100% {
-    transform: translate(0, 0);
+  0% {
+    transform: translateY(-0.5px);
   }
-  25% {
-    transform: translate(0.5px, -0.4px);
-  }
-  50% {
-    transform: translate(-0.5px, 0.3px);
-  }
-  75% {
-    transform: translate(0.4px, 0.5px);
+  100% {
+    transform: translateY(0.5px);
   }
 }
 
@@ -5204,7 +5198,7 @@ button {
 }
 
 .printer-vibrating {
-  animation: printerVibrate 90ms infinite ease-in-out;
+  animation: printerVibrate 90ms ease-in-out infinite alternate;
 }
 
 .check-pop-icon {
@@ -5225,19 +5219,45 @@ button {
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth-h)) no-repeat;
 }
 
-/* Mechanical paper feed animation with clip-path reveal and 2px settle */
+/* ═══════════════════════════════════════════════════════════════
+   MECHANICAL PAPER SLIDE FEED (No clip-path, true slot emergence)
+   The paper window has overflow: hidden and reserves full height.
+   The paper starts at translateY(-100%) tucked behind the printer body.
+   During "printing", it feeds downward: torn zig-zag edge emerges first,
+   subtle sway, micro-pauses at ~35% and ~70%, soft settle at end.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --feed-duration: 3.4s;
+  --feed-ease: cubic-bezier(0.45, 0.05, 0.3, 1);
+}
+
 @keyframes paper-feed {
   0% {
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(-10px);
+    transform: translateY(-100%) rotateZ(0deg);
+  }
+  16% {
+    transform: translateY(-78%) rotateZ(-0.25deg);
+  }
+  33% {
+    transform: translateY(-56%) rotateZ(-0.4deg);
+  }
+  36.5% {
+    transform: translateY(-54.8%) rotateZ(-0.35deg); /* micro-slowdown 1 (~120ms) */
+  }
+  52% {
+    transform: translateY(-36%) rotateZ(0.05deg);
+  }
+  68% {
+    transform: translateY(-18%) rotateZ(0.3deg);
+  }
+  71.5% {
+    transform: translateY(-16.8%) rotateZ(0.25deg); /* micro-slowdown 2 (~120ms) */
   }
   92% {
-    clip-path: inset(0 0 0 0);
-    transform: translateY(2px);
+    transform: translateY(1.5px) rotateZ(-0.05deg); /* soft settle */
   }
   100% {
-    clip-path: inset(0 0 0 0);
-    transform: translateY(0);
+    transform: translateY(0) rotateZ(0deg);
   }
 }
 
@@ -5250,25 +5270,53 @@ button {
   }
 }
 
+/* Base CSS: paper sits entirely above window top, hidden behind printer */
+.receipt-paper {
+  transform: translateY(-100%);
+  transform-origin: 50% 0;
+  will-change: transform;
+}
+
 .paper-idle {
-  clip-path: inset(0 0 100% 0);
-  transform: translateY(-10px);
+  transform: translateY(-100%);
 }
 
 .paper-feeding {
-  animation: paper-feed 2.6s cubic-bezier(0.3, 0.6, 0.2, 1) both;
-  will-change: clip-path, transform;
+  animation: paper-feed var(--feed-duration, 3.4s) var(--feed-ease, cubic-bezier(0.45, 0.05, 0.3, 1)) both;
+  will-change: transform;
 }
 
 .paper-done {
-  clip-path: inset(0 0 0 0);
   transform: translateY(0);
 }
 
 .paper-reduced-motion {
-  clip-path: inset(0 0 0 0);
-  transform: translateY(0);
+  transform: translateY(0) !important;
   animation: paperFade 250ms ease-out both;
+}
+
+.paper-window {
+  position: relative;
+  overflow: hidden;
+  width: 88%;
+  z-index: 10;
+  margin-top: -6px; /* tucked ~6px under slot lip */
+}
+
+.slot-lip-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  z-index: 15;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(14, 20, 12, 0.65) 0%,
+    rgba(14, 20, 12, 0.22) 50%,
+    transparent 100%
+  );
 }
 
 /* Screen and typography resets for receipts */
@@ -5323,6 +5371,7 @@ button {
     padding: 0 !important;
   }
 
+  .paper-window,
   .receipt-paper-viewport {
     overflow: visible !important;
     width: 100% !important;
@@ -5330,6 +5379,10 @@ button {
     margin: 0 auto !important;
     height: auto !important;
     min-height: auto !important;
+  }
+
+  .slot-lip-shadow {
+    display: none !important;
   }
 
   .receipt-paper {

@@ -121,7 +121,7 @@ export default function ReceiptPrinter({
   }, [storageKey])
 
   const [phase, setPhase] = useState<AnimationPhase>(() =>
-    checkShouldSkipOnMount() ? "complete" : "entering"
+    checkShouldSkipOnMount() ? "complete" : "processing"
   )
   const [displayTotal, setDisplayTotal] = useState<number>(() =>
     checkShouldSkipOnMount() ? order.total_price : 0
@@ -181,50 +181,51 @@ export default function ReceiptPrinter({
     let countRafId: number | null = null
     const timers: NodeJS.Timeout[] = []
 
-    // 0 - 0.7s: Entering phase
-    timers.push(
-      setTimeout(() => {
-        if (!isMounted) return
-        setPhase("processing")
+    // 0 - 1.3s: Processing phase (status: "جاري تجهيز طلبك…")
+    // Total counts up smoothly over ~1.1s
+    const startTime = performance.now()
+    const duration = 1100
+    const startVal = 0
+    const endVal = order.total_price
 
-        // 0.7s - 2.0s: Total counting up over ~1.2s
-        const startTime = performance.now()
-        const duration = 1200
-        const startVal = 0
-        const endVal = order.total_price
+    const step = (now: number) => {
+      if (!isMounted) return
+      const elapsed = now - startTime
+      const progress = Math.min(1, elapsed / duration)
+      const easeOut = 1 - Math.pow(1 - progress, 3)
+      const current = Math.round(startVal + easeOut * (endVal - startVal))
+      setDisplayTotal(current)
 
-        const step = (now: number) => {
-          if (!isMounted) return
-          const elapsed = now - startTime
-          const progress = Math.min(1, elapsed / duration)
-          const easeOut = 1 - Math.pow(1 - progress, 3)
-          const current = Math.round(startVal + easeOut * (endVal - startVal))
-          setDisplayTotal(current)
-
-          if (progress < 1) {
-            countRafId = requestAnimationFrame(step)
-          } else {
-            setDisplayTotal(endVal)
-          }
-        }
+      if (progress < 1) {
         countRafId = requestAnimationFrame(step)
-      }, 700)
-    )
+      } else {
+        setDisplayTotal(endVal)
+      }
+    }
+    countRafId = requestAnimationFrame(step)
 
-    // 2.0s: Printing phase begins (paper-feed animation runs for 2.6s)
+    // 1.3s: Printing phase begins (paper-feed animation runs for 3.4s)
     timers.push(
       setTimeout(() => {
         if (!isMounted) return
         setPhase("printing")
 
-        // Fallback timer: duration (2.6s) + 300ms = 2.9s after printing starts
+        // Fallback timer: duration (3.4s) + 300ms = 3.7s after printing starts (at 5.0s total)
         timers.push(
           setTimeout(() => {
             if (!isMounted) return
             handleDone()
-          }, 2900)
+          }, 3700)
         )
-      }, 2000)
+      }, 1300)
+    )
+
+    // Fail-safe timer at 6.5s to ensure the paper never stays hidden under any circumstance
+    timers.push(
+      setTimeout(() => {
+        if (!isMounted) return
+        handleDone()
+      }, 6500)
     )
 
     return () => {
@@ -321,13 +322,33 @@ export default function ReceiptPrinter({
 
   return (
     <div className="receipt-printer-wrapper max-w-[420px] w-[min(92vw,420px)] mx-auto flex flex-col items-center">
+      {/* Accessibility / No-JS fallback */}
+      <noscript>
+        <style>{`
+          .receipt-paper {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+          }
+          .slot-lip-shadow {
+            display: none !important;
+          }
+          .order-actions-bar,
+          .order-delivery-card {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
+          }
+        `}</style>
+      </noscript>
+
       {/* ═══════════════════════════════════════════════════════════════
           1. PRINTER BODY (Deep Forest Green, Metallic Rim, Inner Screen)
+          z-index: 20 so paper slides out from BEHIND the printer body
           ═══════════════════════════════════════════════════════════════ */}
       <div
         className={`printer-body w-full rounded-[26px] z-20 relative text-[#F7F0E3] ${
-          phase === "entering" ? "printer-entering" : ""
-        } ${phase === "printing" && !reducedMotion ? "printer-vibrating" : ""}`}
+          phase === "printing" && !reducedMotion ? "printer-vibrating" : ""
+        }`}
         style={{
           background: "linear-gradient(180deg, #2F3B27 0%, #2F4A33 100%)",
           boxShadow:
@@ -429,18 +450,37 @@ export default function ReceiptPrinter({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          2. RECEIPT PAPER VIEWPORT (In-DOM, Full Height Reserved)
-          Gradual downward reveal via CSS clip-path @keyframes paper-feed
+          2. PAPER WINDOW (z-index: 10, clipped, reserved layout height)
+          Tucked ~6px under slot lip (-mt-1.5)
+          overflow: hidden (clips paper sitting above its top edge)
+          Height equals paper's full height in normal flow (CLS: 0)
           ═══════════════════════════════════════════════════════════════ */}
-      <div className="receipt-paper-viewport w-[88%] relative overflow-visible -mt-2 z-10">
+      <div className="paper-window receipt-paper-viewport w-[88%] relative overflow-hidden -mt-1.5 z-10">
+        {/* Soft shadow/gradient under slot lip so paper looks like it emerges from inside */}
+        <div
+          className="slot-lip-shadow absolute top-0 left-0 right-0 h-4 z-15 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(14, 20, 12, 0.65) 0%, rgba(14, 20, 12, 0.22) 50%, transparent 100%)",
+          }}
+          aria-hidden="true"
+        />
+
+        {/* ═══════════════════════════════════════════════════════════════
+            3. THE PAPER (In-DOM, Full Height Reserved)
+            REST position: translateY(0).
+            INITIAL position: translateY(-100%), sitting entirely above window top.
+            Torn zig-zag bottom edge leads the way out!
+            ═══════════════════════════════════════════════════════════════ */}
         <div
           ref={paperRef}
           onAnimationEnd={handleAnimationEnd}
           className={`receipt-paper w-full bg-[#FBF6EA] text-[#2F3B27] p-5 md:p-6 receipt-zigzag-mask relative ${paperClass}`}
           style={{
             boxShadow:
-              "0 12px 28px -6px rgba(47, 59, 39, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08)",
+              "0 10px 24px -4px rgba(47, 59, 39, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06)",
             paddingBottom: "1.75rem",
+            transformOrigin: "50% 0",
           }}
         >
           {/* Real Brand Logo at top of receipt */}
