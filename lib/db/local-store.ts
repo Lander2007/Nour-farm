@@ -236,6 +236,12 @@ export const localStore = {
     }
     return false
   },
+  deleteAllProducts: (): boolean => {
+    const state = readLocalDb()
+    state.products = []
+    writeLocalDb(state)
+    return true
+  },
   bulkCreateDrafts: (items: { name_ar: string; image_url: string; section_id: string }[]): Product[] => {
     const state = readLocalDb()
     const newProds: Product[] = items.map((item, i) => ({

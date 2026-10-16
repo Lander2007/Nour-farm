@@ -240,6 +240,25 @@ export async function deleteProduct(id: string): Promise<boolean> {
   return true
 }
 
+export async function deleteAllProducts(): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    assertDatabaseConfigured()
+    return localStore.deleteAllProducts()
+  }
+
+  const supabase = getSupabaseServerClient()!
+  // In Supabase PostgreSQL, deleting without where requires an expression like neq id ''
+  const { error } = await supabase.from("products").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+  if (error) {
+    // Fallback if id is text-based
+    const { error: error2 } = await supabase.from("products").delete().gte("created_at", "1970-01-01")
+    if (error2) throw error2
+  }
+  // Also clear local store
+  localStore.deleteAllProducts()
+  return true
+}
+
 export async function bulkCreateDraftProducts(
   items: { name_ar: string; image_url: string; section_id: string }[]
 ): Promise<Product[]> {

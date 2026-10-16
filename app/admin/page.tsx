@@ -76,6 +76,8 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState<boolean>(false)
+  const [isDeletingAll, setIsDeletingAll] = useState<boolean>(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState<boolean>(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState<boolean>(false)
 
@@ -392,6 +394,29 @@ export default function AdminProductsPage() {
     }
   }
 
+  // Delete All Products
+  const handleDeleteAllProducts = async () => {
+    setIsDeletingAll(true)
+    try {
+      const res = await fetch("/api/admin/products", {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "فشل حذف المنتجات")
+      }
+
+      setProducts([])
+      showToast("تم حذف جميع المنتجات وتفريغ قاعدة البيانات بنجاح")
+      setIsDeleteAllModalOpen(false)
+      loadData()
+    } catch (err: any) {
+      alert(err.message || "حدث خطأ أثناء حذف المنتجات")
+    } finally {
+      setIsDeletingAll(false)
+    }
+  }
+
   // Quick Toggle Published
   const handleTogglePublished = async (p: Product) => {
     if (!p.published && (!p.price || p.price <= 0)) {
@@ -665,6 +690,17 @@ export default function AdminProductsPage() {
               >
                 <Upload size={16} />
                 <span>استيراد جماعي بالصور (Bulk)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsDeleteAllModalOpen(true)}
+                className="btn-secondary-action"
+                style={{ background: "#fef2f2", borderColor: "#fca5a5", color: "#b91c1c", fontWeight: 700 }}
+                title="حذف وتفريغ جميع المنتجات من المتجر وقاعدة البيانات"
+              >
+                <Trash2 size={16} />
+                <span>حذف كل الداتا</span>
               </button>
             </div>
           </div>
@@ -1304,6 +1340,77 @@ export default function AdminProductsPage() {
               >
                 <Trash2 size={16} />
                 <span>نعم، احذف الصنف</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+         MODAL: DELETE ALL PRODUCTS CONFIRMATION
+         ───────────────────────────────────────────────────────────── */}
+      {isDeleteAllModalOpen && (
+        <div className="modal-backdrop" onClick={() => !isDeletingAll && setIsDeleteAllModalOpen(false)}>
+          <div className="modal-dialog" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ background: "#fef2f2" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "#dc2626" }}>
+                <AlertTriangle size={24} />
+                <h2 className="modal-title" style={{ color: "#dc2626", fontSize: "1.2rem" }}>
+                  تحذير: حذف جميع المنتجات!
+                </h2>
+              </div>
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={() => setIsDeleteAllModalOpen(false)}
+                className="modal-close-btn"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: "center", padding: "1.75rem" }}>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "#fee2e2",
+                  color: "#dc2626",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 1rem",
+                }}
+              >
+                <Trash2 size={28} />
+              </div>
+              <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#991b1b", marginBottom: "0.5rem" }}>
+                هل أنت متأكد من حذف كافة المنتجات ({products.length} منتج)؟
+              </h3>
+              <p style={{ fontSize: "0.92rem", color: "#6b7280", lineHeight: 1.6 }}>
+                سيتم تفريغ كافة الأصناف نهائياً من قاعدة البيانات (Supabase والتخزين المحلي). هذا الإجراء سيحذف كافة المنتجات ولا يمكن التراجع عنه.
+              </p>
+            </div>
+
+            <div className="modal-footer" style={{ justifyContent: "space-between" }}>
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={() => setIsDeleteAllModalOpen(false)}
+                className="btn-secondary-action"
+              >
+                إلغاء وتراجع
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={handleDeleteAllProducts}
+                className="btn-primary-add"
+                style={{ background: "#dc2626", borderColor: "#b91c1c" }}
+              >
+                <Trash2 size={16} />
+                <span>{isDeletingAll ? "جاري الحذف..." : "تأكيد: احذف كل المنتجات الآن"}</span>
               </button>
             </div>
           </div>
