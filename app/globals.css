@@ -4018,7 +4018,7 @@ button {
 .plate-hero-container {
   position: relative;
   width: 100%;
-  height: 220vh;
+  height: 170vh;
   background: var(--cream);
   overflow-x: clip;
 }
@@ -4038,155 +4038,294 @@ button {
 
 /* ═══════════════════════════════════════════════════════════════
    1. HERO LAYOUT (Desktop >= 1024px: 3-column RTL grid)
+   Right: قسم الخضار | Center: Logo + "اختار قسمك" + Plate | Left: قسم الفاكهة
    ═══════════════════════════════════════════════════════════════ */
 
 .hero-desktop-grid {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(280px, 340px) 1fr minmax(280px, 340px);
   align-items: center;
+  justify-items: center;
   width: 100%;
   max-width: 1440px;
-  padding-inline: clamp(1.5rem, 5vw, 5rem);
+  padding-inline: clamp(1.2rem, 3.5vw, 4rem);
   height: 100%;
   direction: rtl;
   z-index: 10;
   pointer-events: none;
+  gap: clamp(1rem, 2vw, 2.5rem);
 }
 
 .hero-col {
   pointer-events: auto;
+  width: 100%;
 }
 
-/* Right column (First column in RTL) */
-.hero-col-right {
+/* Center column (Large Logo + "اختار قسمك" + 3D Plate) */
+.hero-col-center {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: right;
-  gap: clamp(0.75rem, 1.4vh, 1.25rem);
-  max-width: 28rem;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.hero-center-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: clamp(0.4rem, 1.2vh, 1rem);
+  z-index: 15;
+  pointer-events: auto;
   will-change: transform, opacity;
 }
 
-.hero-eyebrow {
-  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
-  font-weight: 700;
-  color: var(--forest);
-  background: rgba(85, 112, 74, 0.12);
-  padding: 0.35rem 0.85rem;
-  border-radius: 9999px;
-  display: inline-flex;
-  width: fit-content;
-}
-
-.hero-title-main {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(48px, 6vw, 104px);
-  line-height: 1.02;
-  color: var(--ink);
-  letter-spacing: -0.04em;
-  margin: 0;
-}
-
-.hero-supporting-line {
-  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
-  line-height: 1.6;
-  color: var(--ink);
-  opacity: 0.88;
-  margin: 0;
-  max-width: 25rem;
-}
-
-.hero-cta-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin-top: 0.5rem;
-}
-
-.hero-primary-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  background: var(--ink);
-  color: var(--cream);
-  padding: 0.85rem 1.85rem;
-  border-radius: 9999px;
-  font-weight: 700;
-  font-size: 1rem;
-  box-shadow: var(--shadow-card);
-  transition: background 0.25s ease, transform 0.25s ease;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.hero-primary-cta:hover {
-  background: var(--tomato);
-  transform: translateY(-2px);
-}
-
-.hero-text-link {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--forest);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  transition: color 0.2s ease;
-}
-
-.hero-text-link:hover {
-  color: var(--tomato);
-}
-
-/* Center column (The Plate) */
-.hero-col-center {
+.hero-large-logo-wrap {
+  position: relative;
+  width: clamp(68px, 6vw, 92px);
+  height: clamp(68px, 6vw, 92px);
+  margin-bottom: 0.35rem;
+  border-radius: 50%;
+  padding: 3px;
+  background: radial-gradient(circle, rgba(46, 125, 50, 0.18) 0%, rgba(244, 239, 228, 0.6) 70%);
+  border: 1.5px solid rgba(46, 125, 50, 0.25);
+  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.18);
   display: grid;
   place-items: center;
-  position: relative;
 }
 
-/* Left column (Third column in RTL) */
-.hero-col-left {
+.hero-large-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.hero-brand-name {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+  font-weight: 800;
+  color: var(--forest);
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.hero-main-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 3.2vw, 2.75rem);
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin: 0.2rem 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hero-sub-statement {
+  font-size: clamp(0.8rem, 0.95vw, 0.95rem);
+  color: var(--ink);
+  opacity: 0.85;
+  margin: 0.3rem 0 0 0;
+  max-width: 25rem;
+  line-height: 1.5;
+}
+
+/* Department Cards in Hero */
+.hero-dept-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid var(--line);
+  border-radius: 24px;
+  padding: clamp(1rem, 1.4vw, 1.4rem);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  text-align: left;
-  will-change: transform, opacity;
+  gap: 0.75rem;
+  box-shadow: 0 10px 32px rgba(47, 59, 39, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  width: 100%;
+  text-decoration: none;
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
 }
 
-.hero-punchline {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(42px, 5.2vw, 92px);
-  color: var(--ink);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+.hero-dept-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(47, 59, 39, 0.12);
 }
 
-.hero-punchline .accent-word {
-  font-family: var(--font-accent);
+.hero-dept-veg {
+  border-color: rgba(46, 125, 50, 0.25);
+}
+
+.hero-dept-veg:hover {
+  border-color: #2e7d32;
+}
+
+.hero-dept-fruit {
+  border-color: rgba(230, 81, 0, 0.25);
+}
+
+.hero-dept-fruit:hover {
+  border-color: #e65100;
+}
+
+.dept-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dept-badge {
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--tomato);
-  font-size: 1.22em;
-  display: inline-block;
-  transform: rotate(-3deg);
-  margin-inline-start: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.dept-badge-veg {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.dept-badge-fruit {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.dept-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dept-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.5vw, 1.45rem);
+  font-weight: 800;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.dept-card-desc {
+  font-size: 0.78rem;
+  color: var(--sage);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.dept-sections-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.dept-section-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(47, 59, 39, 0.05);
+  color: var(--forest);
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Produce Landing Trays inside department tiles */
+.dept-landing-tray {
+  background: #fbf8f0;
+  border: 1px dashed rgba(47, 59, 39, 0.15);
+  border-radius: 16px;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.45rem;
+  transition: all 0.25s ease;
+}
+
+.dept-landing-tray-veg {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.dept-landing-tray-fruit {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.dept-landing-slot {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(47, 59, 39, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.dept-landing-slot-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--sage);
+  pointer-events: none;
+  line-height: 1.1;
+}
+
+.dept-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #ffffff;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.dept-cta-veg {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.25);
+}
+
+.dept-cta-veg:hover {
+  background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+}
+
+.dept-cta-fruit {
+  background: linear-gradient(135deg, #e65100 0%, #bf360c 100%);
+  box-shadow: 0 4px 14px rgba(230, 81, 0, 0.25);
+}
+
+.dept-cta-fruit:hover {
+  background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
 }
 
 /* Scroll cue at bottom of stage, centered */
 .hero-scroll-cue {
   position: absolute;
-  bottom: clamp(1.2rem, 3.5vh, 2.5rem);
+  bottom: clamp(0.75rem, 2vh, 1.5rem);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   color: var(--sage);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   z-index: 15;
   pointer-events: none;

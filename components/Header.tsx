@@ -8,7 +8,7 @@
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { ArrowLeft, Menu, Search, ShoppingBag, X } from "lucide-react"
 import BrandMark from "./BrandMark"
 import { useCart } from "@/store/cart"
@@ -29,6 +29,9 @@ export default function Header({ solid = true }: { solid?: boolean }) {
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const pathname = usePathname()
+  const isHome = pathname === "/"
+  const showLogo = !isHome || scrolled
 
   useEffect(() => {
     void useCart.persist.rehydrate()
@@ -88,10 +91,12 @@ export default function Header({ solid = true }: { solid?: boolean }) {
   return (
     <>
       <header className={`site-header ${isSolid ? "header-solid" : ""}`}>
-        {}
+        {/* Right side in RTL: Brand Logo Badge (hidden on home when un-scrolled) */}
         <Link
           href="/"
-          className="logo-link"
+          className={`logo-link transition-opacity duration-300 ${
+            showLogo ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
           aria-label="الصفحة الرئيسية - نور فارم"
         >
           <BrandMark />
