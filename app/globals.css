@@ -2087,13 +2087,19 @@ button {
   gap: 0.5rem;
   padding: 0.55rem 1.15rem;
   border-radius: 99rem;
-  border: 1.5px solid var(--ink);
-  background: var(--ink);
-  color: var(--cream);
+  border: 1.5px solid #D9788C;
+  background: #D9788C;
+  color: #ffffff;
   font-weight: 700;
   font-size: 0.88rem;
   cursor: pointer;
   position: relative;
+  transition: all 0.2s ease;
+}
+
+.mobile-filter-btn:hover {
+  background: #ce6a7e;
+  border-color: #ce6a7e;
 }
 
 .mobile-filter-btn svg {
@@ -2244,9 +2250,10 @@ button {
 }
 
 .category-filter-item.active {
-  background: var(--ink);
-  color: var(--cream);
+  background: #D9788C;
+  color: #ffffff;
   font-weight: 700;
+  border-color: #D9788C;
 }
 
 .count-pill {
@@ -2286,9 +2293,9 @@ button {
 }
 
 .price-preset-chip.active {
-  background: var(--sage);
-  color: var(--cream);
-  border-color: var(--sage);
+  background: #D9788C;
+  color: #ffffff;
+  border-color: #D9788C;
 }
 
 .custom-price-inputs {

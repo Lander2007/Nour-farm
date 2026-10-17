@@ -109,7 +109,7 @@ export default function NeutralProductCard({ product }: NeutralProductCardProps)
               <button
                 type="button"
                 onClick={handleAdd}
-                className="flex items-center gap-1.5 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95"
+                className="flex items-center gap-1.5 rounded-xl bg-[#D9788C] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#ce6a7e] active:scale-95"
                 aria-label={`إضافة ${product.name_ar} إلى السلة`}
               >
                 <ShoppingBasket size={15} />
@@ -131,7 +131,7 @@ export default function NeutralProductCard({ product }: NeutralProductCardProps)
                 <button
                   type="button"
                   onClick={handleIncrease}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-700 text-white shadow-xs transition-colors hover:bg-emerald-800 active:scale-90"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#D9788C] text-white shadow-xs transition-colors hover:bg-[#ce6a7e] active:scale-90"
                   aria-label="زيادة الكمية"
                 >
                   <Plus size={13} />

@@ -281,7 +281,7 @@ export default function AllProductsCatalog({
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             className={`inline-flex items-center gap-1.5 px-3.5 py-3 rounded-2xl text-xs font-bold border transition shadow-xs cursor-pointer ${
               showAdvancedFilters || pricePresetIdx !== 0 || minPrice !== "" || maxPrice !== "" || selectedTag !== "الكل"
-                ? "bg-[#2F4A33] text-white border-[#2F4A33]"
+                ? "bg-[#D9788C] text-white border-[#D9788C]"
                 : "bg-white text-stone-700 hover:bg-stone-50 border-stone-200/90"
             }`}
             title="تصفية إضافية بالسعر والسمات"
@@ -312,7 +312,7 @@ export default function AllProductsCatalog({
                 onClick={() => handleDeptChange(chip.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   isActive
-                    ? "bg-[#2F4A33] text-white shadow-sm ring-2 ring-[#2F4A33]/20"
+                    ? "bg-[#D9788C] text-white shadow-sm ring-2 ring-[#D9788C]/20"
                     : "bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/90 shadow-xs"
                 }`}
               >
@@ -345,7 +345,7 @@ export default function AllProductsCatalog({
                 onClick={() => handleSectionChange(sec.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   isActive
-                    ? "bg-[#2F3B27] text-white shadow-xs"
+                    ? "bg-[#D9788C] text-white shadow-xs"
                     : "bg-white/85 text-stone-700 hover:bg-white border border-stone-200/80 shadow-2xs"
                 }`}
               >
@@ -361,7 +361,7 @@ export default function AllProductsCatalog({
         <div className="bg-white/90 backdrop-blur-xs border border-stone-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 animate-fadeIn">
           <div className="flex items-center justify-between border-b border-stone-100 pb-2">
             <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
-              <Filter size={14} className="text-emerald-700" />
+              <Filter size={14} className="text-[#D9788C]" />
               <span>فلاتر متقدمة (السعر والسمات)</span>
             </span>
             {hasActiveFilters && (
@@ -397,7 +397,7 @@ export default function AllProductsCatalog({
                     }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                       isActive
-                        ? "bg-emerald-800 text-white shadow-xs"
+                        ? "bg-[#D9788C] text-white shadow-xs"
                         : "bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/50"
                     }`}
                   >
@@ -419,7 +419,7 @@ export default function AllProductsCatalog({
                   setMinPrice(e.target.value === "" ? "" : Number(e.target.value))
                   setVisibleCount(PAGE_SIZE)
                 }}
-                className="w-20 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-emerald-600 text-center"
+                className="w-20 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-[#D9788C] text-center"
               />
               <span>إلى</span>
               <input
@@ -431,7 +431,7 @@ export default function AllProductsCatalog({
                   setMaxPrice(e.target.value === "" ? "" : Number(e.target.value))
                   setVisibleCount(PAGE_SIZE)
                 }}
-                className="w-20 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-emerald-600 text-center"
+                className="w-20 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-[#D9788C] text-center"
               />
               <span>ج.م</span>
             </div>
@@ -501,7 +501,7 @@ export default function AllProductsCatalog({
             <button
               type="button"
               onClick={resetAllFilters}
-              className="mt-4 px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+              className="mt-4 px-4 py-2 rounded-xl bg-[#D9788C] hover:bg-[#ce6a7e] text-white text-xs font-bold transition shadow-xs cursor-pointer"
             >
               إعادة ضبط جميع الفلاتر
             </button>
