@@ -416,28 +416,52 @@ export async function getOrder(id: string): Promise<Order | null> {
     query = query.eq("order_number", id)
   }
 
-  const { data, error } = await query.single()
+  const { data, error } = await query.maybeSingle()
 
   if (error || !data) {
     return localStore.getOrder(id) || null
   }
 
   const local = localStore.getOrder(data.id) || localStore.getOrder(data.order_number)
+  const addressDetails = (data.address_details || {}) as any
   const subtotal =
     data.subtotal_price ??
+    addressDetails.subtotal_price ??
     local?.subtotal_price ??
     (data.items || []).reduce((s: number, it: any) => s + (Number(it.line_total) || 0), 0)
-  const paymentMethod = data.payment_method || local?.payment_method || data.paymentMethod || local?.paymentMethod || "cod"
-  const paymentStatus = data.payment_status || local?.payment_status || data.paymentStatus || local?.paymentStatus || "pending"
+  const paymentMethod =
+    data.payment_method ||
+    addressDetails.payment_method ||
+    local?.payment_method ||
+    data.paymentMethod ||
+    local?.paymentMethod ||
+    "cod"
+  const paymentStatus =
+    data.payment_status ||
+    addressDetails.payment_status ||
+    local?.payment_status ||
+    data.paymentStatus ||
+    local?.paymentStatus ||
+    "pending"
+
+  const area = data.area || addressDetails.area || local?.area || ""
+  const delivery_fee =
+    data.delivery_fee !== undefined
+      ? data.delivery_fee
+      : addressDetails.delivery_fee !== undefined
+      ? addressDetails.delivery_fee
+      : local?.delivery_fee
+  const delivery_fee_status =
+    data.delivery_fee_status ||
+    addressDetails.delivery_fee_status ||
+    local?.delivery_fee_status ||
+    (delivery_fee === 0 ? "free" : delivery_fee != null ? "set" : "pending")
 
   return {
     ...data,
-    area: data.area || local?.area,
-    delivery_fee: data.delivery_fee !== undefined ? data.delivery_fee : local?.delivery_fee,
-    delivery_fee_status:
-      data.delivery_fee_status ||
-      local?.delivery_fee_status ||
-      (data.delivery_fee === 0 ? "free" : data.delivery_fee != null ? "set" : "pending"),
+    area,
+    delivery_fee,
+    delivery_fee_status,
     payment_method: paymentMethod,
     paymentMethod,
     payment_status: paymentStatus,
@@ -460,31 +484,52 @@ export async function createOrder(
 
   const supabase = getSupabaseServerClient()!
   try {
+    const paymentMethod = order.payment_method || (order as any).paymentMethod || "cod"
+    const paymentStatus = order.payment_status || (order as any).paymentStatus || "pending"
+
+    // Safe payload matching standard Supabase columns, bundling all metadata into address_details
+    const supabasePayload: Record<string, any> = {
+      order_number: order.order_number,
+      customer_name: order.customer_name,
+      customer_phone: order.customer_phone,
+      address_details: {
+        ...(order.address_details || {}),
+        area: order.area,
+        delivery_fee: order.delivery_fee,
+        delivery_fee_status: order.delivery_fee_status,
+        subtotal_price: order.subtotal_price,
+        payment_method: paymentMethod,
+        payment_status: paymentStatus,
+      },
+      location: order.location,
+      items: order.items,
+      total_price: order.total_price,
+      status: order.status || "new",
+    }
+
     const { data, error } = await supabase
       .from("orders")
-      .insert(order)
+      .insert(supabasePayload)
       .select()
       .single()
 
-    if (error) {
-      if (error.code === "42703" || error.message?.includes("column")) {
-        const { area, delivery_fee, delivery_fee_status, subtotal_price, ...legacyOrder } = order as any
-        const { data: legacyData, error: legacyErr } = await supabase
-          .from("orders")
-          .insert(legacyOrder)
-          .select()
-          .single()
-
-        if (!legacyErr && legacyData) {
-          const finalOrder = { ...legacyData, area, delivery_fee, delivery_fee_status, subtotal_price } as Order
-          localStore.saveOrder(finalOrder)
-          return finalOrder
-        }
-      }
+    if (error || !data) {
       console.warn("Supabase createOrder failed, using localOrder:", error)
       return localOrder
     }
-    const finalOrder = data as Order
+
+    const finalOrder = {
+      ...data,
+      area: order.area || data.address_details?.area,
+      delivery_fee: order.delivery_fee ?? data.address_details?.delivery_fee,
+      delivery_fee_status: order.delivery_fee_status || data.address_details?.delivery_fee_status || "pending",
+      subtotal_price: order.subtotal_price ?? data.address_details?.subtotal_price ?? data.total_price,
+      payment_method: paymentMethod,
+      paymentMethod,
+      payment_status: paymentStatus,
+      paymentStatus,
+    } as Order
+
     localStore.saveOrder(finalOrder)
     return finalOrder
   } catch (err) {

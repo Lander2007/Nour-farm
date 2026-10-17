@@ -46,7 +46,7 @@ export default function AdminSettingsPage() {
   )
   const [walletNumber, setWalletNumber] = useState("01283058108")
   const [walletLabel, setWalletLabel] = useState("فودافون كاش والمحافظ الذكية")
-  const [instapayAddress, setInstapayAddress] = useState("01283058108")
+  const [instapayAddress, setInstapayAddress] = useState("01221473559")
 
   const fetchSettings = async () => {
     try {
@@ -69,7 +69,7 @@ export default function AdminSettingsPage() {
           setFreeDeliveryText(s.freeDeliveryText || "التوصيل مجاني في عروض الافتتاح")
           setWalletNumber(s.walletNumber || "01283058108")
           setWalletLabel(s.walletLabel || "فودافون كاش والمحافظ الذكية")
-          setInstapayAddress(s.instapayAddress || "01283058108")
+          setInstapayAddress(s.instapayAddress || "01221473559")
         }
       }
     } catch (err) {
@@ -513,7 +513,7 @@ export default function AdminSettingsPage() {
                   dir="ltr"
                   value={instapayAddress}
                   onChange={(e) => setInstapayAddress(e.target.value)}
-                  placeholder="مثال: username@instapay أو رقم حساب إنستاباي"
+                  placeholder="مثال: 01221473559 أو username@instapay"
                   className="w-full p-3 rounded-xl border border-stone-300 font-mono font-bold text-sm focus:border-emerald-700 focus:outline-none text-right"
                 />
                 <span className="text-[11px] text-stone-500 mt-1 block">

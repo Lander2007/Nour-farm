@@ -50,9 +50,67 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string; 
   },
 }
 
-export default function OrderConfirmationClient({ order }: { order: Order }) {
+export default function OrderConfirmationClient({
+  order: propOrder,
+  initialOrder,
+  orderId,
+}: {
+  order?: Order | null
+  initialOrder?: Order | null
+  orderId?: string
+}) {
+  const [order, setOrder] = useState<Order | null>(() => propOrder || initialOrder || null)
+  const [isLoading, setIsLoading] = useState<boolean>(!propOrder && !initialOrder)
+
+  useEffect(() => {
+    if (order) return
+
+    // 1. Try restoring from sessionStorage or localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const idKey = orderId
+          ? sessionStorage.getItem(`nf_order_${orderId}`) || localStorage.getItem(`nf_order_${orderId}`)
+          : null
+        const lastKey = sessionStorage.getItem("nf_last_order") || localStorage.getItem("nf_last_order")
+        const foundStr = idKey || lastKey
+        if (foundStr) {
+          const parsed = JSON.parse(foundStr)
+          if (parsed && (parsed.id || parsed.order_number)) {
+            setOrder(parsed)
+            setIsLoading(false)
+            return
+          }
+        }
+      } catch (e) {
+        console.warn("Storage check failed:", e)
+      }
+    }
+
+    // 2. Fetch from /api/orders
+    if (orderId) {
+      fetch(`/api/orders?id=${encodeURIComponent(orderId)}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Not found")
+          return res.json()
+        })
+        .then((data) => {
+          if (data && data.order) {
+            setOrder(data.order)
+          }
+        })
+        .catch((err) => {
+          console.warn("Client order fetch error:", err)
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
+    } else {
+      setIsLoading(false)
+    }
+  }, [order, orderId])
+
   const storeSettings = useStoreSettings()
-  const paymentMethod = order.payment_method || order.paymentMethod || "cod"
+  const paymentMethod = order?.payment_method || order?.paymentMethod || "cod"
   const paymentMethodLabel =
     paymentMethod === "wallet"
       ? `محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}`
@@ -65,13 +123,13 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
   const [copied, setCopied] = useState(false)
   const [copiedDetails, setCopiedDetails] = useState(false)
 
-  const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
+  const storageKey = order ? `nf_seen_receipt_${order.id || order.order_number}` : "nf_seen_receipt_none"
 
   // Check if session shortcut applies:
   // Must ONLY apply on reload of an order already viewed in this session,
   // and MUST be ignored in development and when URL has ?replay=1
   const checkShouldSkipOnMount = useCallback((): boolean => {
-    if (typeof window === "undefined") return false
+    if (typeof window === "undefined" || !storageKey) return false
     try {
       const urlParams = new URLSearchParams(window.location.search)
       if (urlParams.get("replay") === "1") return false
@@ -92,6 +150,7 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
 
   // Generate formal WhatsApp message
   const generateWhatsAppMessage = () => {
+    if (!order) return ""
     const itemsList = order.items
       .map((it) => {
         const name = (it as any).name_ar || (it as any).name || "صنف"
@@ -158,6 +217,7 @@ ${totalLabel}: ${number.format(order.total_price)} جنيه مصري${transferDe
   }
 
   const copyOrderNumber = () => {
+    if (!order?.order_number) return
     navigator.clipboard.writeText(order.order_number)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -240,7 +300,49 @@ ${totalLabel}: ${number.format(order.total_price)} جنيه مصري${transferDe
         mapInstanceRef.current = null
       }
     }
-  }, [order.location?.lat, order.location?.lng])
+  }, [order?.location?.lat, order?.location?.lng])
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-[#2F3B27]">
+        <div className="w-12 h-12 border-4 border-[#D9788C] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-base font-semibold">جارٍ استرجاع تفاصيل طلبك...</p>
+      </div>
+    )
+  }
+
+  if (!order) {
+    return (
+      <div className="w-full max-w-lg mx-auto bg-white rounded-3xl p-8 border border-stone-200 text-center shadow-sm my-8">
+        <div className="w-16 h-16 rounded-full bg-[#2F4A33]/10 text-[#2F4A33] flex items-center justify-center mx-auto mb-4">
+          <Check className="w-8 h-8 text-[#2F4A33]" />
+        </div>
+        <h2 className="text-2xl font-black text-[#2F3B27] mb-2">تم تسجيل طلبك بنجاح!</h2>
+        <p className="text-stone-600 text-sm mb-6 leading-relaxed">
+          شكراً لتسوقك من نور فارم. تم استلام بيانات طلبك بنجاح، ويمكنك تأكيد الطلب مباشرة معنا عبر الواتساب.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(
+              `السلام عليكم، لقد أرسلت طلباً من موقع نور فارم ${orderId ? `(رقم: ${orderId})` : ""} وأود تأكيده معكم.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm transition shadow-sm"
+          >
+            <MessageCircle className="w-5 h-5" />
+            <span>تأكيد عبر واتساب</span>
+          </a>
+          <Link
+            href="/"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#D9788C] hover:bg-[#c9687c] text-white font-bold text-sm transition shadow-sm"
+          >
+            العودة للرئيسية
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const statusInfo = STATUS_LABELS[order.status] || STATUS_LABELS.new
 
@@ -327,7 +429,7 @@ ${totalLabel}: ${number.format(order.total_price)} جنيه مصري${transferDe
                   >
                     {paymentMethod === "wallet"
                       ? (storeSettings.walletNumber || "01283058108")
-                      : (storeSettings.instapayAddress || "01283058108")}
+                      : (storeSettings.instapayAddress || "01221473559")}
                   </span>
                   <button
                     type="button"

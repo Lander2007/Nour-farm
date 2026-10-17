@@ -287,6 +287,25 @@ export default function CheckoutPage() {
         throw new Error(data.error || "فشل إرسال الطلب، يرجى مراجعة البيانات والمحاولة مجدداً")
       }
 
+      // Save order in client session storage & local storage so confirmation page NEVER 404s
+      if (typeof window !== "undefined" && data.order) {
+        try {
+          const serialized = JSON.stringify(data.order)
+          sessionStorage.setItem(`nf_order_${data.orderId}`, serialized)
+          if (data.orderNumber) {
+            sessionStorage.setItem(`nf_order_${data.orderNumber}`, serialized)
+          }
+          sessionStorage.setItem("nf_last_order", serialized)
+          localStorage.setItem(`nf_order_${data.orderId}`, serialized)
+          if (data.orderNumber) {
+            localStorage.setItem(`nf_order_${data.orderNumber}`, serialized)
+          }
+          localStorage.setItem("nf_last_order", serialized)
+        } catch (storageErr) {
+          console.warn("Client storage cache error:", storageErr)
+        }
+      }
+
       // Clear Cart Store
       useCart.getState().clear()
 
@@ -957,14 +976,14 @@ export default function CheckoutPage() {
                               fontFamily: "'IBM Plex Mono', monospace",
                             }}
                           >
-                            {storeSettings.instapayAddress || storeSettings.walletNumber || "01283058108"}
+                            {storeSettings.instapayAddress || "01221473559"}
                           </span>
                         </div>
 
                         <button
                           type="button"
                           onClick={() => {
-                            const num = storeSettings.instapayAddress || storeSettings.walletNumber || "01283058108"
+                            const num = storeSettings.instapayAddress || "01221473559"
                             navigator.clipboard.writeText(num)
                             setCopiedInstapay(true)
                             setTimeout(() => setCopiedInstapay(false), 2200)

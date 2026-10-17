@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
   freeDeliveryText: "التوصيل مجاني في عروض الافتتاح",
   walletNumber: "01283058108",
   walletLabel: "فودافون كاش والمحافظ الذكية",
-  instapayAddress: "01283058108",
+  instapayAddress: "01221473559",
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({

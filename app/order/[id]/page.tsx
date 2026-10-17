@@ -1,6 +1,5 @@
 import React from "react"
 import Link from "next/link"
-import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { getOrderById } from "@/lib/db"
 import BrandMark from "@/components/BrandMark"
@@ -16,9 +15,14 @@ interface OrderPageProps {
 
 export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
   const { id } = await params
-  const order = await getOrderById(id)
+  let order = null
+  try {
+    order = await getOrderById(id)
+  } catch (e) {
+    console.error("generateMetadata getOrderById error:", e)
+  }
   if (!order) {
-    return { title: "الطلب غير موجود | نور فارم" }
+    return { title: "تأكيد واستلام الطلب | نور فارم" }
   }
   return {
     title: `تفاصيل الطلب #${order.order_number} | نور فارم`,
@@ -28,10 +32,11 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
 
 export default async function OrderPage({ params }: OrderPageProps) {
   const { id } = await params
-  const order = await getOrderById(id)
-
-  if (!order) {
-    notFound()
+  let order = null
+  try {
+    order = await getOrderById(id)
+  } catch (err) {
+    console.error("OrderPage getOrderById error:", err)
   }
 
   return (
@@ -59,7 +64,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
         className="w-full max-w-4xl px-4 py-8 md:py-12 flex-1"
         style={{ maxWidth: "896px", margin: "0 auto", width: "100%" }}
       >
-        <OrderConfirmationClient order={order} />
+        <OrderConfirmationClient initialOrder={order} orderId={id} />
       </main>
 
       <SlimFooter />
