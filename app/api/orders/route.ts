@@ -69,13 +69,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 6. Validate Address Details
-    if (!address_details || !address_details.building || !address_details.apartment) {
-      return NextResponse.json(
-        { error: "برجاء كتابة رقم أو اسم العمارة ورقم الشقة" },
-        { status: 400 }
-      )
-    }
+    // 6. Address details are optional (building, apartment, landmark, notes)
 
     // 7. Validate Items
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -156,12 +150,12 @@ export async function POST(req: NextRequest) {
       payment_status,
       paymentStatus: payment_status,
       address_details: {
-        street: address_details.street || "",
-        building: String(address_details.building).trim(),
-        floor: address_details.floor ? String(address_details.floor).trim() : "",
-        apartment: String(address_details.apartment).trim(),
-        landmark: address_details.landmark || "",
-        notes: address_details.notes || "",
+        street: (address_details?.street || "").toString().trim(),
+        building: (address_details?.building || "").toString().trim(),
+        floor: (address_details?.floor || "").toString().trim(),
+        apartment: (address_details?.apartment || "").toString().trim(),
+        landmark: (address_details?.landmark || "").toString().trim(),
+        notes: (address_details?.notes || "").toString().trim(),
       },
       location: {
         lat: Number(location.lat.toFixed(6)),

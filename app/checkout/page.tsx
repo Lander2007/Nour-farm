@@ -196,12 +196,6 @@ export default function CheckoutPage() {
     if (!locationData || typeof locationData.lat !== "number" || typeof locationData.lng !== "number") {
       errs.location = "تحديد موقع التوصيل على الخريطة إلزامي لإتمام الطلب"
     }
-    if (!buildingDetails.building.trim()) {
-      errs.building = "يرجى كتابة رقم المبنى أو العمارة"
-    }
-    if (!buildingDetails.apartment.trim()) {
-      errs.apartment = "يرجى كتابة رقم الشقة"
-    }
 
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -225,7 +219,7 @@ export default function CheckoutPage() {
 
     // 2. Validate Contact and Address Details
     if (!validateForm()) {
-      setSubmitError("⚠️ يرجى استكمال بيانات المستلم والعنوان بالأسفل لإتمام الطلب (الاسم، رقم الموبايل، ورقم العمارة والشقة)")
+      setSubmitError("⚠️ يرجى استكمال بيانات المستلم والمنطقة بالأسفل لإتمام الطلب (الاسم، ورقم الموبايل، ومنطقة التوصيل)")
       // Wait for React state to update error labels, then scroll smoothly to the first field that needs attention
       setTimeout(() => {
         const firstErrorEl = document.querySelector(".checkout-field-error")
@@ -517,7 +511,7 @@ export default function CheckoutPage() {
                       <div>
                         <div className="doorstep-badge-tag">خدمة التوصيل حتى باب الشقة</div>
                         <p style={{ margin: 0, fontWeight: 600, color: "var(--forest)" }}>
-                          يرجى تسجيل منطقة التوصيل، رقم العمارة ورقم الشقة بدقة ليتمكن المندوب من الصعود حتى باب شقتك مباشرة.
+                          يرجى اختيار منطقة التوصيل، ويمكنك كتابة رقم العمارة والشقة لتسهيل وصول المندوب لباب بيتك.
                         </p>
                       </div>
                     </div>
@@ -566,7 +560,7 @@ export default function CheckoutPage() {
                       <div className="checkout-form-field">
                         <label>
                           رقم العمارة / المبنى{" "}
-                          <span style={{ color: "var(--tomato)" }}>*</span>
+                          <span className="text-xs font-normal text-stone-400 mr-1">(اختياري)</span>
                         </label>
                         <input
                           type="text"
@@ -576,23 +570,15 @@ export default function CheckoutPage() {
                               ...buildingDetails,
                               building: e.target.value,
                             })
-                            if (errors.building) {
-                              setErrors((prev) => ({ ...prev, building: "" }))
-                            }
                           }}
                           placeholder="مثال: عمارة ١٥..."
                         />
-                        {errors.building && (
-                          <span className="checkout-field-error">
-                            {errors.building}
-                          </span>
-                        )}
                       </div>
 
                       <div className="checkout-form-field">
                         <label>
                           رقم الشقة{" "}
-                          <span style={{ color: "var(--tomato)" }}>*</span>
+                          <span className="text-xs font-normal text-stone-400 mr-1">(اختياري)</span>
                         </label>
                         <input
                           type="text"
@@ -602,17 +588,9 @@ export default function CheckoutPage() {
                               ...buildingDetails,
                               apartment: e.target.value,
                             })
-                            if (errors.apartment) {
-                              setErrors((prev) => ({ ...prev, apartment: "" }))
-                            }
                           }}
                           placeholder="مثال: شقة ٤..."
                         />
-                        {errors.apartment && (
-                          <span className="checkout-field-error">
-                            {errors.apartment}
-                          </span>
-                        )}
                       </div>
 
                       <div className="checkout-form-field">
