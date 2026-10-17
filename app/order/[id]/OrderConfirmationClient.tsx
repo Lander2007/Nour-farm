@@ -121,6 +121,11 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
         ? `${number.format(order.delivery_fee)} جنيه مصري`
         : "بيتحدد حسب المسافة"
 
+    const totalLabel =
+      order.delivery_fee_status === "set" || order.delivery_fee_status === "free"
+        ? "الإجمالي النهائي"
+        : "الإجمالي (بدون التوصيل)"
+
     const transferDetailsLine =
       paymentMethod === "wallet"
         ? `\nطريقة الدفع: محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}${order.delivery_fee_status === "set" || order.delivery_fee_status === "free" ? `\nرقم المحفظة: ${storeSettings.walletNumber || ""}` : ""}`
