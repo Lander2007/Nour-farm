@@ -71,6 +71,18 @@ export async function PATCH(req: NextRequest) {
       updates.freeDeliveryText = String(freeDeliveryText).trim()
     }
 
+    if (body.walletNumber !== undefined) {
+      updates.walletNumber = String(body.walletNumber).trim()
+    }
+
+    if (body.walletLabel !== undefined) {
+      updates.walletLabel = String(body.walletLabel).trim()
+    }
+
+    if (body.instapayAddress !== undefined) {
+      updates.instapayAddress = String(body.instapayAddress).trim()
+    }
+
     const updated = await updateSettings(updates)
     return NextResponse.json({ settings: updated })
   } catch (err: any) {

@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Check, Home } from "lucide-react"
 import type { Order } from "@/lib/db/types"
+import { useStoreSettings } from "@/store/settings"
 
 interface ReceiptPrinterProps {
   order: Order
@@ -101,6 +102,15 @@ export default function ReceiptPrinter({
   order,
   onAnimationComplete,
 }: ReceiptPrinterProps) {
+  const storeSettings = useStoreSettings()
+  const paymentMethod = order.payment_method || order.paymentMethod || "cod"
+  const paymentMethodLabel =
+    paymentMethod === "wallet"
+      ? `محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}`
+      : paymentMethod === "instapay"
+      ? "إنستاباي (InstaPay)"
+      : "الدفع عند الاستلام"
+
   const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
 
   // Check if session shortcut applies:
@@ -641,12 +651,48 @@ export default function ReceiptPrinter({
             )}
 
             <div className="flex items-center justify-between pt-1">
+              <span className="text-[#2F3B27]/60">طريقة الدفع:</span>
+              <span className="font-bold text-[#2F3B27]">
+                {paymentMethodLabel}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-0.5">
               <span className="text-[#2F3B27]/60">حالة الإحداثيات:</span>
               <span className="text-[#15803D] font-bold inline-flex items-center gap-1">
                 <span>تم حفظ الموقع بنجاح</span>
                 <span>✓</span>
               </span>
             </div>
+
+            {paymentMethod !== "cod" && (
+              <div className="mt-2 pt-2 border-t border-[#2F3B27]/10">
+                {order.delivery_fee_status === "pending" || order.delivery_fee_status == null ? (
+                  <div className="p-2.5 rounded-lg bg-amber-50/90 border border-amber-200/80 text-center text-[11px] text-[#2F3B27] font-bold leading-relaxed">
+                    هنبعتلك الإجمالي النهائي وبيانات التحويل على واتساب
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-lg bg-[#EAE2D0]/90 border border-[#2F3B27]/20 text-center text-[11px] text-[#2F3B27] space-y-1">
+                    <div className="font-extrabold text-[#2F3B27]">
+                      {paymentMethod === "wallet"
+                        ? `بيانات التحويل للمحفظة${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}:`
+                        : "بيانات التحويل لـ إنستاباي:"}
+                    </div>
+                    <div
+                      className="receipt-font-mono font-bold text-xs bg-white/80 py-1 px-2 rounded border border-[#2F3B27]/15 inline-block text-[#2F3B27]"
+                      dir="ltr"
+                    >
+                      {paymentMethod === "wallet"
+                        ? (storeSettings.walletNumber || "رقم المحفظة قيد التحديث")
+                        : (storeSettings.instapayAddress || "عنوان إنستاباي قيد التحديث")}
+                    </div>
+                    <div className="text-[10px] text-[#2F3B27]/80 font-bold block pt-0.5">
+                      بعد التحويل ابعت صورة التحويل على واتساب
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Dashed Separator */}

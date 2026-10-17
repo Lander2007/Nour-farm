@@ -23,7 +23,8 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react"
-import type { Order, OrderStatus, DeliveryFeeStatus } from "@/lib/db/types"
+import type { Order, OrderStatus, DeliveryFeeStatus, PaymentStatus } from "@/lib/db/types"
+import { useStoreSettings } from "@/store/settings"
 import "../admin.css"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
@@ -60,6 +61,7 @@ const STATUS_CONFIG: Record<
 
 export default function AdminOrdersPage() {
   const router = useRouter()
+  const storeSettings = useStoreSettings()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -149,6 +151,40 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const handlePaymentStatusToggle = async (
+    orderId: string,
+    newStatus: PaymentStatus
+  ) => {
+    try {
+      setUpdatingId(orderId)
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, paymentStatus: newStatus }),
+      })
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId
+              ? { ...o, payment_status: newStatus, paymentStatus: newStatus }
+              : o
+          )
+        )
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder((prev) =>
+            prev
+              ? { ...prev, payment_status: newStatus, paymentStatus: newStatus }
+              : null
+          )
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update payment status:", err)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
   const convertToWaPhone = (phone: string): string => {
     let clean = (phone || "").replace(/\D/g, "")
     if (clean.startsWith("20")) return clean
@@ -169,12 +205,22 @@ export default function AdminOrdersPage() {
         ? `${number.format(order.delivery_fee)} ج.م`
         : "بيتحدد حسب المسافة"
 
+    const payMethod = order.payment_method || order.paymentMethod || "cod"
+    let payDetails = ""
+    if (payMethod === "wallet") {
+      payDetails = `\n- طريقة الدفع: محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}\n- رقم التحويل: ${storeSettings.walletNumber || ""}\n(برجاء تحويل الإجمالي وإرسال صورة التحويل هنا)`
+    } else if (payMethod === "instapay") {
+      payDetails = `\n- طريقة الدفع: إنستاباي (InstaPay)\n- عنوان إنستاباي: ${storeSettings.instapayAddress || ""}\n(برجاء تحويل الإجمالي وإرسال صورة التحويل هنا)`
+    } else {
+      payDetails = "\n- طريقة الدفع: الدفع عند الاستلام (نقدًا)"
+    }
+
     const message = `مرحباً ${order.customer_name}،
 بخصوص طلبك رقم #${order.order_number} من نور فارم:
 - منطقة التوصيل: ${order.area || "المحددة"}
 - إجمالي المنتجات: ${number.format(subtotal)} ج.م
 - رسوم التوصيل: ${feeText}
-- الإجمالي: ${number.format(order.total_price)} ج.م
+- الإجمالي: ${number.format(order.total_price)} ج.م${payDetails}
 
 طلبك قيد المتابعة والتجهيز، شكراً لتسوقك معنا!`
 
@@ -361,6 +407,7 @@ export default function AdminOrdersPage() {
                   <th>تاريخ الطلب</th>
                   <th>بيانات العميل</th>
                   <th>المنطقة والعنوان</th>
+                  <th>طريقة الدفع</th>
                   <th>رسوم التوصيل</th>
                   <th>الإجمالي</th>
                   <th>حالة الطلب</th>
@@ -441,6 +488,46 @@ export default function AdminOrdersPage() {
                             <span>الموقع على الخريطة</span>
                             <ExternalLink size={10} />
                           </a>
+                        </div>
+                      </td>
+
+                      {/* Payment Method & Status */}
+                      <td>
+                        <div className="flex flex-col gap-1.5 min-w-[125px]">
+                          <span className="text-xs font-bold text-stone-800">
+                            {order.payment_method === "wallet"
+                              ? "محفظة إلكترونية"
+                              : order.payment_method === "instapay"
+                              ? "إنستاباي"
+                              : "عند الاستلام"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handlePaymentStatusToggle(
+                                order.id,
+                                (order.payment_status || order.paymentStatus) === "received"
+                                  ? "pending"
+                                  : "received"
+                              )
+                            }
+                            disabled={updatingId === order.id}
+                            className={`px-2 py-1 text-[10px] font-bold rounded-lg transition cursor-pointer border flex items-center justify-center gap-1 ${
+                              (order.payment_status || order.paymentStatus) === "received"
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                                : "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                            }`}
+                            title="تغيير حالة استلام الدفع"
+                          >
+                            {(order.payment_status || order.paymentStatus) === "received" ? (
+                              <>
+                                <span>✓</span>
+                                <span>تم استلام الدفع</span>
+                              </>
+                            ) : (
+                              <span>في انتظار الدفع</span>
+                            )}
+                          </button>
                         </div>
                       </td>
 
@@ -793,6 +880,46 @@ export default function AdminOrdersPage() {
                     {number.format(selectedOrder.total_price)} ج.م
                   </span>
                 </div>
+              </div>
+
+              {/* Payment Details in Modal */}
+              <div className="p-3 bg-stone-50 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-stone-500 font-bold block mb-0.5">طريقة الدفع:</span>
+                  <span className="text-sm font-bold text-stone-900">
+                    {selectedOrder.payment_method === "wallet"
+                      ? `محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}`
+                      : selectedOrder.payment_method === "instapay"
+                      ? "إنستاباي (InstaPay)"
+                      : "الدفع عند الاستلام (نقدًا)"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePaymentStatusToggle(
+                      selectedOrder.id,
+                      (selectedOrder.payment_status || selectedOrder.paymentStatus) === "received"
+                        ? "pending"
+                        : "received"
+                    )
+                  }
+                  disabled={updatingId === selectedOrder.id}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer border flex items-center gap-1.5 ${
+                    (selectedOrder.payment_status || selectedOrder.paymentStatus) === "received"
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                      : "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                  }`}
+                >
+                  {(selectedOrder.payment_status || selectedOrder.paymentStatus) === "received" ? (
+                    <>
+                      <span>✓</span>
+                      <span>تم استلام الدفع</span>
+                    </>
+                  ) : (
+                    <span>تأكيد استلام الدفع</span>
+                  )}
+                </button>
               </div>
 
               {/* Status Selector */}

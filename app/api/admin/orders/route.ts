@@ -54,6 +54,16 @@ export async function PATCH(req: NextRequest) {
       updatedOrder = await updateOrderDeliveryFee(id, feeNum, feeStatus)
     }
 
+    // If payment status is being updated
+    const rawPayStatus = body.paymentStatus || body.payment_status
+    if (rawPayStatus !== undefined) {
+      if (rawPayStatus !== "pending" && rawPayStatus !== "received") {
+        return NextResponse.json({ error: "حالة الدفع غير صحيحة" }, { status: 400 })
+      }
+      const { updateOrderPaymentStatus } = await import("@/lib/db")
+      updatedOrder = await updateOrderPaymentStatus(id, rawPayStatus as any)
+    }
+
     // If order status is being updated
     if (status) {
       updatedOrder = await updateOrderStatus(id, status as OrderStatus)

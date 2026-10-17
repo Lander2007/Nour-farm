@@ -191,5 +191,307 @@
       "created_at": "2026-10-16T15:54:04.610Z"
     }
   ],
-  "orders": []
+  "orders": [
+    {
+      "order_number": "NF-9339",
+      "customer_name": "كريم عبد العزيز",
+      "customer_phone": "01511223344",
+      "area": "أكتوبر – الحي المتميز",
+      "delivery_fee": null,
+      "delivery_fee_status": "pending",
+      "subtotal_price": 36,
+      "total_price": 36,
+      "address_details": {
+        "floor": "4",
+        "notes": "",
+        "street": "",
+        "building": "12",
+        "landmark": "",
+        "apartment": "8"
+      },
+      "location": {
+        "lat": 29.9812,
+        "lng": 30.9501,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-carrot",
+          "qty": 2,
+          "name": "جزر سكري",
+          "unit": "كجم",
+          "line_total": 36,
+          "unit_price": 18
+        }
+      ],
+      "status": "new",
+      "id": "50e3f8e7-c344-467e-a934-6360ad420562",
+      "created_at": "2026-10-16T23:10:27.55361+00:00"
+    },
+    {
+      "order_number": "NF-3644",
+      "customer_name": "سارة إبراهيم",
+      "customer_phone": "01123456789",
+      "area": "أكتوبر – غرب سوميد",
+      "delivery_fee": 0,
+      "delivery_fee_status": "free",
+      "subtotal_price": 105,
+      "total_price": 105,
+      "address_details": {
+        "floor": "1",
+        "notes": "",
+        "street": "",
+        "building": "8",
+        "landmark": "أمام حديقة سوميد",
+        "apartment": "2"
+      },
+      "location": {
+        "lat": 29.9654,
+        "lng": 30.9231,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-orange",
+          "qty": 3,
+          "name": "برتقال بلدي عصير",
+          "unit": "كجم",
+          "line_total": 105,
+          "unit_price": 35
+        }
+      ],
+      "status": "new",
+      "id": "12157da4-c692-4ed2-83df-dcd16e044567",
+      "created_at": "2026-10-16T23:10:27.135794+00:00"
+    },
+    {
+      "order_number": "NF-4894",
+      "customer_name": "محمد الشناوي",
+      "customer_phone": "01098765432",
+      "area": "أكتوبر – الحي المتميز",
+      "delivery_fee": 40,
+      "delivery_fee_status": "set",
+      "subtotal_price": 80,
+      "total_price": 120,
+      "address_details": {
+        "floor": "3",
+        "notes": "يرجى الاتصال قبل الوصول",
+        "street": "",
+        "building": "24",
+        "landmark": "بجوار مدرسة الرؤية",
+        "apartment": "6"
+      },
+      "location": {
+        "lat": 29.9722,
+        "lng": 30.9411,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-tomato",
+          "qty": 2,
+          "name": "طماطم طازج",
+          "unit": "كجم",
+          "line_total": 50,
+          "unit_price": 25
+        },
+        {
+          "id": "fresh-cucumber",
+          "qty": 1.5,
+          "name": "خيار بلدي",
+          "unit": "كجم",
+          "line_total": 30,
+          "unit_price": 20
+        }
+      ],
+      "status": "new",
+      "id": "76528418-9ef6-48be-875e-71a37e9298a7",
+      "created_at": "2026-10-16T23:10:26.192765+00:00"
+    },
+    {
+      "order_number": "NF-2861",
+      "customer_name": "كريم عبد العزيز",
+      "customer_phone": "01511223344",
+      "area": "أكتوبر – الحي المتميز",
+      "delivery_fee": null,
+      "delivery_fee_status": "pending",
+      "subtotal_price": 36,
+      "total_price": 36,
+      "address_details": {
+        "street": "",
+        "building": "12",
+        "floor": "4",
+        "apartment": "8",
+        "landmark": "",
+        "notes": ""
+      },
+      "location": {
+        "lat": 29.9812,
+        "lng": 30.9501,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-carrot",
+          "name": "جزر سكري",
+          "unit": "كجم",
+          "qty": 2,
+          "unit_price": 18,
+          "line_total": 36
+        }
+      ],
+      "status": "new",
+      "id": "ord-1792191944312-qfwd",
+      "created_at": "2026-10-16T23:05:44.312Z"
+    },
+    {
+      "order_number": "NF-2947",
+      "customer_name": "سارة إبراهيم",
+      "customer_phone": "01123456789",
+      "area": "أكتوبر – غرب سوميد",
+      "delivery_fee": 0,
+      "delivery_fee_status": "free",
+      "subtotal_price": 105,
+      "total_price": 105,
+      "address_details": {
+        "street": "",
+        "building": "8",
+        "floor": "1",
+        "apartment": "2",
+        "landmark": "أمام حديقة سوميد",
+        "notes": ""
+      },
+      "location": {
+        "lat": 29.9654,
+        "lng": 30.9231,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-orange",
+          "name": "برتقال بلدي عصير",
+          "unit": "كجم",
+          "qty": 3,
+          "unit_price": 35,
+          "line_total": 105
+        }
+      ],
+      "status": "new",
+      "id": "ord-1792191943864-j2a6",
+      "created_at": "2026-10-16T23:05:43.864Z"
+    },
+    {
+      "order_number": "NF-1179",
+      "customer_name": "محمد الشناوي",
+      "customer_phone": "01098765432",
+      "area": "أكتوبر – الحي المتميز",
+      "delivery_fee": null,
+      "delivery_fee_status": "pending",
+      "subtotal_price": 80,
+      "total_price": 80,
+      "address_details": {
+        "street": "",
+        "building": "24",
+        "floor": "3",
+        "apartment": "6",
+        "landmark": "بجوار مدرسة الرؤية",
+        "notes": "يرجى الاتصال قبل الوصول"
+      },
+      "location": {
+        "lat": 29.9722,
+        "lng": 30.9411,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-tomato",
+          "name": "طماطم طازج",
+          "unit": "كجم",
+          "qty": 2,
+          "unit_price": 25,
+          "line_total": 50
+        },
+        {
+          "id": "fresh-cucumber",
+          "name": "خيار بلدي",
+          "unit": "كجم",
+          "qty": 1.5,
+          "unit_price": 20,
+          "line_total": 30
+        }
+      ],
+      "status": "new",
+      "id": "ord-1792191943011-4h31",
+      "created_at": "2026-10-16T23:05:43.011Z"
+    },
+    {
+      "order_number": "NF-8737",
+      "customer_name": "محمد الشناوي",
+      "customer_phone": "01098765432",
+      "area": "أكتوبر – الحي المتميز",
+      "delivery_fee": null,
+      "delivery_fee_status": "pending",
+      "subtotal_price": 80,
+      "total_price": 80,
+      "address_details": {
+        "street": "",
+        "building": "24",
+        "floor": "3",
+        "apartment": "6",
+        "landmark": "بجوار مدرسة الرؤية",
+        "notes": "يرجى الاتصال قبل الوصول"
+      },
+      "location": {
+        "lat": 29.9722,
+        "lng": 30.9411,
+        "source": "pin",
+        "address_text": ""
+      },
+      "items": [
+        {
+          "id": "fresh-tomato",
+          "name": "طماطم طازج",
+          "unit": "كجم",
+          "qty": 2,
+          "unit_price": 25,
+          "line_total": 50
+        },
+        {
+          "id": "fresh-cucumber",
+          "name": "خيار بلدي",
+          "unit": "كجم",
+          "qty": 1.5,
+          "unit_price": 20,
+          "line_total": 30
+        }
+      ],
+      "status": "new",
+      "id": "ord-1792191784727-4vfz",
+      "created_at": "2026-10-16T23:03:04.727Z"
+    }
+  ],
+  "settings": {
+    "storeAddress": "أكتوبر – الحي المتميز – السياحية الأولى",
+    "serviceAreas": [
+      {
+        "id": "area-1",
+        "name": "أكتوبر – الحي المتميز",
+        "enabled": true
+      },
+      {
+        "id": "area-2",
+        "name": "أكتوبر – غرب سوميد",
+        "enabled": true
+      }
+    ],
+    "whatsappNumber": "01224272991",
+    "freeDeliveryActive": false,
+    "freeDeliveryText": "التوصيل مجاني في عروض الافتتاح"
+  }
 }

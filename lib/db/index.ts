@@ -370,6 +370,8 @@ export async function getOrders(options?: { status?: OrderStatus }): Promise<Ord
       o.subtotal_price ??
       local?.subtotal_price ??
       (o.items || []).reduce((s: number, it: any) => s + (Number(it.line_total) || 0), 0)
+    const paymentMethod = o.payment_method || local?.payment_method || o.paymentMethod || local?.paymentMethod || "cod"
+    const paymentStatus = o.payment_status || local?.payment_status || o.paymentStatus || local?.paymentStatus || "pending"
     return {
       ...o,
       area: o.area || local?.area,
@@ -378,6 +380,10 @@ export async function getOrders(options?: { status?: OrderStatus }): Promise<Ord
         o.delivery_fee_status ||
         local?.delivery_fee_status ||
         (o.delivery_fee === 0 ? "free" : o.delivery_fee != null ? "set" : "pending"),
+      payment_method: paymentMethod,
+      paymentMethod,
+      payment_status: paymentStatus,
+      paymentStatus,
       subtotal_price: subtotal,
     }
   })
@@ -411,6 +417,8 @@ export async function getOrder(id: string): Promise<Order | null> {
     data.subtotal_price ??
     local?.subtotal_price ??
     (data.items || []).reduce((s: number, it: any) => s + (Number(it.line_total) || 0), 0)
+  const paymentMethod = data.payment_method || local?.payment_method || data.paymentMethod || local?.paymentMethod || "cod"
+  const paymentStatus = data.payment_status || local?.payment_status || data.paymentStatus || local?.paymentStatus || "pending"
 
   return {
     ...data,
@@ -420,6 +428,10 @@ export async function getOrder(id: string): Promise<Order | null> {
       data.delivery_fee_status ||
       local?.delivery_fee_status ||
       (data.delivery_fee === 0 ? "free" : data.delivery_fee != null ? "set" : "pending"),
+    payment_method: paymentMethod,
+    paymentMethod,
+    payment_status: paymentStatus,
+    paymentStatus,
     subtotal_price: subtotal,
   } as Order
 }
@@ -567,6 +579,41 @@ export async function updateOrderDeliveryFee(
   }
 }
 
+export async function updateOrderPaymentStatus(
+  id: string,
+  paymentStatus: PaymentStatus
+): Promise<Order | null> {
+  const localUpdated = localStore.updateOrderPaymentStatus(id, paymentStatus)
+
+  if (!isSupabaseConfigured()) {
+    return localUpdated
+  }
+
+  try {
+    const supabase = getSupabaseServerClient()!
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+    let query = supabase.from("orders").update({ payment_status: paymentStatus })
+    if (isUuid) {
+      query = query.eq("id", id)
+    } else {
+      query = query.eq("order_number", id)
+    }
+
+    const { data, error } = await query.select().single()
+    if (error) {
+      console.warn("Supabase updateOrderPaymentStatus failed, fallback to localStore:", error)
+      return localUpdated
+    }
+    const finalOrder = data as Order
+    localStore.saveOrder(finalOrder)
+    return finalOrder
+  } catch (err) {
+    console.error("Supabase updateOrderPaymentStatus exception:", err)
+    return localUpdated
+  }
+}
+
 export async function getSettings(): Promise<StoreSettings> {
   if (!isSupabaseConfigured()) {
     return localStore.getSettings()
@@ -584,12 +631,17 @@ export async function getSettings(): Promise<StoreSettings> {
       return localStore.getSettings()
     }
 
+    const localSettings = localStore.getSettings()
+
     return {
-      storeAddress: data.store_address,
-      serviceAreas: data.service_areas || [],
-      whatsappNumber: data.whatsapp_number,
-      freeDeliveryActive: Boolean(data.free_delivery_active),
-      freeDeliveryText: data.free_delivery_text,
+      storeAddress: data.store_address || localSettings.storeAddress,
+      serviceAreas: data.service_areas || localSettings.serviceAreas || [],
+      whatsappNumber: data.whatsapp_number || localSettings.whatsappNumber,
+      freeDeliveryActive: data.free_delivery_active !== undefined ? Boolean(data.free_delivery_active) : localSettings.freeDeliveryActive,
+      freeDeliveryText: data.free_delivery_text || localSettings.freeDeliveryText,
+      walletNumber: data.wallet_number !== undefined ? data.wallet_number : localSettings.walletNumber || "",
+      walletLabel: data.wallet_label !== undefined ? data.wallet_label : localSettings.walletLabel || "",
+      instapayAddress: data.instapay_address !== undefined ? data.instapay_address : localSettings.instapayAddress || "",
     }
   } catch (err) {
     console.error("Supabase getSettings exception:", err)
@@ -625,6 +677,9 @@ export async function updateSettings(
     if (updates.whatsappNumber !== undefined) toUpsert.whatsapp_number = updates.whatsappNumber
     if (updates.freeDeliveryActive !== undefined) toUpsert.free_delivery_active = updates.freeDeliveryActive
     if (updates.freeDeliveryText !== undefined) toUpsert.free_delivery_text = updates.freeDeliveryText
+    if (updates.walletNumber !== undefined) toUpsert.wallet_number = updates.walletNumber
+    if (updates.walletLabel !== undefined) toUpsert.wallet_label = updates.walletLabel
+    if (updates.instapayAddress !== undefined) toUpsert.instapay_address = updates.instapayAddress
 
     const { data, error } = await supabase
       .from("settings")
@@ -643,6 +698,9 @@ export async function updateSettings(
       whatsappNumber: data.whatsapp_number,
       freeDeliveryActive: Boolean(data.free_delivery_active),
       freeDeliveryText: data.free_delivery_text,
+      walletNumber: data.wallet_number || "",
+      walletLabel: data.wallet_label || "",
+      instapayAddress: data.instapay_address || "",
     }
   } catch (err) {
     console.error("Supabase updateSettings exception:", err)

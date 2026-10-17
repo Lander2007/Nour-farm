@@ -28,6 +28,9 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   whatsappNumber: "01224272991",
   freeDeliveryActive: false,
   freeDeliveryText: "التوصيل مجاني في عروض الافتتاح",
+  walletNumber: "",
+  walletLabel: "",
+  instapayAddress: "",
 }
 
 const DB_FILE_PATH = path.join(process.cwd(), "data", "local-db.json")
@@ -342,8 +345,14 @@ export const localStore = {
   },
   createOrder: (order: Omit<Order, "id" | "created_at">): Order => {
     const state = readLocalDb()
+    const payment_method = order.payment_method || order.paymentMethod || "cod"
+    const payment_status = order.payment_status || order.paymentStatus || "pending"
     const newOrder: Order = {
       ...order,
+      payment_method,
+      paymentMethod: payment_method,
+      payment_status,
+      paymentStatus: payment_status,
       id: `ord-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       created_at: new Date().toISOString(),
     }
@@ -356,6 +365,15 @@ export const localStore = {
     const idx = state.orders.findIndex((o) => o.id === id || o.order_number === id)
     if (idx === -1) return null
     state.orders[idx].status = status
+    writeLocalDb(state)
+    return state.orders[idx]
+  },
+  updateOrderPaymentStatus: (id: string, paymentStatus: PaymentStatus): Order | null => {
+    const state = readLocalDb()
+    const idx = state.orders.findIndex((o) => o.id === id || o.order_number === id)
+    if (idx === -1) return null
+    state.orders[idx].payment_status = paymentStatus
+    state.orders[idx].paymentStatus = paymentStatus
     writeLocalDb(state)
     return state.orders[idx]
   },

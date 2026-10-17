@@ -65,12 +65,18 @@ export type ServiceArea = {
   enabled: boolean
 }
 
+export type PaymentMethod = "cod" | "wallet" | "instapay"
+export type PaymentStatus = "pending" | "received"
+
 export type StoreSettings = {
   storeAddress: string
   serviceAreas: ServiceArea[]
   whatsappNumber: string
   freeDeliveryActive: boolean
   freeDeliveryText: string
+  walletNumber?: string
+  walletLabel?: string
+  instapayAddress?: string
 }
 
 export type DeliveryFeeStatus = "pending" | "free" | "set"
@@ -88,6 +94,10 @@ export type Order = {
   area?: string
   delivery_fee?: number | null
   delivery_fee_status?: DeliveryFeeStatus
+  payment_method?: PaymentMethod
+  paymentMethod?: PaymentMethod
+  payment_status?: PaymentStatus
+  paymentStatus?: PaymentStatus
   status: OrderStatus
   created_at: string
 }

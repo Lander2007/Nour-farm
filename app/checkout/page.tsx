@@ -95,7 +95,7 @@ function WhatsAppIcon({ size = 22, color = "#25D366" }: { size?: number; color?:
   )
 }
 
-type PaymentMethod = "cod" | "card" | "wallet"
+type PaymentMethod = "cod" | "wallet" | "instapay"
 
 export default function CheckoutPage() {
   const products = useActiveProducts()
@@ -165,14 +165,19 @@ export default function CheckoutPage() {
     landmark: "",
   })
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod")
-  const [cardData, setCardData] = useState({
-    number: "",
-    expiry: "",
-    cvv: "",
-  })
-  const [walletPhone, setWalletPhone] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const hasWallet = Boolean(storeSettings.walletNumber && storeSettings.walletNumber.trim())
+  const hasInstapay = Boolean(storeSettings.instapayAddress && storeSettings.instapayAddress.trim())
+
+  useEffect(() => {
+    if (paymentMethod === "wallet" && !hasWallet) {
+      setPaymentMethod("cod")
+    } else if (paymentMethod === "instapay" && !hasInstapay) {
+      setPaymentMethod("cod")
+    }
+  }, [hasWallet, hasInstapay, paymentMethod])
 
   // Helper to normalize Egyptian phone (Arabic digits, country codes +20/0020, spaces, dashes)
   const normalizeEgyptianPhone = (val: string) => {
@@ -205,23 +210,6 @@ export default function CheckoutPage() {
     }
     if (!buildingDetails.apartment.trim()) {
       errs.apartment = "يرجى كتابة رقم الشقة"
-    }
-    if (paymentMethod === "card") {
-      const cleanNum = cardData.number.replace(/\s/g, "")
-      if (!cleanNum || cleanNum.length < 16) {
-        errs.cardNumber = "أدخل رقم بطاقة صحيح (١٦ رقم)"
-      }
-      if (!cardData.expiry.trim()) {
-        errs.cardExpiry = "تاريخ الانتهاء مطلوب"
-      }
-      if (!cardData.cvv.trim() || cardData.cvv.length < 3) {
-        errs.cardCvv = "رمز CVV مطلوب"
-      }
-    } else if (paymentMethod === "wallet") {
-      const cleanWallet = normalizeEgyptianPhone(walletPhone)
-      if (!cleanWallet || cleanWallet.length < 10) {
-        errs.walletPhone = "يرجى إدخال رقم المحفظة / إنستاباي الذي قمت بالتحويل منه"
-      }
     }
 
     setErrors(errs)
@@ -269,6 +257,7 @@ export default function CheckoutPage() {
         customer_name: customerInfo.fullName.trim(),
         customer_phone: normalizeEgyptianPhone(customerInfo.phone),
         area: selectedArea.trim(),
+        payment_method: paymentMethod,
         address_details: {
           building: buildingDetails.building.trim(),
           floor: buildingDetails.floor.trim(),
@@ -452,7 +441,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {}
-                <div className="checkout-section-card">
+                <div className="checkout-section-card" id="checkout-map-section">
                   <div className="checkout-section-header">
                     <span className="checkout-step-badge">٢</span>
                     <div>
@@ -659,14 +648,22 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="payment-methods-selector">
-                    {}
-                    <div
+                  <div className="payment-methods-selector" role="radiogroup" aria-label="طريقة الدفع">
+                    {/* COD - Always Available */}
+                    <label
                       className={`payment-method-card ${
                         paymentMethod === "cod" ? "is-selected" : ""
                       }`}
-                      onClick={() => setPaymentMethod("cod")}
+                      style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
                     >
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="cod"
+                        checked={paymentMethod === "cod"}
+                        onChange={() => setPaymentMethod("cod")}
+                        style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                      />
                       <div className="payment-method-icon-wrap">
                         <Banknote
                           style={{ width: "1.4rem", height: "1.4rem" }}
@@ -676,52 +673,71 @@ export default function CheckoutPage() {
                         الدفع عند الاستلام
                       </span>
                       <span className="payment-method-desc">
-                        نقدًا للمندوب عند وصول الخضار وباب بيتك.
+                        نقدًا للمندوب عند وصول الخضار وباب بيتك بعد فحص الجودة.
                       </span>
-                    </div>
+                    </label>
 
-                    {}
-                    <div
-                      className={`payment-method-card ${
-                        paymentMethod === "card" ? "is-selected" : ""
-                      }`}
-                      onClick={() => setPaymentMethod("card")}
-                    >
-                      <div className="payment-method-icon-wrap">
-                        <CreditCard
-                          style={{ width: "1.4rem", height: "1.4rem" }}
+                    {/* Electronic Wallet - Only if walletNumber is configured */}
+                    {hasWallet && (
+                      <label
+                        className={`payment-method-card ${
+                          paymentMethod === "wallet" ? "is-selected" : ""
+                        }`}
+                        style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+                      >
+                        <input
+                          type="radio"
+                          name="payment_method"
+                          value="wallet"
+                          checked={paymentMethod === "wallet"}
+                          onChange={() => setPaymentMethod("wallet")}
+                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
                         />
-                      </div>
-                      <span className="payment-method-title">
-                        البطاقة البنكية
-                      </span>
-                      <span className="payment-method-desc">
-                        فيزا / ماستركارد / ميزة ببيانات مشفرة.
-                      </span>
-                    </div>
+                        <div className="payment-method-icon-wrap">
+                          <Smartphone
+                            style={{ width: "1.4rem", height: "1.4rem" }}
+                          />
+                        </div>
+                        <span className="payment-method-title">
+                          محفظة إلكترونية {storeSettings.walletLabel ? `(${storeSettings.walletLabel})` : ""}
+                        </span>
+                        <span className="payment-method-desc">
+                          تحويل عبر فودافون كاش أو المحفظة الذكية بعد تأكيد الإجمالي.
+                        </span>
+                      </label>
+                    )}
 
-                    {}
-                    <div
-                      className={`payment-method-card ${
-                        paymentMethod === "wallet" ? "is-selected" : ""
-                      }`}
-                      onClick={() => setPaymentMethod("wallet")}
-                    >
-                      <div className="payment-method-icon-wrap">
-                        <Smartphone
-                          style={{ width: "1.4rem", height: "1.4rem" }}
+                    {/* InstaPay - Only if instapayAddress is configured */}
+                    {hasInstapay && (
+                      <label
+                        className={`payment-method-card ${
+                          paymentMethod === "instapay" ? "is-selected" : ""
+                        }`}
+                        style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+                      >
+                        <input
+                          type="radio"
+                          name="payment_method"
+                          value="instapay"
+                          checked={paymentMethod === "instapay"}
+                          onChange={() => setPaymentMethod("instapay")}
+                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
                         />
-                      </div>
-                      <span className="payment-method-title">
-                        إنستاباي / محفظة
-                      </span>
-                      <span className="payment-method-desc">
-                        تحويل لحظي عبر فودافون كاش أو إنستاباي.
-                      </span>
-                    </div>
+                        <div className="payment-method-icon-wrap">
+                          <Smartphone
+                            style={{ width: "1.4rem", height: "1.4rem" }}
+                          />
+                        </div>
+                        <span className="payment-method-title">
+                          إنستاباي (InstaPay)
+                        </span>
+                        <span className="payment-method-desc">
+                          تحويل لحظي مباشر عبر تطبيق إنستاباي بعد تأكيد الإجمالي.
+                        </span>
+                      </label>
+                    )}
                   </div>
 
-                  {}
                   {paymentMethod === "cod" && (
                     <div
                       className="payment-details-panel"
@@ -729,6 +745,7 @@ export default function CheckoutPage() {
                         display: "flex",
                         gap: "0.85rem",
                         alignItems: "flex-start",
+                        marginTop: "1.25rem",
                       }}
                     >
                       <Truck
@@ -757,208 +774,79 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {paymentMethod === "card" && (
-                    <div
-                      className="payment-details-panel"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "1rem",
-                      }}
-                    >
-                      <div className="checkout-form-field">
-                        <label>رقم البطاقة (١٦ رقم)</label>
-                        <input
-                          type="text"
-                          dir="ltr"
-                          maxLength={19}
-                          value={cardData.number}
-                          onChange={(e) => {
-                            const val = e.target.value
-                              .replace(/\D/g, "")
-                              .replace(/(.{4})/g, "$1 ")
-                              .trim()
-                            setCardData({ ...cardData, number: val })
-                          }}
-                          placeholder="4000 1234 5678 9010"
-                        />
-                        {errors.cardNumber && (
-                          <span className="checkout-field-error">
-                            {errors.cardNumber}
-                          </span>
-                        )}
-                      </div>
-
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: "1rem",
-                        }}
-                      >
-                        <div className="checkout-form-field">
-                          <label>تاريخ الانتهاء</label>
-                          <input
-                            type="text"
-                            dir="ltr"
-                            maxLength={5}
-                            value={cardData.expiry}
-                            onChange={(e) => {
-                              let val = e.target.value.replace(/\D/g, "")
-                              if (val.length >= 2)
-                                val = `${val.slice(0, 2)}/${val.slice(2, 4)}`
-                              setCardData({ ...cardData, expiry: val })
-                            }}
-                            placeholder="MM/YY"
-                          />
-                          {errors.cardExpiry && (
-                            <span className="checkout-field-error">
-                              {errors.cardExpiry}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="checkout-form-field">
-                          <label>رمز الأمان (CVV)</label>
-                          <input
-                            type="password"
-                            dir="ltr"
-                            maxLength={4}
-                            value={cardData.cvv}
-                            onChange={(e) =>
-                              setCardData({
-                                ...cardData,
-                                cvv: e.target.value.replace(/\D/g, ""),
-                              })
-                            }
-                            placeholder="123"
-                          />
-                          {errors.cardCvv && (
-                            <span className="checkout-field-error">
-                              {errors.cardCvv}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {paymentMethod === "wallet" && (
                     <div
                       className="payment-details-panel"
                       style={{
                         display: "flex",
-                        flexDirection: "column",
                         gap: "0.85rem",
+                        alignItems: "flex-start",
+                        marginTop: "1.25rem",
                       }}
                     >
-                      <div
+                      <Smartphone
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          borderBottom: "1px solid var(--line)",
-                          paddingBottom: "0.65rem",
+                          width: "1.4rem",
+                          height: "1.4rem",
+                          color: "var(--forest)",
+                          flexShrink: 0,
                         }}
-                      >
-                        <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>
-                          رقم محفظة نور فارم / إنستاباي:
-                        </span>
-                        <span
+                      />
+                      <div style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
+                        <strong
                           style={{
-                            fontFamily: "monospace",
-                            direction: "ltr",
-                            background: "#fff",
-                            padding: "0.3rem 0.75rem",
-                            borderRadius: "0.5rem",
-                            border: "1px solid var(--line)",
-                            fontWeight: 700,
-                            fontSize: "0.95rem",
+                            display: "block",
+                            color: "var(--forest)",
+                            marginBottom: "0.2rem",
                           }}
                         >
-                          01098765432
-                        </span>
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "0.82rem",
-                          lineHeight: 1.6,
-                          opacity: 0.85,
-                        }}
-                      >
-                        قم بتحويل المبلغ الإجمالي ({number.format(total)} ج.م)
-                        ثم اكتب رقم هاتفك المحوّل منه بالأسفل للتحقق الفوري من
-                        إتمام العملية.
-                      </p>
-                      <div className="checkout-form-field">
-                        <label>رقم هاتفك المحوّل منه:</label>
-                        <input
-                          type="tel"
-                          dir="ltr"
-                          value={walletPhone}
-                          onChange={(e) => setWalletPhone(e.target.value)}
-                          placeholder="010XXXXXXXX"
-                          style={{ textAlign: "right" }}
-                        />
-                        {errors.walletPhone && (
-                          <span className="checkout-field-error">
-                            {errors.walletPhone}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Mobile Bottom Submit Button (after user finishes steps) */}
-                <div className="checkout-mobile-bottom-submit">
-                  {submitError && (
-                    <div
-                      style={{
-                        padding: "0.85rem 1rem",
-                        marginBottom: "1rem",
-                        background: "#fef2f2",
-                        border: "1.5px solid #fca5a5",
-                        color: "#991b1b",
-                        borderRadius: "0.75rem",
-                        fontSize: "0.85rem",
-                        fontWeight: 700,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <span>{submitError}</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="whatsapp-order-btn"
-                    style={{
-                      cursor: isSubmitting ? "not-allowed" : "pointer",
-                      background: !locationData
-                        ? "linear-gradient(135deg, #475569 0%, #334155 100%)"
-                        : "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
-                    }}
-                  >
-                    {isSubmitting ? (
-                      <span>جارٍ تسجيل وتأكيد الطلب...</span>
-                    ) : !locationData ? (
-                      <>
-                        <MapPin size={20} color="#ffffff" />
-                        <span>حدد موقع التوصيل على الخريطة أولاً</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 size={22} color="#ffffff" />
+                          الدفع عبر المحفظة الإلكترونية:
+                        </strong>
                         <span>
                           {isFreeDelivery
-                            ? `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`
-                            : `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`}
+                            ? `يمكنك تحويل المبلغ عبر المحفظة (${storeSettings.walletNumber}) بعد تأكيد الطلب، مع إرسال إشعار التحويل عبر واتساب.`
+                            : "نظراً لأن رسوم التوصيل تُحدد بناءً على المسافة، سنرسل لك الإجمالي النهائي ورقم المحفظة على واتساب فور تسجيل طلبك للتحويل."}
                         </span>
-                      </>
-                    )}
-                  </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === "instapay" && (
+                    <div
+                      className="payment-details-panel"
+                      style={{
+                        display: "flex",
+                        gap: "0.85rem",
+                        alignItems: "flex-start",
+                        marginTop: "1.25rem",
+                      }}
+                    >
+                      <Smartphone
+                        style={{
+                          width: "1.4rem",
+                          height: "1.4rem",
+                          color: "var(--forest)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
+                        <strong
+                          style={{
+                            display: "block",
+                            color: "var(--forest)",
+                            marginBottom: "0.2rem",
+                          }}
+                        >
+                          الدفع عبر إنستاباي (InstaPay):
+                        </strong>
+                        <span>
+                          {isFreeDelivery
+                            ? `يمكنك التحويل لحساب إنستاباي (${storeSettings.instapayAddress}) بعد تأكيد الطلب، مع إرسال إشعار التحويل عبر واتساب.`
+                            : "نظراً لأن رسوم التوصيل تُحدد بناءً على المسافة، سنرسل لك الإجمالي النهائي وعنوان إنستاباي على واتساب فور تسجيل طلبك للتحويل."}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1055,10 +943,24 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Main Submit Button */}
+                  {/* Single Submit Button on all breakpoints */}
                   <button
+                    id="checkout-submit-btn"
                     type="submit"
                     disabled={isSubmitting}
+                    onClick={(e) => {
+                      if (!locationData) {
+                        e.preventDefault()
+                        setSubmitError("⚠️ برجاء تحديد موقع التوصيل على الخريطة أولاً لتسجيل الطلب")
+                        const mapSection = document.getElementById("checkout-map-section")
+                        if (mapSection) {
+                          mapSection.scrollIntoView({ behavior: "smooth", block: "center" })
+                          mapSection.classList.remove("highlight-pulse")
+                          void (mapSection as HTMLElement).offsetWidth
+                          mapSection.classList.add("highlight-pulse")
+                        }
+                      }
+                    }}
                     className="whatsapp-order-btn"
                     style={{
                       cursor: isSubmitting ? "not-allowed" : "pointer",
@@ -1080,11 +982,7 @@ export default function CheckoutPage() {
                     ) : (
                       <>
                         <CheckCircle2 size={22} color="#ffffff" />
-                        <span>
-                          {isFreeDelivery
-                            ? `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`
-                            : `تأكيد الطلب الآن (${number.format(subtotal)} ج.م)`}
-                        </span>
+                        <span>تأكيد الطلب</span>
                       </>
                     )}
                   </button>

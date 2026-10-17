@@ -44,6 +44,9 @@ export default function AdminSettingsPage() {
   const [freeDeliveryText, setFreeDeliveryText] = useState(
     "التوصيل مجاني في عروض الافتتاح"
   )
+  const [walletNumber, setWalletNumber] = useState("")
+  const [walletLabel, setWalletLabel] = useState("")
+  const [instapayAddress, setInstapayAddress] = useState("")
 
   const fetchSettings = async () => {
     try {
@@ -64,6 +67,9 @@ export default function AdminSettingsPage() {
           setWhatsappNumber(s.whatsappNumber || "01224272991")
           setFreeDeliveryActive(Boolean(s.freeDeliveryActive))
           setFreeDeliveryText(s.freeDeliveryText || "التوصيل مجاني في عروض الافتتاح")
+          setWalletNumber(s.walletNumber || "")
+          setWalletLabel(s.walletLabel || "")
+          setInstapayAddress(s.instapayAddress || "")
         }
       }
     } catch (err) {
@@ -90,6 +96,9 @@ export default function AdminSettingsPage() {
         whatsappNumber: whatsappNumber.trim(),
         freeDeliveryActive,
         freeDeliveryText: freeDeliveryText.trim(),
+        walletNumber: walletNumber.trim(),
+        walletLabel: walletLabel.trim(),
+        instapayAddress: instapayAddress.trim(),
       }
 
       const res = await fetch("/api/admin/settings", {
@@ -421,6 +430,72 @@ export default function AdminSettingsPage() {
                   placeholder="التوصيل مجاني في عروض الافتتاح"
                   className="w-full p-3 rounded-xl border border-stone-300 font-bold text-sm focus:border-emerald-700 focus:outline-none"
                 />
+              </div>
+            </div>
+
+            {/* 5. Wallet & InstaPay Transfer Settings */}
+            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm space-y-4">
+              <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
+                <CheckCircle2 className="text-emerald-700" size={20} />
+                <h2 className="text-base font-extrabold text-stone-900">
+                  بيانات التحويل المالي (المحفظة الإلكترونية وإنستاباي)
+                </h2>
+              </div>
+
+              <div className="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed font-medium">
+                💡 <strong>ملاحظة هامة:</strong> لن تظهر وسيلة &quot;محفظة إلكترونية&quot; أو &quot;إنستاباي&quot; للعميل في صفحة الدفع إلا إذا تم كتابة البيانات بالأسفل. إذا تُرك الحقل فارغاً، يتم إخفاء طريقة الدفع فوراً.
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                    رقم المحفظة الإلكترونية (فودافون كاش، إلخ):
+                  </label>
+                  <input
+                    type="tel"
+                    dir="ltr"
+                    value={walletNumber}
+                    onChange={(e) => setWalletNumber(e.target.value)}
+                    placeholder="مثال: 010XXXXXXXX"
+                    className="w-full p-3 rounded-xl border border-stone-300 font-mono font-bold text-sm focus:border-emerald-700 focus:outline-none text-right"
+                  />
+                  <span className="text-[11px] text-stone-500 mt-1 block">
+                    اتركه فارغاً لإخفاء خيار المحفظة من صفحة الدفع.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                    اسم / مسمى المحفظة:
+                  </label>
+                  <input
+                    type="text"
+                    value={walletLabel}
+                    onChange={(e) => setWalletLabel(e.target.value)}
+                    placeholder="مثال: محفظة فودافون كاش / أورنج كاش"
+                    className="w-full p-3 rounded-xl border border-stone-300 font-bold text-sm focus:border-emerald-700 focus:outline-none"
+                  />
+                  <span className="text-[11px] text-stone-500 mt-1 block">
+                    الاسم الذي يظهر للعميل بجانب رقم المحفظة.
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                  عنوان أو حساب إنستاباي (InstaPay Address / Username):
+                </label>
+                <input
+                  type="text"
+                  dir="ltr"
+                  value={instapayAddress}
+                  onChange={(e) => setInstapayAddress(e.target.value)}
+                  placeholder="مثال: username@instapay أو رقم حساب إنستاباي"
+                  className="w-full p-3 rounded-xl border border-stone-300 font-mono font-bold text-sm focus:border-emerald-700 focus:outline-none text-right"
+                />
+                <span className="text-[11px] text-stone-500 mt-1 block">
+                  اتركه فارغاً لإخفاء خيار إنستاباي من صفحة الدفع.
+                </span>
               </div>
             </div>
 

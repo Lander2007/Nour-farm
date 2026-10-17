@@ -18,6 +18,9 @@ const DEFAULT_SETTINGS: StoreSettings = {
   whatsappNumber: "01224272991",
   freeDeliveryActive: false,
   freeDeliveryText: "التوصيل مجاني في عروض الافتتاح",
+  walletNumber: "",
+  walletLabel: "",
+  instapayAddress: "",
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({

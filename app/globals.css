@@ -3852,8 +3852,14 @@ button {
   transform: none;
 }
 
-.checkout-mobile-bottom-submit {
-  display: none;
+@keyframes pulseHighlight {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); border-color: var(--tomato); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.2); border-color: var(--tomato); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.highlight-pulse {
+  animation: pulseHighlight 1.4s ease-out;
 }
 
 .whatsapp-info-hint {
@@ -4050,11 +4056,6 @@ button {
 
   .checkout-section-card {
     padding: 1.5rem 1.25rem;
-  }
-
-  .checkout-mobile-bottom-submit {
-    display: block;
-    margin-top: 1.5rem;
   }
 }
 

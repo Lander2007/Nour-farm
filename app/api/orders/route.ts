@@ -110,6 +110,32 @@ export async function POST(req: NextRequest) {
     const delivery_fee_status = freeDelivery ? "free" : "pending"
     const total_price = subtotal_price
 
+    // Validate Payment Method
+    const rawPayment = body.payment_method || body.paymentMethod || "cod"
+    if (!["cod", "wallet", "instapay"].includes(rawPayment)) {
+      return NextResponse.json(
+        { error: "طريقة الدفع المختارة غير صحيحة" },
+        { status: 400 }
+      )
+    }
+
+    if (rawPayment === "wallet" && !storeSettings.walletNumber?.trim()) {
+      return NextResponse.json(
+        { error: "الدفع عبر المحفظة الإلكترونية غير متاح حالياً" },
+        { status: 400 }
+      )
+    }
+
+    if (rawPayment === "instapay" && !storeSettings.instapayAddress?.trim()) {
+      return NextResponse.json(
+        { error: "الدفع عبر إنستاباي غير متاح حالياً" },
+        { status: 400 }
+      )
+    }
+
+    const payment_method = rawPayment as "cod" | "wallet" | "instapay"
+    const payment_status = "pending" as const
+
     // Generate readable order number
     const randomSuffix = Math.floor(1000 + Math.random() * 9000)
     const order_number = `NF-${randomSuffix}`
@@ -123,6 +149,10 @@ export async function POST(req: NextRequest) {
       delivery_fee_status,
       subtotal_price,
       total_price,
+      payment_method,
+      paymentMethod: payment_method,
+      payment_status,
+      paymentStatus: payment_status,
       address_details: {
         street: address_details.street || "",
         building: String(address_details.building).trim(),
