@@ -5421,8 +5421,14 @@ button {
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  background-color: #F7F0E3;
+  background-color: #FFCED8;
   position: relative;
+}
+
+.home-viewport-container .site-header {
+  background-color: #FFCED8;
+  border-bottom: 1px solid rgba(47, 59, 39, 0.08);
+  box-shadow: none;
 }
 
 .home-center-content {

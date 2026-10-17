@@ -25,7 +25,7 @@ export default async function AllProductsPage() {
     .map((a) => a.name)
 
   return (
-    <div className="min-h-screen bg-[#F7F0E3] text-[#2F3B27] flex flex-col justify-between" dir="rtl">
+    <div className="min-h-screen bg-[#FFCED8] text-[#2F3B27] flex flex-col justify-between" dir="rtl">
       {/* 1. Top Header */}
       <Header solid />
 
