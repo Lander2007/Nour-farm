@@ -19,8 +19,8 @@ export default async function HomePage() {
 
   return (
     <div className="home-viewport-container" dir="rtl">
-      {/* 1. Header with small logo hidden */}
-      <Header solid hideLogo={true} />
+      {/* 1. Header with logo */}
+      <Header solid />
 
       {/* 2. Center Column */}
       <main className="home-center-content">
