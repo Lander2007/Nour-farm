@@ -29,9 +29,9 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   whatsappNumber: "01224272991",
   freeDeliveryActive: false,
   freeDeliveryText: "التوصيل مجاني في عروض الافتتاح",
-  walletNumber: "",
-  walletLabel: "",
-  instapayAddress: "",
+  walletNumber: "01224272991",
+  walletLabel: "فودافون كاش",
+  instapayAddress: "01224272991",
 }
 
 const DB_FILE_PATH = path.join(process.cwd(), "data", "local-db.json")

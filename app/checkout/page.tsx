@@ -168,17 +168,6 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const hasWallet = Boolean(storeSettings.walletNumber && storeSettings.walletNumber.trim())
-  const hasInstapay = Boolean(storeSettings.instapayAddress && storeSettings.instapayAddress.trim())
-
-  useEffect(() => {
-    if (paymentMethod === "wallet" && !hasWallet) {
-      setPaymentMethod("cod")
-    } else if (paymentMethod === "instapay" && !hasInstapay) {
-      setPaymentMethod("cod")
-    }
-  }, [hasWallet, hasInstapay, paymentMethod])
-
   // Helper to normalize Egyptian phone (Arabic digits, country codes +20/0020, spaces, dashes)
   const normalizeEgyptianPhone = (val: string) => {
     if (!val) return ""
@@ -649,7 +638,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="payment-methods-selector" role="radiogroup" aria-label="طريقة الدفع">
-                    {/* COD - Always Available */}
+                    {/* COD */}
                     <label
                       className={`payment-method-card ${
                         paymentMethod === "cod" ? "is-selected" : ""
@@ -677,65 +666,61 @@ export default function CheckoutPage() {
                       </span>
                     </label>
 
-                    {/* Electronic Wallet - Only if walletNumber is configured */}
-                    {hasWallet && (
-                      <label
-                        className={`payment-method-card ${
-                          paymentMethod === "wallet" ? "is-selected" : ""
-                        }`}
-                        style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
-                      >
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="wallet"
-                          checked={paymentMethod === "wallet"}
-                          onChange={() => setPaymentMethod("wallet")}
-                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                    {/* Electronic Wallet */}
+                    <label
+                      className={`payment-method-card ${
+                        paymentMethod === "wallet" ? "is-selected" : ""
+                      }`}
+                      style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="wallet"
+                        checked={paymentMethod === "wallet"}
+                        onChange={() => setPaymentMethod("wallet")}
+                        style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                      />
+                      <div className="payment-method-icon-wrap">
+                        <Smartphone
+                          style={{ width: "1.4rem", height: "1.4rem" }}
                         />
-                        <div className="payment-method-icon-wrap">
-                          <Smartphone
-                            style={{ width: "1.4rem", height: "1.4rem" }}
-                          />
-                        </div>
-                        <span className="payment-method-title">
-                          محفظة إلكترونية {storeSettings.walletLabel ? `(${storeSettings.walletLabel})` : ""}
-                        </span>
-                        <span className="payment-method-desc">
-                          تحويل عبر فودافون كاش أو المحفظة الذكية بعد تأكيد الإجمالي.
-                        </span>
-                      </label>
-                    )}
+                      </div>
+                      <span className="payment-method-title">
+                        محفظة إلكترونية {storeSettings.walletLabel ? `(${storeSettings.walletLabel})` : "(فودافون كاش)"}
+                      </span>
+                      <span className="payment-method-desc">
+                        تحويل عبر فودافون كاش أو أي محفظة ذكية قبل أو عند الاستلام.
+                      </span>
+                    </label>
 
-                    {/* InstaPay - Only if instapayAddress is configured */}
-                    {hasInstapay && (
-                      <label
-                        className={`payment-method-card ${
-                          paymentMethod === "instapay" ? "is-selected" : ""
-                        }`}
-                        style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
-                      >
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="instapay"
-                          checked={paymentMethod === "instapay"}
-                          onChange={() => setPaymentMethod("instapay")}
-                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                    {/* InstaPay */}
+                    <label
+                      className={`payment-method-card ${
+                        paymentMethod === "instapay" ? "is-selected" : ""
+                      }`}
+                      style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="instapay"
+                        checked={paymentMethod === "instapay"}
+                        onChange={() => setPaymentMethod("instapay")}
+                        style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                      />
+                      <div className="payment-method-icon-wrap">
+                        <Smartphone
+                          style={{ width: "1.4rem", height: "1.4rem" }}
                         />
-                        <div className="payment-method-icon-wrap">
-                          <Smartphone
-                            style={{ width: "1.4rem", height: "1.4rem" }}
-                          />
-                        </div>
-                        <span className="payment-method-title">
-                          إنستاباي (InstaPay)
-                        </span>
-                        <span className="payment-method-desc">
-                          تحويل لحظي مباشر عبر تطبيق إنستاباي بعد تأكيد الإجمالي.
-                        </span>
-                      </label>
-                    )}
+                      </div>
+                      <span className="payment-method-title">
+                        إنستاباي (InstaPay)
+                      </span>
+                      <span className="payment-method-desc">
+                        تحويل بنكي لحظي ومباشر عبر تطبيق إنستاباي بكل سهولة.
+                      </span>
+                    </label>
                   </div>
 
                   {paymentMethod === "cod" && (
@@ -800,12 +785,12 @@ export default function CheckoutPage() {
                             marginBottom: "0.2rem",
                           }}
                         >
-                          الدفع عبر المحفظة الإلكترونية:
+                          الدفع عبر المحفظة الإلكترونية ({storeSettings.walletLabel || "فودافون كاش"}):
                         </strong>
                         <span>
-                          {isFreeDelivery
-                            ? `يمكنك تحويل المبلغ عبر المحفظة (${storeSettings.walletNumber}) بعد تأكيد الطلب، مع إرسال إشعار التحويل عبر واتساب.`
-                            : "نظراً لأن رسوم التوصيل تُحدد بناءً على المسافة، سنرسل لك الإجمالي النهائي ورقم المحفظة على واتساب فور تسجيل طلبك للتحويل."}
+                          {storeSettings.walletNumber
+                            ? `رقم المحفظة المعتمد للتحويل: ${storeSettings.walletNumber} — يرجى إرسال لقطة شاشة التحويل على واتساب بعد إتمام الطلب.`
+                            : "يمكنك التحويل عبر فودافون كاش أو أي محفظة ذكية (01224272991). سنرسل لك الإجمالي ورقم المحفظة على واتساب فور تسجيل طلبك."}
                         </span>
                       </div>
                     </div>
@@ -837,12 +822,12 @@ export default function CheckoutPage() {
                             marginBottom: "0.2rem",
                           }}
                         >
-                          الدفع عبر إنستاباي (InstaPay):
+                          الدفع عبر تطبيق إنستاباي (InstaPay):
                         </strong>
                         <span>
-                          {isFreeDelivery
-                            ? `يمكنك التحويل لحساب إنستاباي (${storeSettings.instapayAddress}) بعد تأكيد الطلب، مع إرسال إشعار التحويل عبر واتساب.`
-                            : "نظراً لأن رسوم التوصيل تُحدد بناءً على المسافة، سنرسل لك الإجمالي النهائي وعنوان إنستاباي على واتساب فور تسجيل طلبك للتحويل."}
+                          {storeSettings.instapayAddress
+                            ? `عنوان إنستاباي المعتمد: ${storeSettings.instapayAddress} — يرجى إرسال إشعار التحويل على واتساب بعد إتمام الطلب.`
+                            : "يمكنك التحويل الفوري عبر إنستاباي لرقم الهاتف (01224272991). سنرسل لك المعرف ورابط التحويل على واتساب فور تسجيل طلبك."}
                         </span>
                       </div>
                     </div>
