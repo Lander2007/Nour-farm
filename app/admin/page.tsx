@@ -906,26 +906,48 @@ export default function AdminProductsPage() {
                 </select>
 
                 {activeSection !== "all" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const sec = sections.find((s) => s.id === activeSection)
-                      if (sec) handleDeleteSection(sec.id, sec.name)
-                    }}
-                    className="btn-secondary-action"
-                    style={{
-                      background: "#fef2f2",
-                      borderColor: "#fca5a5",
-                      color: "#dc2626",
-                      padding: "0.45rem 0.65rem",
-                      fontSize: "0.82rem",
-                      fontWeight: 600,
-                    }}
-                    title="حذف هذا القسم بالكامل"
-                  >
-                    <Trash2 size={14} />
-                    <span>حذف القسم</span>
-                  </button>
+                  <>
+                    <Link
+                      href={`/admin/sections/${activeSection}`}
+                      className="btn-secondary-action"
+                      style={{
+                        background: "#f0fdf4",
+                        borderColor: "#86efac",
+                        color: "#166534",
+                        padding: "0.45rem 0.75rem",
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                      title="فتح معرض هذا القسم لإدارة منتجاته وكروته"
+                    >
+                      <ImageIcon size={14} />
+                      <span>معرض القسم</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sec = sections.find((s) => s.id === activeSection)
+                        if (sec) handleDeleteSection(sec.id, sec.name)
+                      }}
+                      className="btn-secondary-action"
+                      style={{
+                        background: "#fef2f2",
+                        borderColor: "#fca5a5",
+                        color: "#dc2626",
+                        padding: "0.45rem 0.65rem",
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                      }}
+                      title="حذف هذا القسم بالكامل"
+                    >
+                      <Trash2 size={14} />
+                      <span>حذف القسم</span>
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -1778,6 +1800,24 @@ export default function AdminProductsPage() {
                               />
                             </label>
 
+                            <Link
+                              href={`/admin/sections/${sec.id}`}
+                              className="btn-primary-add"
+                              style={{
+                                padding: "4px 9px",
+                                fontSize: "0.78rem",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                textDecoration: "none",
+                                fontWeight: 700,
+                              }}
+                              title={`فتح معرض ومنتجات قسم ${sec.name}`}
+                            >
+                              <ImageIcon size={13} />
+                              <span>المعرض ({count})</span>
+                            </Link>
+
                             <button
                               type="button"
                               onClick={() => {
@@ -1786,10 +1826,9 @@ export default function AdminProductsPage() {
                               }}
                               className="btn-secondary-action"
                               style={{ padding: "3px 7px", fontSize: "0.74rem", display: "inline-flex", alignItems: "center", gap: "3px" }}
-                              title="اختيار صورة من مكتبة صور المزرعة"
+                              title="اختيار صورة غلاف من مكتبة صور المزرعة"
                             >
-                              <ImageIcon size={12} />
-                              <span>المعرض</span>
+                              <span>غلاف</span>
                             </button>
 
                             {sec.cover_image && (
