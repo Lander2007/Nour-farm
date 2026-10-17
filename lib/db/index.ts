@@ -1,6 +1,16 @@
 import { isSupabaseConfigured, getSupabaseServerClient } from "./supabase"
 import { localStore } from "./local-store"
-import type { Department, Section, Product, Order, OrderStatus } from "./types"
+import type {
+  Department,
+  Section,
+  Product,
+  Order,
+  OrderStatus,
+  DeliveryFeeStatus,
+  PaymentStatus,
+  StoreSettings,
+  DeliveryArea,
+} from "./types"
 
 export * from "./types"
 
@@ -653,7 +663,7 @@ export async function getPublicSettings(): Promise<StoreSettings> {
   const settings = await getSettings()
   return {
     ...settings,
-    serviceAreas: (settings.serviceAreas || []).filter((a) => a.enabled),
+    serviceAreas: (settings.serviceAreas || []).filter((a: DeliveryArea) => a.enabled),
   }
 }
 

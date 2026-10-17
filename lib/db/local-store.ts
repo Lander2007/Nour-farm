@@ -8,6 +8,7 @@ import type {
   OrderStatus,
   StoreSettings,
   DeliveryFeeStatus,
+  PaymentStatus,
 } from "./types"
 import { products as oldDemoProducts } from "@/data/products"
 

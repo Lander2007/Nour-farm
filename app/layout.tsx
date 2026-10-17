@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import CartDrawer from "@/components/CartDrawer"
 import CartErrorBoundary from "@/components/CartErrorBoundary"
 import "./globals.css"

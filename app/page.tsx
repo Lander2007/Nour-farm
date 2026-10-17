@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const settings = await getPublicSettings()
-  const enabledAreas = settings.serviceAreas
-    .filter((a) => a.enabled)
-    .map((a) => a.name)
+  const enabledAreas = (settings.serviceAreas || [])
+    .filter((a: any) => a.enabled)
+    .map((a: any) => a.name)
 
   return (
     <div className="home-viewport-container" dir="rtl">

@@ -33,6 +33,7 @@ export default function Header({
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const products = useActiveProducts()
 
   useEffect(() => {
     void useCart.persist.rehydrate()
@@ -74,7 +75,7 @@ export default function Header({
   const searchResults = cleanSearch
     ? products
         .filter(
-          (p) =>
+          (p: Product) =>
             p.name.toLowerCase().includes(cleanSearch) ||
             p.section.toLowerCase().includes(cleanSearch) ||
             (p.tag && p.tag.toLowerCase().includes(cleanSearch)),
@@ -213,7 +214,7 @@ export default function Header({
                     <div className="search-results-title">
                       <span>المنتجات المطابقة ({searchResults.length})</span>
                     </div>
-                    {searchResults.map((product) => (
+                    {searchResults.map((product: Product) => (
                       <div key={product.id} className="search-result-row">
                         <Link
                           href={`/products?search=${encodeURIComponent(product.name)}`}

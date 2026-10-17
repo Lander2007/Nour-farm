@@ -20,9 +20,9 @@ export default async function ProductsPage() {
     getPublicSettings(),
   ])
 
-  const enabledAreas = settings.serviceAreas
-    .filter((a) => a.enabled)
-    .map((a) => a.name)
+  const enabledAreas = (settings.serviceAreas || [])
+    .filter((a: any) => a.enabled)
+    .map((a: any) => a.name)
 
   return (
     <div className="min-h-screen bg-[#EDE3CF] text-[#2F3B27] flex flex-col justify-between" dir="rtl">

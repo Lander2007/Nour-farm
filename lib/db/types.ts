@@ -64,6 +64,7 @@ export type ServiceArea = {
   name: string
   enabled: boolean
 }
+export type DeliveryArea = ServiceArea
 
 export type PaymentMethod = "cod" | "wallet" | "instapay"
 export type PaymentStatus = "pending" | "received"

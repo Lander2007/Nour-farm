@@ -836,7 +836,7 @@ export default function AdminOrdersPage() {
                     <tbody className="divide-y divide-stone-100">
                       {selectedOrder.items.map((it, idx) => (
                         <tr key={idx}>
-                          <td className="p-2.5 font-bold">{it.name}</td>
+                          <td className="p-2.5 font-bold">{(it as any).name_ar || (it as any).name || "صنف"}</td>
                           <td className="p-2.5">{number.format(it.qty)} {it.unit}</td>
                           <td className="p-2.5">{number.format(it.unit_price)} ج.م</td>
                           <td className="p-2.5 font-bold text-emerald-800">

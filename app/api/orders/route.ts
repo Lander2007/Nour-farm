@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const { getSettings } = await import("@/lib/db")
     const storeSettings = await getSettings()
     const validArea = (storeSettings.serviceAreas || []).find(
-      (a) => a.enabled && a.name.trim() === area.trim()
+      (a: any) => a.enabled && a.name.trim() === area.trim()
     )
 
     if (!validArea) {
@@ -92,9 +92,11 @@ export async function POST(req: NextRequest) {
       const unit_price = Number(it.unit_price) || 0
       const line_total = Number((qty * unit_price).toFixed(2))
       calculatedSubtotal += line_total
+      const name = String(it.name_ar || it.name || "صنف")
       return {
         id: String(it.id),
-        name: String(it.name || it.name_ar || "صنف"),
+        name_ar: name,
+        name,
         unit: String(it.unit || "كجم"),
         qty,
         unit_price,

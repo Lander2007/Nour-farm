@@ -144,7 +144,8 @@ export default function AllProductsCatalog({
         }
 
         // 3. Price filter
-        if (p.price < activeMin || p.price > activeMax) {
+        const price = p.price ?? 0
+        if (price < activeMin || price > activeMax) {
           return false
         }
 
@@ -178,16 +179,16 @@ export default function AllProductsCatalog({
       .sort((a, b) => {
         // User explicit sort options
         if (sortBy === "price-asc") {
-          return a.price - b.price
+          return (a.price ?? 0) - (b.price ?? 0)
         }
         if (sortBy === "price-desc") {
-          return b.price - a.price
+          return (b.price ?? 0) - (a.price ?? 0)
         }
         if (sortBy === "name") {
           return a.name_ar.localeCompare(b.name_ar, "ar")
         }
 
-        // Default 'featured': group by department then section then sort_order
+        // Default 'featured': group by department then section then sort
         const secA = sectionMap.get(a.section_id)
         const secB = sectionMap.get(b.section_id)
         const deptA = secA?.department_id || ""
@@ -199,7 +200,9 @@ export default function AllProductsCatalog({
         if (a.section_id !== b.section_id) {
           return a.section_id.localeCompare(b.section_id)
         }
-        return a.sort_order - b.sort_order
+        const sortA = (a as any).sort ?? (a as any).sort_order ?? 0
+        const sortB = (b as any).sort ?? (b as any).sort_order ?? 0
+        return sortA - sortB
       })
   }, [
     initialProducts,
