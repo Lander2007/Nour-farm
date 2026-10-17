@@ -83,7 +83,7 @@ export default function Footer() {
 
             <div className="footer-brand-actions">
               <a
-                href="https://wa.me/201224272991"
+                href="https://wa.me/201287733737"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="footer-wa-button"
@@ -147,8 +147,8 @@ export default function Footer() {
                 <Phone size={15} className="contact-item-icon" />
                 <div>
                   <span className="contact-label">خدمة العملاء:</span>
-                  <a href="tel:01224272991" className="contact-val" dir="ltr">
-                    012 2427 2991
+                  <a href="tel:01287733737" className="contact-val" dir="ltr">
+                    012 8773 3737
                   </a>
                 </div>
               </div>

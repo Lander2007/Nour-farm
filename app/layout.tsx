@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import CartDrawer from "@/components/CartDrawer"
 import CartErrorBoundary from "@/components/CartErrorBoundary"
+import WhatsAppBubble from "@/components/WhatsAppBubble"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default function RootLayout({
         <CartErrorBoundary>
           <CartDrawer />
         </CartErrorBoundary>
+        <WhatsAppBubble />
       </body>
     </html>
   )

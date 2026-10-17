@@ -73,8 +73,8 @@ const LeafletLocationPicker = dynamic(
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
-const WHATSAPP_DISPLAY = "01224272991"
-const WHATSAPP_INTL = "201224272991"
+const WHATSAPP_DISPLAY = "01287733737"
+const WHATSAPP_INTL = "201287733737"
 
 function WhatsAppIcon({ size = 22, color = "#25D366" }: { size?: number; color?: string }) {
   return (
@@ -167,6 +167,8 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [copiedWallet, setCopiedWallet] = useState(false)
+  const [copiedInstapay, setCopiedInstapay] = useState(false)
 
   // Helper to normalize Egyptian phone (Arabic digits, country codes +20/0020, spaces, dashes)
   const normalizeEgyptianPhone = (val: string) => {
@@ -764,35 +766,120 @@ export default function CheckoutPage() {
                       className="payment-details-panel"
                       style={{
                         display: "flex",
+                        flexDirection: "column",
                         gap: "0.85rem",
-                        alignItems: "flex-start",
                         marginTop: "1.25rem",
+                        border: "1.5px solid rgba(85, 112, 74, 0.35)",
+                        background: "#FAF7EE",
+                        borderRadius: "1rem",
+                        padding: "1.25rem",
                       }}
                     >
-                      <Smartphone
-                        style={{
-                          width: "1.4rem",
-                          height: "1.4rem",
-                          color: "var(--forest)",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
-                        <strong
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                        <div
                           style={{
-                            display: "block",
-                            color: "var(--forest)",
-                            marginBottom: "0.2rem",
+                            width: "2.2rem",
+                            height: "2.2rem",
+                            borderRadius: "50%",
+                            background: "var(--forest)",
+                            color: "#ffffff",
+                            display: "grid",
+                            placeItems: "center",
+                            flexShrink: 0,
                           }}
                         >
-                          الدفع عبر المحفظة الإلكترونية ({storeSettings.walletLabel || "فودافون كاش"}):
-                        </strong>
-                        <span>
-                          {storeSettings.walletNumber
-                            ? `رقم المحفظة المعتمد للتحويل: ${storeSettings.walletNumber} — يرجى إرسال لقطة شاشة التحويل على واتساب بعد إتمام الطلب.`
-                            : "يمكنك التحويل عبر فودافون كاش أو أي محفظة ذكية (01224272991). سنرسل لك الإجمالي ورقم المحفظة على واتساب فور تسجيل طلبك."}
-                        </span>
+                          <Smartphone style={{ width: "1.2rem", height: "1.2rem" }} />
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              display: "block",
+                              color: "var(--forest)",
+                              fontSize: "1rem",
+                              fontWeight: 800,
+                            }}
+                          >
+                            رقم محفظة نور فارم للتحويل (فودافون كاش ومحافظ ذكية):
+                          </strong>
+                          <span style={{ fontSize: "0.82rem", color: "#55704A", fontWeight: 600 }}>
+                            (هذا هو رقم محفظة المتجر للتحويل إليه، لا نطلب منك إدخال رقم محفظتك الشخصية)
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Prominent Store Wallet Number Card with Copy Button */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: "#ffffff",
+                          border: "2px dashed var(--forest)",
+                          borderRadius: "0.85rem",
+                          padding: "0.85rem 1.1rem",
+                          gap: "1rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "0.78rem", color: "#555", fontWeight: 700 }}>
+                            رقم محفظة المتجر (Vodafone Cash):
+                          </span>
+                          <span
+                            dir="ltr"
+                            style={{
+                              fontSize: "1.45rem",
+                              fontWeight: 900,
+                              letterSpacing: "0.08em",
+                              color: "#2F3B27",
+                              fontFamily: "'IBM Plex Mono', monospace",
+                            }}
+                          >
+                            {storeSettings.walletNumber || "01283058108"}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const num = storeSettings.walletNumber || "01283058108"
+                            navigator.clipboard.writeText(num)
+                            setCopiedWallet(true)
+                            setTimeout(() => setCopiedWallet(false), 2200)
+                          }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                            padding: "0.6rem 1.1rem",
+                            borderRadius: "0.65rem",
+                            border: "none",
+                            background: copiedWallet ? "#15803d" : "var(--forest)",
+                            color: "#ffffff",
+                            fontSize: "0.88rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          {copiedWallet ? (
+                            <>
+                              <span>تم النسخ بنجاح</span>
+                              <Check style={{ width: "1.1rem", height: "1.1rem" }} />
+                            </>
+                          ) : (
+                            <>
+                              <span>نسخ رقم المحفظة</span>
+                              <Copy style={{ width: "1.1rem", height: "1.1rem" }} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Explicit Guidance */}
+                      <p style={{ margin: 0, fontSize: "0.84rem", color: "#2F3B27", lineHeight: 1.6 }}>
+                        💡 <strong>طريقة الدفع:</strong> قم بتحويل إجمالي الطلب من تطبيق محفظتك (فودافون كاش، اتصالات كاش، أورانج كاش، أو المحفظة البنكية) إلى رقم المتجر أعلاه (<strong>{storeSettings.walletNumber || "01283058108"}</strong>)، ثم أكمل تسجيل الطلب وأرسل صورة التحويل على واتساب لتأكيد الشحن فوراً.
+                      </p>
                     </div>
                   )}
 
@@ -801,35 +888,120 @@ export default function CheckoutPage() {
                       className="payment-details-panel"
                       style={{
                         display: "flex",
+                        flexDirection: "column",
                         gap: "0.85rem",
-                        alignItems: "flex-start",
                         marginTop: "1.25rem",
+                        border: "1.5px solid rgba(85, 112, 74, 0.35)",
+                        background: "#FAF7EE",
+                        borderRadius: "1rem",
+                        padding: "1.25rem",
                       }}
                     >
-                      <Smartphone
-                        style={{
-                          width: "1.4rem",
-                          height: "1.4rem",
-                          color: "var(--forest)",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
-                        <strong
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                        <div
                           style={{
-                            display: "block",
-                            color: "var(--forest)",
-                            marginBottom: "0.2rem",
+                            width: "2.2rem",
+                            height: "2.2rem",
+                            borderRadius: "50%",
+                            background: "var(--forest)",
+                            color: "#ffffff",
+                            display: "grid",
+                            placeItems: "center",
+                            flexShrink: 0,
                           }}
                         >
-                          الدفع عبر تطبيق إنستاباي (InstaPay):
-                        </strong>
-                        <span>
-                          {storeSettings.instapayAddress
-                            ? `عنوان إنستاباي المعتمد: ${storeSettings.instapayAddress} — يرجى إرسال إشعار التحويل على واتساب بعد إتمام الطلب.`
-                            : "يمكنك التحويل الفوري عبر إنستاباي لرقم الهاتف (01224272991). سنرسل لك المعرف ورابط التحويل على واتساب فور تسجيل طلبك."}
-                        </span>
+                          <Smartphone style={{ width: "1.2rem", height: "1.2rem" }} />
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              display: "block",
+                              color: "var(--forest)",
+                              fontSize: "1rem",
+                              fontWeight: 800,
+                            }}
+                          >
+                            بيانات التحويل عبر تطبيق إنستاباي (InstaPay):
+                          </strong>
+                          <span style={{ fontSize: "0.82rem", color: "#55704A", fontWeight: 600 }}>
+                            (التحويل لرقم هاتف حساب نور فارم المعتمد في إنستاباي)
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Prominent Number Box with Copy Button */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: "#ffffff",
+                          border: "2px dashed var(--forest)",
+                          borderRadius: "0.85rem",
+                          padding: "0.85rem 1.1rem",
+                          gap: "1rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "0.78rem", color: "#555", fontWeight: 700 }}>
+                            رقم الهاتف المعتمد في InstaPay:
+                          </span>
+                          <span
+                            dir="ltr"
+                            style={{
+                              fontSize: "1.45rem",
+                              fontWeight: 900,
+                              letterSpacing: "0.08em",
+                              color: "#2F3B27",
+                              fontFamily: "'IBM Plex Mono', monospace",
+                            }}
+                          >
+                            {storeSettings.instapayAddress || storeSettings.walletNumber || "01283058108"}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const num = storeSettings.instapayAddress || storeSettings.walletNumber || "01283058108"
+                            navigator.clipboard.writeText(num)
+                            setCopiedInstapay(true)
+                            setTimeout(() => setCopiedInstapay(false), 2200)
+                          }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                            padding: "0.6rem 1.1rem",
+                            borderRadius: "0.65rem",
+                            border: "none",
+                            background: copiedInstapay ? "#15803d" : "var(--forest)",
+                            color: "#ffffff",
+                            fontSize: "0.88rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          {copiedInstapay ? (
+                            <>
+                              <span>تم النسخ بنجاح</span>
+                              <Check style={{ width: "1.1rem", height: "1.1rem" }} />
+                            </>
+                          ) : (
+                            <>
+                              <span>نسخ الرقم</span>
+                              <Copy style={{ width: "1.1rem", height: "1.1rem" }} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Guidance */}
+                      <p style={{ margin: 0, fontSize: "0.84rem", color: "#2F3B27", lineHeight: 1.6 }}>
+                        💡 <strong>طريقة الدفع:</strong> افتح تطبيق InstaPay، اختر تحويل إلى رقم هاتف وأدخل الرقم أعلاه، ثم أكد الطلب وأرسل صورة أو إشعار التحويل عبر واتساب.
+                      </p>
                     </div>
                   )}
                 </div>

@@ -15,12 +15,12 @@ const DEFAULT_SETTINGS: StoreSettings = {
     { id: "area-1", name: "أكتوبر – الحي المتميز", enabled: true },
     { id: "area-2", name: "أكتوبر – غرب سوميد", enabled: true },
   ],
-  whatsappNumber: "01224272991",
+  whatsappNumber: "01287733737",
   freeDeliveryActive: false,
   freeDeliveryText: "التوصيل مجاني في عروض الافتتاح",
-  walletNumber: "01224272991",
-  walletLabel: "فودافون كاش",
-  instapayAddress: "01224272991",
+  walletNumber: "01283058108",
+  walletLabel: "فودافون كاش والمحافظ الذكية",
+  instapayAddress: "01283058108",
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({

@@ -39,14 +39,14 @@ export default function AdminSettingsPage() {
     { id: "area-2", name: "أكتوبر – غرب سوميد", enabled: true },
   ])
   const [newAreaName, setNewAreaName] = useState("")
-  const [whatsappNumber, setWhatsappNumber] = useState("01224272991")
+  const [whatsappNumber, setWhatsappNumber] = useState("01287733737")
   const [freeDeliveryActive, setFreeDeliveryActive] = useState(false)
   const [freeDeliveryText, setFreeDeliveryText] = useState(
     "التوصيل مجاني في عروض الافتتاح"
   )
-  const [walletNumber, setWalletNumber] = useState("")
-  const [walletLabel, setWalletLabel] = useState("")
-  const [instapayAddress, setInstapayAddress] = useState("")
+  const [walletNumber, setWalletNumber] = useState("01283058108")
+  const [walletLabel, setWalletLabel] = useState("فودافون كاش والمحافظ الذكية")
+  const [instapayAddress, setInstapayAddress] = useState("01283058108")
 
   const fetchSettings = async () => {
     try {
@@ -64,12 +64,12 @@ export default function AdminSettingsPage() {
           if (Array.isArray(s.serviceAreas) && s.serviceAreas.length > 0) {
             setServiceAreas(s.serviceAreas)
           }
-          setWhatsappNumber(s.whatsappNumber || "01224272991")
+          setWhatsappNumber(s.whatsappNumber || "01287733737")
           setFreeDeliveryActive(Boolean(s.freeDeliveryActive))
           setFreeDeliveryText(s.freeDeliveryText || "التوصيل مجاني في عروض الافتتاح")
-          setWalletNumber(s.walletNumber || "")
-          setWalletLabel(s.walletLabel || "")
-          setInstapayAddress(s.instapayAddress || "")
+          setWalletNumber(s.walletNumber || "01283058108")
+          setWalletLabel(s.walletLabel || "فودافون كاش والمحافظ الذكية")
+          setInstapayAddress(s.instapayAddress || "01283058108")
         }
       }
     } catch (err) {
@@ -409,7 +409,7 @@ export default function AdminSettingsPage() {
                   dir="ltr"
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
-                  placeholder="01224272991"
+                  placeholder="01287733737"
                   className="w-full p-3 rounded-xl border border-stone-300 font-mono font-bold text-sm focus:border-emerald-700 focus:outline-none"
                   required
                 />
@@ -479,7 +479,7 @@ export default function AdminSettingsPage() {
                     dir="ltr"
                     value={walletNumber}
                     onChange={(e) => setWalletNumber(e.target.value)}
-                    placeholder="مثال: 010XXXXXXXX"
+                    placeholder="مثال: 01283058108"
                     className="w-full p-3 rounded-xl border border-stone-300 font-mono font-bold text-sm focus:border-emerald-700 focus:outline-none text-right"
                   />
                   <span className="text-[11px] text-stone-500 mt-1 block">

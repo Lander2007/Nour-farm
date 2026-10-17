@@ -18,7 +18,7 @@ import type { Order } from "@/lib/db/types"
 import ReceiptPrinter from "@/components/ReceiptPrinter"
 import { useStoreSettings } from "@/store/settings"
 
-const WHATSAPP_PHONE = "201224272991"
+const WHATSAPP_PHONE = "201287733737"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
@@ -326,8 +326,8 @@ ${totalLabel}: ${number.format(order.total_price)} جنيه مصري${transferDe
                     dir="ltr"
                   >
                     {paymentMethod === "wallet"
-                      ? (storeSettings.walletNumber || "قيد التحديد")
-                      : (storeSettings.instapayAddress || "قيد التحديد")}
+                      ? (storeSettings.walletNumber || "01283058108")
+                      : (storeSettings.instapayAddress || "01283058108")}
                   </span>
                   <button
                     type="button"

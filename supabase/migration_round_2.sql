@@ -7,7 +7,7 @@ create table if not exists public.settings (
   id text primary key default 'store_settings',
   store_address text not null default 'أكتوبر – الحي المتميز – السياحية الأولى',
   service_areas jsonb not null default '[{"id":"area-1","name":"أكتوبر – الحي المتميز","enabled":true},{"id":"area-2","name":"أكتوبر – غرب سوميد","enabled":true}]'::jsonb,
-  whatsapp_number text not null default '01224272991',
+  whatsapp_number text not null default '01287733737',
   free_delivery_active boolean not null default false,
   free_delivery_text text not null default 'التوصيل مجاني في عروض الافتتاح',
   updated_at timestamptz not null default now()
@@ -19,7 +19,7 @@ values (
   'store_settings',
   'أكتوبر – الحي المتميز – السياحية الأولى',
   '[{"id":"area-1","name":"أكتوبر – الحي المتميز","enabled":true},{"id":"area-2","name":"أكتوبر – غرب سوميد","enabled":true}]'::jsonb,
-  '01224272991',
+  '01287733737',
   false,
   'التوصيل مجاني في عروض الافتتاح'
 )
