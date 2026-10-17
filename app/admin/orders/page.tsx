@@ -19,8 +19,14 @@ import {
   ArrowRight,
   Truck,
   Building,
+  Settings,
+  MessageCircle,
+  Send,
+  Copy,
+  Check,
 } from "lucide-react"
-import type { Order, OrderStatus } from "@/lib/db/types"
+import type { Order, OrderStatus, DeliveryFeeStatus, PaymentStatus } from "@/lib/db/types"
+import { useStoreSettings } from "@/store/settings"
 import "../admin.css"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
@@ -57,12 +63,29 @@ const STATUS_CONFIG: Record<
 
 export default function AdminOrdersPage() {
   const router = useRouter()
+  const storeSettings = useStoreSettings()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [feeInputs, setFeeInputs] = useState<Record<string, string>>({})
+  const [modalFeeInput, setModalFeeInput] = useState<string>("")
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null)
+
+  const handleCopyAddress = (order: Order) => {
+    const bld = order.address_details?.building ? `عمارة ${order.address_details.building}` : ""
+    const flr = order.address_details?.floor ? `الدور ${order.address_details.floor}` : ""
+    const apt = order.address_details?.apartment ? `شقة ${order.address_details.apartment}` : ""
+    const lnd = order.address_details?.landmark ? `(علامة: ${order.address_details.landmark})` : ""
+    const full = [order.area ? `[${order.area}]` : "", bld, flr, apt, lnd].filter(Boolean).join("، ")
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(full)
+      setCopiedOrderId(order.id)
+      setTimeout(() => setCopiedOrderId(null), 2500)
+    }
+  }
 
   const fetchOrders = async () => {
     try {
@@ -111,6 +134,115 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const handleSaveDeliveryFee = async (
+    orderId: string,
+    feeValue: number,
+    feeStatus: DeliveryFeeStatus
+  ) => {
+    try {
+      setUpdatingId(orderId)
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: orderId,
+          deliveryFee: feeValue,
+          deliveryFeeStatus: feeStatus,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const updated = data.order
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? updated : o))
+        )
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder(updated)
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update delivery fee:", err)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const handlePaymentStatusToggle = async (
+    orderId: string,
+    newStatus: PaymentStatus
+  ) => {
+    try {
+      setUpdatingId(orderId)
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, paymentStatus: newStatus }),
+      })
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId
+              ? { ...o, payment_status: newStatus, paymentStatus: newStatus }
+              : o
+          )
+        )
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder((prev) =>
+            prev
+              ? { ...prev, payment_status: newStatus, paymentStatus: newStatus }
+              : null
+          )
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update payment status:", err)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const convertToWaPhone = (phone: string): string => {
+    let clean = (phone || "").replace(/\D/g, "")
+    if (clean.startsWith("20")) return clean
+    if (clean.startsWith("0")) return `20${clean.slice(1)}`
+    return `20${clean}`
+  }
+
+  const getWhatsAppShareUrl = (order: Order): string => {
+    const waPhone = convertToWaPhone(order.customer_phone)
+    const subtotal =
+      order.subtotal_price ??
+      order.items.reduce((sum, it) => sum + (it.line_total || 0), 0)
+
+    const feeText =
+      order.delivery_fee_status === "free"
+        ? "مجاني"
+        : order.delivery_fee_status === "set" && order.delivery_fee != null
+        ? `${number.format(order.delivery_fee)} ج.م`
+        : "بيتحدد حسب المسافة"
+
+    const payMethod = order.payment_method || order.paymentMethod || "cod"
+    let payDetails = ""
+    if (payMethod === "wallet") {
+      payDetails = `\n- طريقة الدفع: محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}\n- رقم التحويل: ${storeSettings.walletNumber || ""}\n(برجاء تحويل الإجمالي وإرسال صورة التحويل هنا)`
+    } else if (payMethod === "instapay") {
+      payDetails = `\n- طريقة الدفع: إنستاباي (InstaPay)\n- عنوان إنستاباي: ${storeSettings.instapayAddress || ""}\n(برجاء تحويل الإجمالي وإرسال صورة التحويل هنا)`
+    } else {
+      payDetails = "\n- طريقة الدفع: الدفع عند الاستلام (نقدًا)"
+    }
+
+    const message = `مرحباً ${order.customer_name}،
+بخصوص طلبك رقم #${order.order_number} من نور فارم:
+- منطقة التوصيل: ${order.area || "المحددة"}
+- إجمالي المنتجات: ${number.format(subtotal)} ج.م
+- رسوم التوصيل: ${feeText}
+- الإجمالي: ${number.format(order.total_price)} ج.م${payDetails}
+
+طلبك قيد المتابعة والتجهيز، شكراً لتسوقك معنا!`
+
+    return `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`
+  }
+
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
       const matchSearch =
@@ -149,10 +281,35 @@ export default function AdminOrdersPage() {
             </div>
           </div>
 
-          <div className="admin-header-actions">
+          <div className="admin-mobile-only" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={fetchOrders}
+              className="row-action-btn"
+              title="تحديث البيانات"
+              style={{ width: 38, height: 38 }}
+            >
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            </button>
+            <Link
+              href="/"
+              target="_blank"
+              className="row-action-btn"
+              title="عرض المتجر"
+              style={{ width: 38, height: 38 }}
+            >
+              <ExternalLink size={16} />
+            </Link>
+          </div>
+
+          <div className="admin-header-actions admin-desktop-only">
             <Link href="/admin" className="admin-action-btn-ghost">
               <Layers size={16} />
               <span>إدارة المنتجات</span>
+            </Link>
+            <Link href="/admin/settings" className="admin-action-btn-ghost">
+              <Settings size={16} />
+              <span>إعدادات المتجر</span>
             </Link>
             <button
               type="button"
@@ -227,7 +384,7 @@ export default function AdminOrdersPage() {
               <Search className="toolbar-search-icon" size={18} />
               <input
                 type="text"
-                placeholder="ابحث برقم الطلب، اسم العميل، أو رقم الهاتف..."
+                placeholder="ابحث برقم الطلب، اسم العميل، أو رقم الهاتف أو المنطقة..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="toolbar-search-input"
@@ -280,14 +437,16 @@ export default function AdminOrdersPage() {
               </span>
             </div>
           ) : (
-            <table className="admin-table">
+            <>
+              <table className="admin-table admin-orders-desktop-table">
               <thead>
                 <tr>
                   <th>رقم الطلب</th>
                   <th>تاريخ الطلب</th>
                   <th>بيانات العميل</th>
-                  <th>عنوان وموقع التوصيل</th>
-                  <th>عدد الأصناف</th>
+                  <th>المنطقة والعنوان</th>
+                  <th>طريقة الدفع</th>
+                  <th>رسوم التوصيل</th>
                   <th>الإجمالي</th>
                   <th>حالة الطلب</th>
                   <th>الإجراءات</th>
@@ -296,6 +455,15 @@ export default function AdminOrdersPage() {
               <tbody>
                 {filteredOrders.map((order) => {
                   const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.new
+                  const currentInputValue =
+                    feeInputs[order.id] !== undefined
+                      ? feeInputs[order.id]
+                      : order.delivery_fee != null
+                      ? String(order.delivery_fee)
+                      : ""
+                  const isFeeSaved =
+                    order.delivery_fee_status === "set" || order.delivery_fee_status === "free"
+
                   return (
                     <tr key={order.id}>
                       {/* Order Number */}
@@ -335,10 +503,16 @@ export default function AdminOrdersPage() {
                         </a>
                       </td>
 
-                      {/* Address & Pin Location */}
+                      {/* Area & Address */}
                       <td>
                         <div className="max-w-[220px] text-xs text-stone-700 leading-snug">
-                          <span className="font-medium block">
+                          {order.area && (
+                            <div className="inline-flex items-center gap-1 font-bold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md mb-1">
+                              <Building size={11} className="text-emerald-700 shrink-0" />
+                              <span className="truncate">{order.area}</span>
+                            </div>
+                          )}
+                          <span className="text-stone-600 block">
                             عمارة {order.address_details.building}
                             {order.address_details.apartment && `، شقة ${order.address_details.apartment}`}
                           </span>
@@ -349,24 +523,145 @@ export default function AdminOrdersPage() {
                             className="inline-flex items-center gap-1 text-[11px] text-blue-700 hover:underline mt-0.5"
                           >
                             <MapPin size={11} />
-                            <span>فتح الموقع على الخريطة</span>
+                            <span>الموقع على الخريطة</span>
                             <ExternalLink size={10} />
                           </a>
                         </div>
                       </td>
 
-                      {/* Items */}
+                      {/* Payment Method & Status */}
                       <td>
-                        <span className="text-xs font-bold text-stone-800">
-                          {order.items.length} أصناف
-                        </span>
+                        <div className="flex flex-col gap-1.5 min-w-[125px]">
+                          <span className="text-xs font-bold text-stone-800">
+                            {order.payment_method === "wallet"
+                              ? "محفظة إلكترونية"
+                              : order.payment_method === "instapay"
+                              ? "إنستاباي"
+                              : "عند الاستلام"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handlePaymentStatusToggle(
+                                order.id,
+                                (order.payment_status || order.paymentStatus) === "received"
+                                  ? "pending"
+                                  : "received"
+                              )
+                            }
+                            disabled={updatingId === order.id}
+                            className={`px-2 py-1 text-[10px] font-bold rounded-lg transition cursor-pointer border flex items-center justify-center gap-1 ${
+                              (order.payment_status || order.paymentStatus) === "received"
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                                : "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                            }`}
+                            title="تغيير حالة استلام الدفع"
+                          >
+                            {(order.payment_status || order.paymentStatus) === "received" ? (
+                              <>
+                                <span>✓</span>
+                                <span>تم استلام الدفع</span>
+                              </>
+                            ) : (
+                              <span>في انتظار الدفع</span>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+
+                      {/* Delivery Fee Input & Quick Free */}
+                      <td>
+                        <div className="flex flex-col gap-1.5 min-w-[150px]">
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min="0"
+                              step="5"
+                              placeholder="الرسوم ج.م"
+                              value={currentInputValue}
+                              onChange={(e) =>
+                                setFeeInputs((prev) => ({
+                                  ...prev,
+                                  [order.id]: e.target.value,
+                                }))
+                              }
+                              className="w-20 px-2 py-1 text-xs border border-stone-300 rounded-lg font-mono focus:border-emerald-600 outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFeeInputs((prev) => ({ ...prev, [order.id]: "0" }))
+                                handleSaveDeliveryFee(order.id, 0, "free")
+                              }}
+                              disabled={updatingId === order.id}
+                              className="px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition cursor-pointer"
+                              title="تحديد التوصيل مجاني"
+                            >
+                              مجاني
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = Number(currentInputValue || 0)
+                                handleSaveDeliveryFee(
+                                  order.id,
+                                  val,
+                                  val === 0 ? "free" : "set"
+                                )
+                              }}
+                              disabled={updatingId === order.id}
+                              className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-stone-800 hover:bg-black text-white transition cursor-pointer"
+                            >
+                              حفظ
+                            </button>
+                          </div>
+                          <div>
+                            {order.delivery_fee_status === "free" ? (
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                تم التحديد: مجاني
+                              </span>
+                            ) : order.delivery_fee_status === "set" ? (
+                              <span className="text-[10px] font-bold text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded">
+                                تم التحديد: {number.format(order.delivery_fee ?? 0)} ج.م
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                                لم تُحدد بعد (قيد الانتظار)
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
 
                       {/* Total */}
                       <td>
-                        <strong className="text-sm font-extrabold text-emerald-800">
-                          {number.format(order.total_price)} ج.م
-                        </strong>
+                        {order.delivery_fee_status === "pending" ||
+                        order.delivery_fee_status === null ||
+                        order.delivery_fee_status === undefined ? (
+                          <div>
+                            <strong className="text-sm font-extrabold text-stone-800 block">
+                              {number.format(order.subtotal_price ?? order.total_price)} ج.م
+                            </strong>
+                            <span className="text-[10px] font-bold text-amber-700 block">
+                              (بدون التوصيل)
+                            </span>
+                          </div>
+                        ) : (
+                          <div>
+                            <strong className="text-sm font-extrabold text-emerald-800 block">
+                              {number.format(order.total_price)} ج.م
+                            </strong>
+                            {order.delivery_fee_status === "free" ? (
+                              <span className="text-[10px] text-emerald-700 block font-medium">
+                                شامل توصيل مجاني
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-stone-500 block">
+                                شامل التوصيل ({number.format(order.delivery_fee ?? 0)} ج.م)
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
 
                       {/* Status Dropdown */}
@@ -388,22 +683,37 @@ export default function AdminOrdersPage() {
 
                       {/* Actions */}
                       <td>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedOrder(order)}
-                            className="px-2.5 py-1 text-xs font-bold rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition cursor-pointer"
-                          >
-                            التفاصيل
-                          </button>
-                          <Link
-                            href={`/order/${order.id}`}
-                            target="_blank"
-                            className="p-1 text-stone-400 hover:text-emerald-700 transition"
-                            title="عرض صفحة تأكيد الزبون"
-                          >
-                            <ExternalLink size={15} />
-                          </Link>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedOrder(order)}
+                              className="px-2.5 py-1 text-xs font-bold rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition cursor-pointer"
+                            >
+                              التفاصيل
+                            </button>
+                            <Link
+                              href={`/order/${order.id}`}
+                              target="_blank"
+                              className="p-1 text-stone-400 hover:text-emerald-700 transition"
+                              title="عرض فاتورة العميل"
+                            >
+                              <ExternalLink size={15} />
+                            </Link>
+                          </div>
+
+                          {isFeeSaved && (
+                            <a
+                              href={getWhatsAppShareUrl(order)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-1 px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition text-center shadow-xs"
+                              title="إرسال الإجمالي للعميل عبر واتساب"
+                            >
+                              <MessageCircle size={12} />
+                              <span>إرسال الإجمالي للعميل</span>
+                            </a>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -411,7 +721,259 @@ export default function AdminOrdersPage() {
                 })}
               </tbody>
             </table>
-          )}
+
+            {/* MOBILE ORDERS LIST */}
+            <div className="admin-orders-mobile-list">
+              {filteredOrders.map((order) => {
+                const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.new
+                const currentInputValue =
+                  feeInputs[order.id] !== undefined
+                    ? feeInputs[order.id]
+                    : order.delivery_fee != null
+                    ? String(order.delivery_fee)
+                    : ""
+                const isFeeSaved =
+                  order.delivery_fee_status === "set" || order.delivery_fee_status === "free"
+
+                return (
+                  <div key={order.id} className="mobile-order-card">
+                    {/* Header */}
+                    <div className="mobile-order-header">
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span className="font-mono font-black text-stone-900 text-base">
+                            #{order.order_number}
+                          </span>
+                          <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                            {cfg.label}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-400 font-mono">
+                          {new Date(order.created_at).toLocaleDateString("ar-EG")} • {new Date(order.created_at).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+
+                      {/* Status Select */}
+                      <select
+                        value={order.status}
+                        disabled={updatingId === order.id}
+                        onChange={(e) =>
+                          handleStatusChange(order.id, e.target.value as OrderStatus)
+                        }
+                        className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none transition ${cfg.bg} ${cfg.color} ${cfg.border}`}
+                      >
+                        <option value="new">جديد</option>
+                        <option value="preparing">قيد التجهيز</option>
+                        <option value="delivered">تم التسليم</option>
+                        <option value="cancelled">ملغي</option>
+                      </select>
+                    </div>
+
+                    {/* Customer Details & 1-Tap Quick Contact */}
+                    <div className="mobile-order-customer-box">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <strong className="text-stone-900 text-sm font-black">
+                          {order.customer_name}
+                        </strong>
+                        <span className="text-xs font-mono font-bold text-stone-600" dir="ltr">
+                          {order.customer_phone}
+                        </span>
+                      </div>
+
+                      <div className="mobile-contact-actions">
+                        <a
+                          href={`tel:${order.customer_phone}`}
+                          className="mobile-contact-btn mobile-contact-call"
+                          title="اتصال هاتفي مباشر"
+                        >
+                          <Phone size={15} />
+                          <span>اتصال هاتفي</span>
+                        </a>
+                        <a
+                          href={`https://wa.me/20${order.customer_phone.replace(/^0+/, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mobile-contact-btn mobile-contact-whatsapp"
+                          title="محادثة واتساب مباشرة"
+                        >
+                          <MessageCircle size={15} />
+                          <span>واتساب</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Delivery Address & Copy */}
+                    <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.75rem", fontSize: "0.82rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                        <div style={{ flex: 1 }}>
+                          {order.area && (
+                            <span className="font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded text-[11px] inline-block mb-1">
+                              📍 {order.area}
+                            </span>
+                          )}
+                          <p className="text-stone-700 font-medium leading-relaxed">
+                            عمارة {order.address_details?.building || "غير محدد"}، الدور {order.address_details?.floor || "غير محدد"}، شقة {order.address_details?.apartment || "غير محدد"}
+                            {order.address_details?.landmark && ` (علامة: ${order.address_details.landmark})`}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAddress(order)}
+                          className="px-2.5 py-1.5 rounded-lg border text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+                          style={{
+                            background: copiedOrderId === order.id ? "#ecfdf5" : "#ffffff",
+                            borderColor: copiedOrderId === order.id ? "#10b981" : "#cbd5e1",
+                            color: copiedOrderId === order.id ? "#047857" : "#475569",
+                            flexShrink: 0
+                          }}
+                          title="نسخ العنوان للدليفري"
+                        >
+                          {copiedOrderId === order.id ? <Check size={13} /> : <Copy size={13} />}
+                          <span>{copiedOrderId === order.id ? "تم النسخ" : "نسخ"}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Items Summary */}
+                    <div style={{ fontSize: "0.8rem", color: "#334155", background: "#fafaf9", padding: "0.6rem 0.75rem", borderRadius: 10 }}>
+                      <span className="text-[11px] font-bold text-stone-500 block mb-1">
+                        الأصناف المطلوبة ({order.items?.length || 0}):
+                      </span>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        {order.items?.map((it, idx) => (
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem" }}>
+                            <span className="font-semibold text-stone-800">{it.name_ar} × {it.qty} {it.unit || ""}</span>
+                            <span className="font-mono font-bold text-stone-600">{number.format(it.line_total || it.unit_price * it.qty)} ج.م</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Delivery Fee Editor */}
+                    <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 12, padding: "0.75rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                        <span className="text-xs font-black text-emerald-900">رسوم التوصيل:</span>
+                        {order.delivery_fee_status === "free" ? (
+                          <span className="text-[11px] font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                            محددة: مجاني ✓
+                          </span>
+                        ) : order.delivery_fee_status === "set" ? (
+                          <span className="text-[11px] font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                            محددة: {number.format(order.delivery_fee ?? 0)} ج.م
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                            لم تُحدد بعد
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", width: "100%" }}>
+                        <input
+                          type="number"
+                          placeholder="ج.م"
+                          value={currentInputValue}
+                          onChange={(e) =>
+                            setFeeInputs((prev) => ({ ...prev, [order.id]: e.target.value }))
+                          }
+                          style={{ minHeight: 40, fontSize: 16, minWidth: 0, flex: "1 1 0%" }}
+                          className="px-3 py-1 border border-emerald-300 rounded-lg font-mono font-bold bg-white focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFeeInputs((prev) => ({ ...prev, [order.id]: "0" }))
+                            handleSaveDeliveryFee(order.id, 0, "free")
+                          }}
+                          disabled={updatingId === order.id}
+                          style={{ flexShrink: 0, whiteSpace: "nowrap", minHeight: 40 }}
+                          className="px-3 py-2 text-xs font-extrabold rounded-lg bg-white border border-emerald-400 text-emerald-800 cursor-pointer"
+                        >
+                          مجاني
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const val = Number(currentInputValue || 0)
+                            handleSaveDeliveryFee(order.id, val, val === 0 ? "free" : "set")
+                          }}
+                          disabled={updatingId === order.id}
+                          style={{ flexShrink: 0, whiteSpace: "nowrap", minHeight: 40 }}
+                          className="px-4 py-2 text-xs font-extrabold rounded-lg bg-emerald-800 text-white cursor-pointer"
+                        >
+                          حفظ
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Payment Method & Total Row */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "0.25rem" }}>
+                      <div>
+                        <span className="text-[11px] text-stone-500 block">طريقة الدفع:</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "2px" }}>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-stone-100 text-stone-800">
+                            {order.payment_method === "wallet"
+                              ? "محفظة إلكترونية"
+                              : order.payment_method === "instapay"
+                              ? "إنستاباي"
+                              : "عند الاستلام"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handlePaymentStatusToggle(
+                                order.id,
+                                order.payment_status === "received" ? "pending" : "received"
+                              )
+                            }
+                            className={`text-[11px] font-bold px-2 py-0.5 rounded cursor-pointer ${
+                              order.payment_status === "received"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-rose-100 text-rose-800"
+                            }`}
+                            title="انقر لتغيير حالة السداد"
+                          >
+                            {order.payment_status === "received" ? "مدفوع ✓" : "لم يُسدد ✕"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "left" }}>
+                        <span className="text-[11px] text-stone-500 block">الإجمالي:</span>
+                        <strong className="text-base font-black text-stone-900 font-mono">
+                          {number.format(order.total_price)} ج.م
+                        </strong>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", paddingTop: "0.25rem" }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(order)}
+                        className="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs text-center cursor-pointer"
+                      >
+                        عرض التفاصيل والفاتورة
+                      </button>
+
+                      {isFeeSaved && (
+                        <a
+                          href={getWhatsAppShareUrl(order)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-bold rounded-xl bg-emerald-700 text-white shadow-xs"
+                          title="إرسال الإجمالي للعميل عبر واتساب"
+                        >
+                          <MessageCircle size={14} />
+                          <span>واتساب</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
         </div>
       </div>
 
@@ -445,10 +1007,18 @@ export default function AdminOrdersPage() {
 
             <div className="py-4 space-y-4 text-sm">
               {/* Customer */}
-              <div className="p-3 bg-stone-50 rounded-xl space-y-1">
-                <span className="text-xs font-bold text-stone-500 block">بيانات العميل:</span>
+              <div className="p-3 bg-stone-50 rounded-xl space-y-1.5">
+                <span className="text-xs font-bold text-stone-500 block">بيانات العميل والتوصيل:</span>
                 <p><strong>الاسم:</strong> {selectedOrder.customer_name}</p>
                 <p><strong>الهاتف:</strong> <span dir="ltr">{selectedOrder.customer_phone}</span></p>
+                {selectedOrder.area && (
+                  <p>
+                    <strong>منطقة التوصيل:</strong>{" "}
+                    <span className="font-bold text-emerald-800 bg-emerald-100/60 px-2 py-0.5 rounded">
+                      {selectedOrder.area}
+                    </span>
+                  </p>
+                )}
                 <p>
                   <strong>العنوان:</strong> عمارة {selectedOrder.address_details.building}،
                   الدور {selectedOrder.address_details.floor || "غير محدد"}،
@@ -472,6 +1042,74 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
 
+              {/* Delivery Fee Management Box */}
+              <div className="p-3.5 bg-emerald-50/50 border border-emerald-200/70 rounded-xl space-y-2">
+                <span className="text-xs font-extrabold text-emerald-950 block">إدارة رسوم التوصيل:</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    step="5"
+                    placeholder="قيمة الرسوم ج.م"
+                    defaultValue={selectedOrder.delivery_fee != null ? String(selectedOrder.delivery_fee) : ""}
+                    id="modal-fee-input"
+                    className="w-28 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg font-mono outline-none focus:border-emerald-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById("modal-fee-input") as HTMLInputElement
+                      if (input) input.value = "0"
+                      handleSaveDeliveryFee(selectedOrder.id, 0, "free")
+                    }}
+                    disabled={updatingId === selectedOrder.id}
+                    className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition cursor-pointer"
+                  >
+                    مجاني
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById("modal-fee-input") as HTMLInputElement
+                      const val = Number(input?.value || 0)
+                      handleSaveDeliveryFee(
+                        selectedOrder.id,
+                        val,
+                        val === 0 ? "free" : "set"
+                      )
+                    }}
+                    disabled={updatingId === selectedOrder.id}
+                    className="px-4 py-1.5 text-xs font-bold rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white transition cursor-pointer"
+                  >
+                    حفظ الرسوم
+                  </button>
+                </div>
+
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-emerald-100">
+                  <div className="text-xs">
+                    {selectedOrder.delivery_fee_status === "free" ? (
+                      <span className="font-bold text-emerald-800">الحالة الحالية: توصيل مجاني</span>
+                    ) : selectedOrder.delivery_fee_status === "set" ? (
+                      <span className="font-bold text-stone-800">
+                        الحالة الحالية: رسوم التوصيل {number.format(selectedOrder.delivery_fee ?? 0)} ج.م
+                      </span>
+                    ) : (
+                      <span className="font-bold text-amber-700">الحالة الحالية: لم تُحدد بعد (قيد الانتظار)</span>
+                    )}
+                  </div>
+
+                  <a
+                    href={getWhatsAppShareUrl(selectedOrder)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs"
+                  >
+                    <MessageCircle size={14} />
+                    <span>إرسال الإجمالي للعميل عبر واتساب</span>
+                  </a>
+                </div>
+              </div>
+
               {/* Items Table */}
               <div>
                 <span className="text-xs font-bold text-stone-500 block mb-2">الأصناف المطلوبة:</span>
@@ -488,7 +1126,7 @@ export default function AdminOrdersPage() {
                     <tbody className="divide-y divide-stone-100">
                       {selectedOrder.items.map((it, idx) => (
                         <tr key={idx}>
-                          <td className="p-2.5 font-bold">{it.name}</td>
+                          <td className="p-2.5 font-bold">{(it as any).name_ar || (it as any).name || "صنف"}</td>
                           <td className="p-2.5">{number.format(it.qty)} {it.unit}</td>
                           <td className="p-2.5">{number.format(it.unit_price)} ج.م</td>
                           <td className="p-2.5 font-bold text-emerald-800">
@@ -501,30 +1139,94 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
 
-              {/* Total & Status */}
-              <div className="flex items-center justify-between pt-2">
-                <div>
-                  <span className="text-xs text-stone-400 block">إجمالي الفاتورة:</span>
-                  <span className="text-xl font-extrabold text-emerald-800">
+              {/* Breakdown & Status */}
+              <div className="p-3 bg-stone-50 rounded-xl space-y-2">
+                <div className="flex justify-between text-xs text-stone-600">
+                  <span>إجمالي المنتجات:</span>
+                  <span className="font-mono font-bold">
+                    {number.format(
+                      selectedOrder.subtotal_price ??
+                        selectedOrder.items.reduce((s, it) => s + (it.line_total || 0), 0)
+                    )} ج.م
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs text-stone-600">
+                  <span>رسوم التوصيل:</span>
+                  <span className="font-mono font-bold">
+                    {selectedOrder.delivery_fee_status === "free"
+                      ? "مجاني"
+                      : selectedOrder.delivery_fee_status === "set"
+                      ? `${number.format(selectedOrder.delivery_fee ?? 0)} ج.م`
+                      : "بيتحدد حسب المسافة"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm font-extrabold text-stone-900 pt-2 border-t border-stone-200">
+                  <span>
+                    {selectedOrder.delivery_fee_status === "free" || selectedOrder.delivery_fee_status === "set"
+                      ? "الإجمالي النهائي:"
+                      : "الإجمالي (بدون التوصيل):"}
+                  </span>
+                  <span className="text-emerald-800 text-lg font-mono">
                     {number.format(selectedOrder.total_price)} ج.م
                   </span>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-stone-500 font-bold">تغيير الحالة:</span>
-                  <select
-                    value={selectedOrder.status}
-                    onChange={(e) =>
-                      handleStatusChange(selectedOrder.id, e.target.value as OrderStatus)
-                    }
-                    className="text-xs font-bold p-2 rounded-lg border border-stone-300"
-                  >
-                    <option value="new">جديد</option>
-                    <option value="preparing">قيد التجهيز</option>
-                    <option value="delivered">تم التسليم</option>
-                    <option value="cancelled">ملغي</option>
-                  </select>
+              {/* Payment Details in Modal */}
+              <div className="p-3 bg-stone-50 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-stone-500 font-bold block mb-0.5">طريقة الدفع:</span>
+                  <span className="text-sm font-bold text-stone-900">
+                    {selectedOrder.payment_method === "wallet"
+                      ? `محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}`
+                      : selectedOrder.payment_method === "instapay"
+                      ? "إنستاباي (InstaPay)"
+                      : "الدفع عند الاستلام (نقدًا)"}
+                  </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePaymentStatusToggle(
+                      selectedOrder.id,
+                      (selectedOrder.payment_status || selectedOrder.paymentStatus) === "received"
+                        ? "pending"
+                        : "received"
+                    )
+                  }
+                  disabled={updatingId === selectedOrder.id}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer border flex items-center gap-1.5 ${
+                    (selectedOrder.payment_status || selectedOrder.paymentStatus) === "received"
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                      : "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                  }`}
+                >
+                  {(selectedOrder.payment_status || selectedOrder.paymentStatus) === "received" ? (
+                    <>
+                      <span>✓</span>
+                      <span>تم استلام الدفع</span>
+                    </>
+                  ) : (
+                    <span>تأكيد استلام الدفع</span>
+                  )}
+                </button>
+              </div>
+
+              {/* Status Selector */}
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs text-stone-500 font-bold">تغيير حالة الطلب:</span>
+                <select
+                  value={selectedOrder.status}
+                  onChange={(e) =>
+                    handleStatusChange(selectedOrder.id, e.target.value as OrderStatus)
+                  }
+                  className="text-xs font-bold p-2 rounded-lg border border-stone-300"
+                >
+                  <option value="new">جديد</option>
+                  <option value="preparing">قيد التجهيز</option>
+                  <option value="delivered">تم التسليم</option>
+                  <option value="cancelled">ملغي</option>
+                </select>
               </div>
             </div>
 
@@ -551,3 +1253,4 @@ export default function AdminOrdersPage() {
     </div>
   )
 }
+

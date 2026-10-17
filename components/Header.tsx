@@ -17,18 +17,23 @@ import { type Product } from "@/data/products"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
-export default function Header({ solid = true }: { solid?: boolean }) {
-  const products = useActiveProducts()
-  const items = useCart((state) => state.items)
+export default function Header({
+  solid = true,
+  hideLogo = false,
+}: {
+  solid?: boolean
+  hideLogo?: boolean
+}) {
+  const count = useCart((state) => Object.keys(state.items).length)
   const setOpen = useCart((state) => state.setOpen)
   const add = useCart((state) => state.add)
-  const count = Object.keys(items).length
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const products = useActiveProducts()
 
   useEffect(() => {
     void useCart.persist.rehydrate()
@@ -70,7 +75,7 @@ export default function Header({ solid = true }: { solid?: boolean }) {
   const searchResults = cleanSearch
     ? products
         .filter(
-          (p) =>
+          (p: Product) =>
             p.name.toLowerCase().includes(cleanSearch) ||
             p.section.toLowerCase().includes(cleanSearch) ||
             (p.tag && p.tag.toLowerCase().includes(cleanSearch)),
@@ -88,16 +93,17 @@ export default function Header({ solid = true }: { solid?: boolean }) {
   return (
     <>
       <header className={`site-header ${isSolid ? "header-solid" : ""}`}>
-        {}
+        {/* Right side in RTL: Brand Logo Badge */}
         <Link
           href="/"
-          className="logo-link"
+          className={`logo-link ${hideLogo ? "invisible pointer-events-none select-none opacity-0" : ""}`}
           aria-label="الصفحة الرئيسية - نور فارم"
+          tabIndex={hideLogo ? -1 : undefined}
         >
           <BrandMark />
         </Link>
 
-        {}
+        {/* Center: Main Navigation */}
         <nav className="desktop-nav" aria-label="التنقل الرئيسي">
           <Link href="/" className="nav-item">
             الرئيسية
@@ -108,8 +114,8 @@ export default function Header({ solid = true }: { solid?: boolean }) {
           <Link href="/fruits" className="nav-item">
             قسم الفاكهة
           </Link>
-          <Link href="/products" className="nav-item">
-            جميع الأصناف
+          <Link href="/all" className="nav-item">
+            الكل
           </Link>
         </nav>
 
@@ -208,7 +214,7 @@ export default function Header({ solid = true }: { solid?: boolean }) {
                     <div className="search-results-title">
                       <span>المنتجات المطابقة ({searchResults.length})</span>
                     </div>
-                    {searchResults.map((product) => (
+                    {searchResults.map((product: Product) => (
                       <div key={product.id} className="search-result-row">
                         <Link
                           href={`/products?search=${encodeURIComponent(product.name)}`}
@@ -350,10 +356,10 @@ export default function Header({ solid = true }: { solid?: boolean }) {
                 قسم الفاكهة
               </Link>
               <Link
-                href="/products"
+                href="/all"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                جميع الأصناف
+                الكل
               </Link>
             </div>
           </nav>

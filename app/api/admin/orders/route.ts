@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { isAuthenticatedAdmin } from "@/lib/auth/server-auth"
-import { getOrders, updateOrderStatus, type OrderStatus } from "@/lib/db"
+import {
+  getOrders,
+  updateOrderStatus,
+  updateOrderDeliveryFee,
+  type OrderStatus,
+  type DeliveryFeeStatus,
+} from "@/lib/db"
+
+export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
   const isAuth = await isAuthenticatedAdmin()
@@ -22,19 +30,55 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const { id, status } = await req.json()
-    if (!id || !status) {
-      return NextResponse.json({ error: "المعرف والحالة مطلوبان" }, { status: 400 })
+    const body = await req.json()
+    const { id, status, deliveryFee, deliveryFeeStatus } = body
+
+    if (!id) {
+      return NextResponse.json({ error: "معرف الطلب مطلوب" }, { status: 400 })
     }
 
-    const updated = await updateOrderStatus(id, status)
-    if (!updated) {
+    let updatedOrder = null
+
+    // If delivery fee is being updated
+    if (deliveryFeeStatus !== undefined || deliveryFee !== undefined) {
+      const feeStatus: DeliveryFeeStatus = deliveryFeeStatus === "free" ? "free" : "set"
+      const feeNum = feeStatus === "free" ? 0 : Number(deliveryFee) || 0
+
+      if (feeStatus === "set" && (isNaN(feeNum) || feeNum < 0)) {
+        return NextResponse.json(
+          { error: "رسوم التوصيل يجب أن تكون رقماً موجباً" },
+          { status: 400 }
+        )
+      }
+
+      updatedOrder = await updateOrderDeliveryFee(id, feeNum, feeStatus)
+    }
+
+    // If payment status is being updated
+    const rawPayStatus = body.paymentStatus || body.payment_status
+    if (rawPayStatus !== undefined) {
+      if (rawPayStatus !== "pending" && rawPayStatus !== "received") {
+        return NextResponse.json({ error: "حالة الدفع غير صحيحة" }, { status: 400 })
+      }
+      const { updateOrderPaymentStatus } = await import("@/lib/db")
+      updatedOrder = await updateOrderPaymentStatus(id, rawPayStatus as any)
+    }
+
+    // If order status is being updated
+    if (status) {
+      updatedOrder = await updateOrderStatus(id, status as OrderStatus)
+    }
+
+    if (!updatedOrder) {
       return NextResponse.json({ error: "الطلب غير موجود" }, { status: 404 })
     }
 
-    return NextResponse.json({ order: updated })
+    return NextResponse.json({ order: updatedOrder })
   } catch (err: any) {
-    console.error("Order status update error:", err)
-    return NextResponse.json({ error: err.message || "فشل تحديث حالة الطلب" }, { status: 500 })
+    console.error("Order update error:", err)
+    return NextResponse.json(
+      { error: err.message || "فشل تحديث الطلب" },
+      { status: 500 }
+    )
   }
 }

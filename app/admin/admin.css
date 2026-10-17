@@ -1010,3 +1010,551 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE ADMIN BOTTOM NAV & RESPONSIVE LAYOUT
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .admin-mobile-bottom-nav {
+    display: none !important;
+  }
+  .admin-mobile-cards-only {
+    display: none !important;
+  }
+  .admin-orders-mobile-list {
+    display: none !important;
+  }
+  .admin-mobile-fab {
+    display: none !important;
+  }
+  .admin-mobile-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-desktop-only {
+    display: none !important;
+  }
+  .admin-table-desktop-only {
+    display: none !important;
+  }
+  .admin-orders-desktop-table {
+    display: none !important;
+  }
+
+  .admin-root {
+    padding-bottom: 96px !important;
+  }
+
+  .admin-container {
+    padding: 0.85rem 0.75rem !important;
+  }
+
+  /* Compact KPI metrics on mobile (2 columns) */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.65rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .kpi-card {
+    padding: 0.85rem 0.9rem !important;
+    border-radius: 14px !important;
+  }
+
+  .kpi-card-header {
+    margin-bottom: 0.4rem !important;
+  }
+
+  .kpi-card-title {
+    font-size: 0.75rem !important;
+  }
+
+  .kpi-card-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 9px !important;
+  }
+
+  .kpi-card-icon svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  .kpi-card-value {
+    font-size: 1.45rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  .kpi-card-subline {
+    font-size: 0.68rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Responsive Toolbar */
+  .admin-toolbar-card {
+    padding: 0.9rem 0.85rem !important;
+    border-radius: 16px !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .toolbar-top-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .toolbar-search-wrapper {
+    min-width: 100% !important;
+  }
+
+  .toolbar-search-input {
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    padding: 0.7rem 2.6rem 0.7rem 0.85rem !important;
+  }
+
+  .toolbar-buttons-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .toolbar-buttons-group .btn-primary-add {
+    grid-column: span 2 !important;
+    justify-content: center !important;
+    font-size: 0.95rem !important;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .toolbar-buttons-group .btn-secondary-action {
+    justify-content: center !important;
+    font-size: 0.82rem !important;
+    padding: 0.7rem 0.6rem !important;
+  }
+
+  .toolbar-filters-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  .category-tabs {
+    width: 100% !important;
+    padding-bottom: 0.4rem !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .category-tab-btn {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .view-controls {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  .view-controls select,
+  .view-controls input,
+  .form-select,
+  .form-input {
+    font-size: 16px !important; /* Prevents iOS zoom */
+    min-height: 44px !important;
+  }
+
+  /* Hide bottom nav and FAB when any modal or sheet is open */
+  body:has(.modal-backdrop) .admin-mobile-bottom-nav,
+  body:has(.modal-backdrop) .admin-mobile-fab {
+    display: none !important;
+  }
+
+  /* Full screen modals & sheets on mobile */
+  .modal-backdrop {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    z-index: 100000 !important;
+  }
+
+  .modal-dialog,
+  .modal-card,
+  .admin-sheet-dialog {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    z-index: 100001 !important;
+    background: #ffffff !important;
+  }
+
+  .modal-header {
+    position: sticky !important;
+    top: 0 !important;
+    background: #faf6ee !important;
+    z-index: 20 !important;
+    padding: 1rem 1.15rem !important;
+    border-bottom: 1.5px solid rgba(47, 59, 39, 0.12) !important;
+  }
+
+  .modal-body,
+  .admin-sheet-body {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 1.25rem 1rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  .modal-footer,
+  .admin-sheet-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #faf6ee !important;
+    border-top: 1.5px solid rgba(47, 59, 39, 0.15) !important;
+    padding: 0.85rem 1rem !important;
+    z-index: 100002 !important;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.75rem !important;
+    margin-top: auto !important;
+  }
+
+  .modal-footer button,
+  .admin-sheet-footer button {
+    flex: 1 !important;
+    min-height: 46px !important;
+    font-size: 0.95rem !important;
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE FLOATING ACTION BUTTON (FAB)
+   ───────────────────────────────────────────────────────────── */
+.admin-mobile-fab {
+  position: fixed;
+  bottom: 76px;
+  left: 16px;
+  z-index: 999;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+  color: #ffffff;
+  border-radius: 999px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  text-decoration: none;
+  animation: fabPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fabPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE PRODUCT CARDS (Dashboard /admin)
+   ───────────────────────────────────────────────────────────── */
+.admin-mobile-product-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(47, 59, 39, 0.12);
+  border-radius: 18px;
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.admin-mobile-product-card:active {
+  transform: scale(0.99);
+}
+
+.mobile-card-top-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.mobile-card-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f4efe4;
+  border: 1px solid rgba(47, 59, 39, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mobile-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1a2a1d;
+  margin-bottom: 0.25rem;
+  line-height: 1.25;
+}
+
+.mobile-card-section-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.mobile-card-middle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: #faf6ee;
+  padding: 0.6rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(47, 59, 39, 0.08);
+}
+
+.mobile-card-price-box {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mobile-card-price-input {
+  width: 72px;
+  min-height: 36px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e3322;
+  background: #ffffff;
+  border: 1.5px solid rgba(47, 59, 39, 0.18);
+  border-radius: 8px;
+  text-align: center;
+  outline: none;
+}
+
+.mobile-card-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.mobile-toggle-btn {
+  flex: 1;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-toggle-btn.is-published {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1.5px solid #a5d6a7;
+}
+
+.mobile-toggle-btn.is-draft {
+  background: #f3f4f6;
+  color: #64748b;
+  border: 1.5px solid #cbd5e1;
+}
+
+.mobile-action-icon-btn {
+  min-height: 42px;
+  min-width: 44px;
+  padding: 0 0.85rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1px solid rgba(47, 59, 39, 0.15);
+  background: #ffffff;
+  color: #2f3b27;
+  cursor: pointer;
+}
+
+.mobile-action-icon-btn.is-danger {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE ORDERS CARDS (/admin/orders)
+   ───────────────────────────────────────────────────────────── */
+.mobile-order-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(47, 59, 39, 0.12);
+  border-radius: 18px;
+  padding: 1.1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.mobile-order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(47, 59, 39, 0.08);
+  padding-bottom: 0.65rem;
+}
+
+.mobile-order-customer-box {
+  background: #fbf8f0;
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-contact-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.mobile-contact-btn {
+  min-height: 42px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-contact-call {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.mobile-contact-whatsapp {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GALLERY PRODUCT CARDS (Responsive & Touch-Optimized)
+   ───────────────────────────────────────────────────────────── */
+.section-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .section-gallery-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+}
+
+.gallery-product-card {
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.gallery-product-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.gallery-product-card.is-missing {
+  border-color: #f59e0b;
+  border-style: solid;
+  background: #fffdfa;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.12);
+}
+
+.gallery-product-card.is-missing::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #f59e0b;
+  border-radius: 16px 16px 0 0;
+}
+
+.touch-target-44 {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+

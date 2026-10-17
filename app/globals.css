@@ -13,8 +13,8 @@
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Curated organic color palette */
-  --cream: #f7f0e3;
-  --cream-surface: #faf5ec;
+  --cream: #EDE3CF;
+  --cream-surface: #FBF6EA;
   --ink: #2f3b27;
   --forest: #1e3322;
   --forest-dark: #142217;
@@ -3123,12 +3123,14 @@ button {
   background: rgba(20, 34, 23, 0.52);
   opacity: 0;
   visibility: hidden;
-  transition: .35s ease;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .drawer-scrim.is-open {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .cart-drawer {
@@ -3138,15 +3140,17 @@ button {
   width: min(92vw, 29rem);
   background: var(--cream);
   transform: translateX(-105%);
-  transition: transform .5s cubic-bezier(.2, .8, .2, 1);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   padding: 2rem;
   display: flex;
   flex-direction: column;
   box-shadow: 20px 0 60px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
 }
 
 .cart-drawer.is-open {
   transform: translateX(0);
+  pointer-events: auto;
 }
 
 .drawer-head {
@@ -3848,8 +3852,14 @@ button {
   transform: none;
 }
 
-.checkout-mobile-bottom-submit {
-  display: none;
+@keyframes pulseHighlight {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); border-color: var(--tomato); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.2); border-color: var(--tomato); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.highlight-pulse {
+  animation: pulseHighlight 1.4s ease-out;
 }
 
 .whatsapp-info-hint {
@@ -4046,11 +4056,6 @@ button {
 
   .checkout-section-card {
     padding: 1.5rem 1.25rem;
-  }
-
-  .checkout-mobile-bottom-submit {
-    display: block;
-    margin-top: 1.5rem;
   }
 }
 
@@ -5409,4 +5414,298 @@ button {
     break-inside: avoid;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   HOME PAGE ONE-SCREEN STYLES (Noor Farm Hero V2)
+   ═══════════════════════════════════════════════════════════════ */
+.home-viewport-container {
+  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background-color: #FA9EB8;
+  background: radial-gradient(circle at 50% 28%, #FCC1D1 0%, #FA9EB8 60%, #F58CA9 100%);
+  position: relative;
+}
+
+.home-viewport-container .site-header {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(47, 59, 39, 0.08);
+  box-shadow: 0 2px 14px rgba(47, 59, 39, 0.04);
+}
+
+.home-viewport-container footer {
+  background-color: transparent !important;
+  border-top-color: rgba(47, 59, 39, 0.08) !important;
+}
+
+.home-center-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.home-logo-wrap {
+  position: relative;
+  width: min(32vh, 60vw);
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  animation: logoEnter 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (min-width: 1024px) {
+  .home-logo-wrap {
+    width: min(38vh, 55vw);
+    max-width: 360px;
+    margin-bottom: 1rem;
+  }
+}
+
+.home-logo-img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  border-radius: 50%;
+  z-index: 2;
+  user-select: none;
+  box-shadow: 0 8px 28px rgba(47, 59, 39, 0.16), 0 0 0 4px #FFFFFF;
+  filter: drop-shadow(0 4px 16px rgba(47, 59, 39, 0.1));
+}
+
+.logo-dotted-ring {
+  position: absolute;
+  inset: -3%;
+  border: 2px dotted rgba(47, 59, 39, 0.35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  animation: ringRotate 60s linear infinite;
+  transform-origin: center center;
+}
+
+.logo-dotted-ring .ring-leaf {
+  position: absolute;
+  font-size: clamp(0.9rem, 1.4vw, 1.35rem);
+  user-select: none;
+  line-height: 1;
+}
+
+.logo-dotted-ring .ring-leaf-1 {
+  top: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%) rotate(10deg);
+}
+
+.logo-dotted-ring .ring-leaf-2 {
+  left: 3%;
+  bottom: 22%;
+  transform: rotate(-120deg);
+}
+
+.logo-dotted-ring .ring-leaf-3 {
+  right: 3%;
+  bottom: 26%;
+  transform: rotate(70deg);
+}
+
+@keyframes ringRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.home-slogan {
+  font-family: 'Readex Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 50px);
+  color: #1F281B;
+  line-height: 1.15;
+  text-align: center;
+  margin: 0 0 0.85rem 0;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  animation: sloganEnter 600ms cubic-bezier(0.16, 1, 0.3, 1) 150ms forwards;
+}
+
+.home-slogan .accent-word {
+  font-family: 'Aref Ruqaa', cursive;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(70, 20, 35, 0.35);
+  font-style: normal;
+  display: inline-block;
+  margin-right: 0.25rem;
+}
+
+.home-tiles-grid {
+  display: grid;
+  width: 100%;
+  max-width: 920px;
+  gap: 0.65rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (min-width: 768px) {
+  .home-tiles-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+  }
+}
+
+.home-tile {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  color: #2F3B27;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(47, 59, 39, 0.08);
+}
+
+.home-tile:hover,
+.home-tile:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(47, 59, 39, 0.12);
+}
+
+.home-tile:focus-visible {
+  outline: 2px solid #2F4A33;
+  outline-offset: 3px;
+}
+
+.home-tile:hover .tile-produce-img,
+.home-tile:focus-visible .tile-produce-img {
+  transform: scale(1.05);
+}
+
+.home-tile-title {
+  font-family: 'Readex Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.8vw, 19px);
+  color: #2F3B27;
+  text-align: center;
+  z-index: 2;
+  margin-bottom: 0.2rem;
+}
+
+.home-tile-visual {
+  position: relative;
+  width: 100%;
+  height: clamp(48px, 8.5vh, 76px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.tile-produce-img {
+  position: absolute;
+  object-fit: contain;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 3px 6px rgba(47, 59, 39, 0.12));
+  user-select: none;
+}
+
+/* Produce tile themes */
+.home-tile-veg {
+  background-color: rgba(251, 246, 234, 0.94);
+}
+
+.home-tile-fruits {
+  background-color: rgba(251, 246, 234, 0.94);
+}
+
+.home-tile-all {
+  background-color: rgba(251, 246, 234, 0.97);
+  grid-column: span 2;
+}
+
+@media (min-width: 768px) {
+  .home-tile-all {
+    grid-column: span 1;
+  }
+  .home-tile {
+    padding: 1.15rem 1.15rem;
+  }
+  .home-tile-visual {
+    height: clamp(70px, 10.5vh, 100px);
+  }
+}
+
+/* Stagger entrance */
+.home-tile-1 {
+  opacity: 0;
+  animation: tileEnter 500ms cubic-bezier(0.16, 1, 0.3, 1) 240ms forwards;
+}
+.home-tile-2 {
+  opacity: 0;
+  animation: tileEnter 500ms cubic-bezier(0.16, 1, 0.3, 1) 330ms forwards;
+}
+.home-tile-3 {
+  opacity: 0;
+  animation: tileEnter 500ms cubic-bezier(0.16, 1, 0.3, 1) 420ms forwards;
+}
+
+@keyframes logoEnter {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes sloganEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes tileEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-logo-wrap,
+  .home-slogan,
+  .home-tile-1,
+  .home-tile-2,
+  .home-tile-3 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .logo-dotted-ring {
+    animation: none !important;
+  }
+  .home-tile:hover,
+  .home-tile:focus-visible {
+    transform: none !important;
+  }
+  .home-tile:hover .tile-produce-img,
+  .home-tile:focus-visible .tile-produce-img {
+    transform: none !important;
+  }
+}
+
 

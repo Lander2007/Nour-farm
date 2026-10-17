@@ -29,6 +29,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import SlimFooter from "@/components/SlimFooter"
 import {
   ArrowLeft,
   Banknote,
@@ -54,6 +55,7 @@ import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { useCart } from "@/store/cart"
 import { useActiveProducts } from "@/store/products"
+import { useStoreSettings } from "@/store/settings"
 import { type Product } from "@/data/products"
 import type { LocationData } from "@/components/checkout/LeafletLocationPicker"
 
@@ -93,18 +95,29 @@ function WhatsAppIcon({ size = 22, color = "#25D366" }: { size?: number; color?:
   )
 }
 
-type PaymentMethod = "cod" | "card" | "wallet"
+type PaymentMethod = "cod" | "wallet" | "instapay"
 
 export default function CheckoutPage() {
   const products = useActiveProducts()
   const items = useCart((state) => state.items)
   const change = useCart((state) => state.change)
+  const storeSettings = useStoreSettings()
 
   const [mounted, setMounted] = useState(false)
+  const [selectedArea, setSelectedArea] = useState("")
+
+  const enabledAreas = (storeSettings.serviceAreas || []).filter((a) => a.enabled)
+
   useEffect(() => {
     void useCart.persist.rehydrate()
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!selectedArea && enabledAreas.length > 0) {
+      setSelectedArea(enabledAreas[0].name)
+    }
+  }, [enabledAreas, selectedArea])
 
   const getQty = (p: { id: string }) => {
     return (
@@ -133,14 +146,8 @@ export default function CheckoutPage() {
           1),
     0,
   )
-  const deliveryFee =
-    subtotal >
-    150
-      ? 0
-      : 25
-  const total =
-    subtotal +
-    deliveryFee
+  const isFreeDelivery = Boolean(storeSettings.freeDeliveryActive)
+  const total = subtotal
   const router = useRouter()
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
@@ -158,14 +165,19 @@ export default function CheckoutPage() {
     landmark: "",
   })
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod")
-  const [cardData, setCardData] = useState({
-    number: "",
-    expiry: "",
-    cvv: "",
-  })
-  const [walletPhone, setWalletPhone] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const hasWallet = Boolean(storeSettings.walletNumber && storeSettings.walletNumber.trim())
+  const hasInstapay = Boolean(storeSettings.instapayAddress && storeSettings.instapayAddress.trim())
+
+  useEffect(() => {
+    if (paymentMethod === "wallet" && !hasWallet) {
+      setPaymentMethod("cod")
+    } else if (paymentMethod === "instapay" && !hasInstapay) {
+      setPaymentMethod("cod")
+    }
+  }, [hasWallet, hasInstapay, paymentMethod])
 
   // Helper to normalize Egyptian phone (Arabic digits, country codes +20/0020, spaces, dashes)
   const normalizeEgyptianPhone = (val: string) => {
@@ -187,6 +199,9 @@ export default function CheckoutPage() {
     if (!/^01[0125][0-9]{8}$/.test(cleanPhone)) {
       errs.phone = "يرجى إدخال رقم موبايل مصري صحيح مكون من 11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015"
     }
+    if (!selectedArea.trim()) {
+      errs.area = "يرجى اختيار منطقة التوصيل من القائمة"
+    }
     if (!locationData || typeof locationData.lat !== "number" || typeof locationData.lng !== "number") {
       errs.location = "تحديد موقع التوصيل على الخريطة إلزامي لإتمام الطلب"
     }
@@ -195,23 +210,6 @@ export default function CheckoutPage() {
     }
     if (!buildingDetails.apartment.trim()) {
       errs.apartment = "يرجى كتابة رقم الشقة"
-    }
-    if (paymentMethod === "card") {
-      const cleanNum = cardData.number.replace(/\s/g, "")
-      if (!cleanNum || cleanNum.length < 16) {
-        errs.cardNumber = "أدخل رقم بطاقة صحيح (١٦ رقم)"
-      }
-      if (!cardData.expiry.trim()) {
-        errs.cardExpiry = "تاريخ الانتهاء مطلوب"
-      }
-      if (!cardData.cvv.trim() || cardData.cvv.length < 3) {
-        errs.cardCvv = "رمز CVV مطلوب"
-      }
-    } else if (paymentMethod === "wallet") {
-      const cleanWallet = normalizeEgyptianPhone(walletPhone)
-      if (!cleanWallet || cleanWallet.length < 10) {
-        errs.walletPhone = "يرجى إدخال رقم المحفظة / إنستاباي الذي قمت بالتحويل منه"
-      }
     }
 
     setErrors(errs)
@@ -258,6 +256,8 @@ export default function CheckoutPage() {
       const orderPayload = {
         customer_name: customerInfo.fullName.trim(),
         customer_phone: normalizeEgyptianPhone(customerInfo.phone),
+        area: selectedArea.trim(),
+        payment_method: paymentMethod,
         address_details: {
           building: buildingDetails.building.trim(),
           floor: buildingDetails.floor.trim(),
@@ -441,7 +441,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {}
-                <div className="checkout-section-card">
+                <div className="checkout-section-card" id="checkout-map-section">
                   <div className="checkout-section-header">
                     <span className="checkout-step-badge">٢</span>
                     <div>
@@ -507,9 +507,49 @@ export default function CheckoutPage() {
                       <div>
                         <div className="doorstep-badge-tag">خدمة التوصيل حتى باب الشقة</div>
                         <p style={{ margin: 0, fontWeight: 600, color: "var(--forest)" }}>
-                          يرجى تسجيل رقم العمارة ورقم الشقة بدقة ليتمكن المندوب من الصعود حتى باب شقتك مباشرة.
+                          يرجى تسجيل منطقة التوصيل، رقم العمارة ورقم الشقة بدقة ليتمكن المندوب من الصعود حتى باب شقتك مباشرة.
                         </p>
                       </div>
+                    </div>
+
+                    {/* Delivery Area Select - REQUIRED */}
+                    <div className="checkout-form-field" style={{ marginBottom: "1rem" }}>
+                      <label htmlFor="checkout-area-select" style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                        منطقة التوصيل <span style={{ color: "var(--tomato)" }}>*</span>
+                      </label>
+                      <select
+                        id="checkout-area-select"
+                        value={selectedArea}
+                        onChange={(e) => {
+                          setSelectedArea(e.target.value)
+                          if (errors.area) {
+                            setErrors((prev) => ({ ...prev, area: "" }))
+                          }
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "0.8rem 1rem",
+                          borderRadius: "0.75rem",
+                          border: errors.area ? "1.5px solid var(--tomato)" : "1.5px solid #d6d3d1",
+                          background: "#ffffff",
+                          fontSize: "0.95rem",
+                          fontWeight: 700,
+                          color: "#1c1917",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="">-- اختر منطقة التوصيل المعتمدة --</option>
+                        {enabledAreas.map((area) => (
+                          <option key={area.id} value={area.name}>
+                            {area.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.area && (
+                        <span className="checkout-field-error">
+                          {errors.area}
+                        </span>
+                      )}
                     </div>
 
                     <div className="checkout-form-grid">
@@ -608,14 +648,22 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="payment-methods-selector">
-                    {}
-                    <div
+                  <div className="payment-methods-selector" role="radiogroup" aria-label="طريقة الدفع">
+                    {/* COD - Always Available */}
+                    <label
                       className={`payment-method-card ${
                         paymentMethod === "cod" ? "is-selected" : ""
                       }`}
-                      onClick={() => setPaymentMethod("cod")}
+                      style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
                     >
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="cod"
+                        checked={paymentMethod === "cod"}
+                        onChange={() => setPaymentMethod("cod")}
+                        style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                      />
                       <div className="payment-method-icon-wrap">
                         <Banknote
                           style={{ width: "1.4rem", height: "1.4rem" }}
@@ -625,52 +673,71 @@ export default function CheckoutPage() {
                         الدفع عند الاستلام
                       </span>
                       <span className="payment-method-desc">
-                        نقدًا للمندوب عند وصول الخضار وباب بيتك.
+                        نقدًا للمندوب عند وصول الخضار وباب بيتك بعد فحص الجودة.
                       </span>
-                    </div>
+                    </label>
 
-                    {}
-                    <div
-                      className={`payment-method-card ${
-                        paymentMethod === "card" ? "is-selected" : ""
-                      }`}
-                      onClick={() => setPaymentMethod("card")}
-                    >
-                      <div className="payment-method-icon-wrap">
-                        <CreditCard
-                          style={{ width: "1.4rem", height: "1.4rem" }}
+                    {/* Electronic Wallet - Only if walletNumber is configured */}
+                    {hasWallet && (
+                      <label
+                        className={`payment-method-card ${
+                          paymentMethod === "wallet" ? "is-selected" : ""
+                        }`}
+                        style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+                      >
+                        <input
+                          type="radio"
+                          name="payment_method"
+                          value="wallet"
+                          checked={paymentMethod === "wallet"}
+                          onChange={() => setPaymentMethod("wallet")}
+                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
                         />
-                      </div>
-                      <span className="payment-method-title">
-                        البطاقة البنكية
-                      </span>
-                      <span className="payment-method-desc">
-                        فيزا / ماستركارد / ميزة ببيانات مشفرة.
-                      </span>
-                    </div>
+                        <div className="payment-method-icon-wrap">
+                          <Smartphone
+                            style={{ width: "1.4rem", height: "1.4rem" }}
+                          />
+                        </div>
+                        <span className="payment-method-title">
+                          محفظة إلكترونية {storeSettings.walletLabel ? `(${storeSettings.walletLabel})` : ""}
+                        </span>
+                        <span className="payment-method-desc">
+                          تحويل عبر فودافون كاش أو المحفظة الذكية بعد تأكيد الإجمالي.
+                        </span>
+                      </label>
+                    )}
 
-                    {}
-                    <div
-                      className={`payment-method-card ${
-                        paymentMethod === "wallet" ? "is-selected" : ""
-                      }`}
-                      onClick={() => setPaymentMethod("wallet")}
-                    >
-                      <div className="payment-method-icon-wrap">
-                        <Smartphone
-                          style={{ width: "1.4rem", height: "1.4rem" }}
+                    {/* InstaPay - Only if instapayAddress is configured */}
+                    {hasInstapay && (
+                      <label
+                        className={`payment-method-card ${
+                          paymentMethod === "instapay" ? "is-selected" : ""
+                        }`}
+                        style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+                      >
+                        <input
+                          type="radio"
+                          name="payment_method"
+                          value="instapay"
+                          checked={paymentMethod === "instapay"}
+                          onChange={() => setPaymentMethod("instapay")}
+                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
                         />
-                      </div>
-                      <span className="payment-method-title">
-                        إنستاباي / محفظة
-                      </span>
-                      <span className="payment-method-desc">
-                        تحويل لحظي عبر فودافون كاش أو إنستاباي.
-                      </span>
-                    </div>
+                        <div className="payment-method-icon-wrap">
+                          <Smartphone
+                            style={{ width: "1.4rem", height: "1.4rem" }}
+                          />
+                        </div>
+                        <span className="payment-method-title">
+                          إنستاباي (InstaPay)
+                        </span>
+                        <span className="payment-method-desc">
+                          تحويل لحظي مباشر عبر تطبيق إنستاباي بعد تأكيد الإجمالي.
+                        </span>
+                      </label>
+                    )}
                   </div>
 
-                  {}
                   {paymentMethod === "cod" && (
                     <div
                       className="payment-details-panel"
@@ -678,6 +745,7 @@ export default function CheckoutPage() {
                         display: "flex",
                         gap: "0.85rem",
                         alignItems: "flex-start",
+                        marginTop: "1.25rem",
                       }}
                     >
                       <Truck
@@ -706,206 +774,79 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {paymentMethod === "card" && (
-                    <div
-                      className="payment-details-panel"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "1rem",
-                      }}
-                    >
-                      <div className="checkout-form-field">
-                        <label>رقم البطاقة (١٦ رقم)</label>
-                        <input
-                          type="text"
-                          dir="ltr"
-                          maxLength={19}
-                          value={cardData.number}
-                          onChange={(e) => {
-                            const val = e.target.value
-                              .replace(/\D/g, "")
-                              .replace(/(.{4})/g, "$1 ")
-                              .trim()
-                            setCardData({ ...cardData, number: val })
-                          }}
-                          placeholder="4000 1234 5678 9010"
-                        />
-                        {errors.cardNumber && (
-                          <span className="checkout-field-error">
-                            {errors.cardNumber}
-                          </span>
-                        )}
-                      </div>
-
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: "1rem",
-                        }}
-                      >
-                        <div className="checkout-form-field">
-                          <label>تاريخ الانتهاء</label>
-                          <input
-                            type="text"
-                            dir="ltr"
-                            maxLength={5}
-                            value={cardData.expiry}
-                            onChange={(e) => {
-                              let val = e.target.value.replace(/\D/g, "")
-                              if (val.length >= 2)
-                                val = `${val.slice(0, 2)}/${val.slice(2, 4)}`
-                              setCardData({ ...cardData, expiry: val })
-                            }}
-                            placeholder="MM/YY"
-                          />
-                          {errors.cardExpiry && (
-                            <span className="checkout-field-error">
-                              {errors.cardExpiry}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="checkout-form-field">
-                          <label>رمز الأمان (CVV)</label>
-                          <input
-                            type="password"
-                            dir="ltr"
-                            maxLength={4}
-                            value={cardData.cvv}
-                            onChange={(e) =>
-                              setCardData({
-                                ...cardData,
-                                cvv: e.target.value.replace(/\D/g, ""),
-                              })
-                            }
-                            placeholder="123"
-                          />
-                          {errors.cardCvv && (
-                            <span className="checkout-field-error">
-                              {errors.cardCvv}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {paymentMethod === "wallet" && (
                     <div
                       className="payment-details-panel"
                       style={{
                         display: "flex",
-                        flexDirection: "column",
                         gap: "0.85rem",
+                        alignItems: "flex-start",
+                        marginTop: "1.25rem",
                       }}
                     >
-                      <div
+                      <Smartphone
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          borderBottom: "1px solid var(--line)",
-                          paddingBottom: "0.65rem",
+                          width: "1.4rem",
+                          height: "1.4rem",
+                          color: "var(--forest)",
+                          flexShrink: 0,
                         }}
-                      >
-                        <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>
-                          رقم محفظة نور فارم / إنستاباي:
-                        </span>
-                        <span
+                      />
+                      <div style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
+                        <strong
                           style={{
-                            fontFamily: "monospace",
-                            direction: "ltr",
-                            background: "#fff",
-                            padding: "0.3rem 0.75rem",
-                            borderRadius: "0.5rem",
-                            border: "1px solid var(--line)",
-                            fontWeight: 700,
-                            fontSize: "0.95rem",
+                            display: "block",
+                            color: "var(--forest)",
+                            marginBottom: "0.2rem",
                           }}
                         >
-                          01098765432
+                          الدفع عبر المحفظة الإلكترونية:
+                        </strong>
+                        <span>
+                          {isFreeDelivery
+                            ? `يمكنك تحويل المبلغ عبر المحفظة (${storeSettings.walletNumber}) بعد تأكيد الطلب، مع إرسال إشعار التحويل عبر واتساب.`
+                            : "نظراً لأن رسوم التوصيل تُحدد بناءً على المسافة، سنرسل لك الإجمالي النهائي ورقم المحفظة على واتساب فور تسجيل طلبك للتحويل."}
                         </span>
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "0.82rem",
-                          lineHeight: 1.6,
-                          opacity: 0.85,
-                        }}
-                      >
-                        قم بتحويل المبلغ الإجمالي ({number.format(total)} ج.م)
-                        ثم اكتب رقم هاتفك المحوّل منه بالأسفل للتحقق الفوري من
-                        إتمام العملية.
-                      </p>
-                      <div className="checkout-form-field">
-                        <label>رقم هاتفك المحوّل منه:</label>
-                        <input
-                          type="tel"
-                          dir="ltr"
-                          value={walletPhone}
-                          onChange={(e) => setWalletPhone(e.target.value)}
-                          placeholder="010XXXXXXXX"
-                          style={{ textAlign: "right" }}
-                        />
-                        {errors.walletPhone && (
-                          <span className="checkout-field-error">
-                            {errors.walletPhone}
-                          </span>
-                        )}
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Mobile Bottom Submit Button (after user finishes steps) */}
-                <div className="checkout-mobile-bottom-submit">
-                  {submitError && (
+                  {paymentMethod === "instapay" && (
                     <div
+                      className="payment-details-panel"
                       style={{
-                        padding: "0.85rem 1rem",
-                        marginBottom: "1rem",
-                        background: "#fef2f2",
-                        border: "1.5px solid #fca5a5",
-                        color: "#991b1b",
-                        borderRadius: "0.75rem",
-                        fontSize: "0.85rem",
-                        fontWeight: 700,
-                        lineHeight: 1.5,
+                        display: "flex",
+                        gap: "0.85rem",
+                        alignItems: "flex-start",
+                        marginTop: "1.25rem",
                       }}
                     >
-                      <span>{submitError}</span>
+                      <Smartphone
+                        style={{
+                          width: "1.4rem",
+                          height: "1.4rem",
+                          color: "var(--forest)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
+                        <strong
+                          style={{
+                            display: "block",
+                            color: "var(--forest)",
+                            marginBottom: "0.2rem",
+                          }}
+                        >
+                          الدفع عبر إنستاباي (InstaPay):
+                        </strong>
+                        <span>
+                          {isFreeDelivery
+                            ? `يمكنك التحويل لحساب إنستاباي (${storeSettings.instapayAddress}) بعد تأكيد الطلب، مع إرسال إشعار التحويل عبر واتساب.`
+                            : "نظراً لأن رسوم التوصيل تُحدد بناءً على المسافة، سنرسل لك الإجمالي النهائي وعنوان إنستاباي على واتساب فور تسجيل طلبك للتحويل."}
+                        </span>
+                      </div>
                     </div>
                   )}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="whatsapp-order-btn"
-                    style={{
-                      cursor: isSubmitting ? "not-allowed" : "pointer",
-                      background: !locationData
-                        ? "linear-gradient(135deg, #475569 0%, #334155 100%)"
-                        : "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
-                    }}
-                  >
-                    {isSubmitting ? (
-                      <span>جارٍ تسجيل وتأكيد الطلب...</span>
-                    ) : !locationData ? (
-                      <>
-                        <MapPin size={20} color="#ffffff" />
-                        <span>حدد موقع التوصيل على الخريطة أولاً</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 size={22} color="#ffffff" />
-                        <span>
-                          تأكيد الطلب الآن ({number.format(total)} ج.م)
-                        </span>
-                      </>
-                    )}
-                  </button>
                 </div>
               </div>
 
@@ -961,37 +902,26 @@ export default function CheckoutPage() {
                   {}
                   <div className="checkout-totals-block">
                     <div className="totals-row">
-                      <span>مجموع المنتجات:</span>
+                      <span>إجمالي المنتجات:</span>
                       <strong>{number.format(subtotal)} ج.م</strong>
                     </div>
 
                     <div className="totals-row">
-                      <span>
-                        رسوم التوصيل السريع:
-                        {subtotal > 150 && (
-                          <span
-                            style={{
-                              marginRight: "0.5rem",
-                              background: "#e8f5e9",
-                              color: "#2e7d32",
-                              fontSize: "0.72rem",
-                              fontWeight: 700,
-                              padding: "0.15rem 0.45rem",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            مجاناً
-                          </span>
-                        )}
-                      </span>
-                      <strong>
-                        {deliveryFee === 0 ? "مجاناً" : `${deliveryFee} ج.م`}
-                      </strong>
+                      <span>التوصيل:</span>
+                      {isFreeDelivery ? (
+                        <strong style={{ color: "#2e7d32" }}>
+                          {storeSettings.freeDeliveryText ? `${storeSettings.freeDeliveryText} - ` : ""}مجاني
+                        </strong>
+                      ) : (
+                        <span style={{ fontSize: "0.82rem", color: "#78716c", fontWeight: 600 }}>
+                          بيتحدد حسب المسافة وهيتأكد معاك
+                        </span>
+                      )}
                     </div>
 
                     <div className="totals-row grand-total">
-                      <span>الإجمالي المستحق:</span>
-                      <span>{number.format(total)} ج.م</span>
+                      <span>{isFreeDelivery ? "الإجمالي:" : "الإجمالي (بدون التوصيل):"}</span>
+                      <span>{number.format(subtotal)} ج.م</span>
                     </div>
                   </div>
 
@@ -1013,10 +943,24 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Main Submit Button */}
+                  {/* Single Submit Button on all breakpoints */}
                   <button
+                    id="checkout-submit-btn"
                     type="submit"
                     disabled={isSubmitting}
+                    onClick={(e) => {
+                      if (!locationData) {
+                        e.preventDefault()
+                        setSubmitError("⚠️ برجاء تحديد موقع التوصيل على الخريطة أولاً لتسجيل الطلب")
+                        const mapSection = document.getElementById("checkout-map-section")
+                        if (mapSection) {
+                          mapSection.scrollIntoView({ behavior: "smooth", block: "center" })
+                          mapSection.classList.remove("highlight-pulse")
+                          void (mapSection as HTMLElement).offsetWidth
+                          mapSection.classList.add("highlight-pulse")
+                        }
+                      }
+                    }}
                     className="whatsapp-order-btn"
                     style={{
                       cursor: isSubmitting ? "not-allowed" : "pointer",
@@ -1038,9 +982,7 @@ export default function CheckoutPage() {
                     ) : (
                       <>
                         <CheckCircle2 size={22} color="#ffffff" />
-                        <span>
-                          تأكيد الطلب الآن ({number.format(total)} ج.م)
-                        </span>
+                        <span>تأكيد الطلب</span>
                       </>
                     )}
                   </button>
@@ -1075,7 +1017,8 @@ export default function CheckoutPage() {
                 </div>
               </aside>
             </form>
-      </div>
-    </main>
-  )
+        </div>
+        <SlimFooter />
+      </main>
+    )
 }

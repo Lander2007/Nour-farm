@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import type { Order } from "@/lib/db/types"
 import ReceiptPrinter from "@/components/ReceiptPrinter"
+import { useStoreSettings } from "@/store/settings"
 
 const WHATSAPP_PHONE = "201224272991"
 
@@ -50,9 +51,19 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string; 
 }
 
 export default function OrderConfirmationClient({ order }: { order: Order }) {
+  const storeSettings = useStoreSettings()
+  const paymentMethod = order.payment_method || order.paymentMethod || "cod"
+  const paymentMethodLabel =
+    paymentMethod === "wallet"
+      ? `محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}`
+      : paymentMethod === "instapay"
+      ? "إنستاباي (InstaPay)"
+      : "الدفع عند الاستلام"
+
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const [copied, setCopied] = useState(false)
+  const [copiedDetails, setCopiedDetails] = useState(false)
 
   const storageKey = `nf_seen_receipt_${order.id || order.order_number}`
 
@@ -99,6 +110,29 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
 
     const mapsLink = `https://maps.google.com/?q=${order.location.lat},${order.location.lng}`
 
+    const subtotal =
+      order.subtotal_price ??
+      order.items.reduce((s, it) => s + (it.line_total || 0), 0)
+
+    const feeText =
+      order.delivery_fee_status === "free"
+        ? "مجاني"
+        : order.delivery_fee_status === "set" && order.delivery_fee != null
+        ? `${number.format(order.delivery_fee)} جنيه مصري`
+        : "بيتحدد حسب المسافة"
+
+    const totalLabel =
+      order.delivery_fee_status === "set" || order.delivery_fee_status === "free"
+        ? "الإجمالي النهائي"
+        : "الإجمالي (بدون التوصيل)"
+
+    const transferDetailsLine =
+      paymentMethod === "wallet"
+        ? `\nطريقة الدفع: محفظة إلكترونية${storeSettings.walletLabel ? ` (${storeSettings.walletLabel})` : ""}${order.delivery_fee_status === "set" || order.delivery_fee_status === "free" ? `\nرقم المحفظة: ${storeSettings.walletNumber || ""}` : ""}`
+        : paymentMethod === "instapay"
+        ? `\nطريقة الدفع: إنستاباي (InstaPay)${order.delivery_fee_status === "set" || order.delivery_fee_status === "free" ? `\nعنوان إنستاباي: ${storeSettings.instapayAddress || ""}` : ""}`
+        : "\nطريقة الدفع: الدفع عند الاستلام (نقدًا)"
+
     return encodeURIComponent(
       `السلام عليكم ورحمة الله وبركاته،
 تأكيد طلب من نور فارم
@@ -108,13 +142,17 @@ export default function OrderConfirmationClient({ order }: { order: Order }) {
 بيانات العميل:
 الاسم: ${order.customer_name}
 الهاتف: ${order.customer_phone}
+منطقة التوصيل: ${order.area || "غير محددة"}
 العنوان: ${address}
 موقع التوصيل: ${mapsLink}
 
 تفاصيل الطلب:
 ${itemsList}
 
-إجمالي الحساب: ${number.format(order.total_price)} جنيه مصري
+إجمالي المنتجات: ${number.format(subtotal)} جنيه مصري
+التوصيل: ${feeText}
+${totalLabel}: ${number.format(order.total_price)} جنيه مصري${transferDetailsLine}
+
 شكراً لتعاملكم مع نور فارم.`
     )
   }
@@ -253,6 +291,68 @@ ${itemsList}
           </button>
         </div>
 
+        {/* Transfer instructions for Wallet / InstaPay */}
+        {paymentMethod !== "cod" && (
+          <div
+            className="w-full rounded-2xl p-4 border text-center transition shadow-xs"
+            style={{
+              background: "#FBF6EA",
+              borderColor: "rgba(47, 59, 39, 0.15)",
+              color: "#2F3B27",
+            }}
+          >
+            {order.delivery_fee_status === "pending" || order.delivery_fee_status == null ? (
+              <div className="space-y-1">
+                <div className="font-extrabold text-sm text-[#2F3B27] flex items-center justify-center gap-1.5">
+                  <span>📱</span>
+                  <span>الدفع بواسطة {paymentMethodLabel}</span>
+                </div>
+                <p className="text-xs text-[#2F3B27]/85 font-medium leading-relaxed m-0">
+                  هنبعتلك الإجمالي النهائي وبيانات التحويل على واتساب فور تحديد رسوم التوصيل حسب المسافة.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="font-extrabold text-sm text-[#2F3B27] flex items-center justify-center gap-1.5">
+                  <span>📱</span>
+                  <span>بيانات تحويل {paymentMethodLabel}</span>
+                </div>
+                <div className="text-xs text-[#2F3B27]/80">
+                  الإجمالي النهائي المطلوب تحويله: <strong className="text-[#2F4A33] font-bold">{number.format(order.total_price)} ج.م</strong>
+                </div>
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <span
+                    className="receipt-font-mono font-bold text-xs bg-white px-3 py-1 rounded-lg border border-[#2F3B27]/20 select-all"
+                    dir="ltr"
+                  >
+                    {paymentMethod === "wallet"
+                      ? (storeSettings.walletNumber || "قيد التحديد")
+                      : (storeSettings.instapayAddress || "قيد التحديد")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = paymentMethod === "wallet" ? storeSettings.walletNumber : storeSettings.instapayAddress
+                      if (val) {
+                        navigator.clipboard.writeText(val)
+                        setCopiedDetails(true)
+                        setTimeout(() => setCopiedDetails(false), 2000)
+                      }
+                    }}
+                    className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-[#2F3B27] text-xs cursor-pointer border border-[#2F3B27]/10"
+                    title="نسخ بيانات التحويل"
+                  >
+                    {copiedDetails ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-[#2F3B27]/75 font-bold m-0 pt-1">
+                  بعد التحويل ابعت صورة التحويل على واتساب
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <span className="text-[11px] text-[#2F3B27]/60 text-center block leading-relaxed px-2">
           يمكنك إرسال رسالة لتأكيد موعد الشحن مع فريق خدمة عملاء نور فارم
         </span>
@@ -314,6 +414,27 @@ ${itemsList}
               </span>
               <strong className="receipt-font-mono font-bold text-[#2F3B27]" dir="ltr">
                 {order.customer_phone}
+              </strong>
+            </div>
+
+            {order.area && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#2F3B27]/65 flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-[#2F4A33]/70" />
+                  <span>منطقة التوصيل:</span>
+                </span>
+                <strong className="font-bold text-[#2F4A33] bg-[#2F4A33]/10 px-2 py-0.5 rounded-md text-xs">
+                  <bdi dir="auto">{order.area}</bdi>
+                </strong>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              <span className="text-[#2F3B27]/65 flex items-center gap-1.5">
+                <span>طريقة الدفع:</span>
+              </span>
+              <strong className="font-bold text-[#2F3B27] bg-stone-100 px-2 py-0.5 rounded-md text-xs">
+                {paymentMethodLabel}
               </strong>
             </div>
 

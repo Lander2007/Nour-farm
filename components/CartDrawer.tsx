@@ -9,10 +9,41 @@ import BrandMark from "./BrandMark"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
+import { useEffect } from "react"
+import { useStoreSettings } from "@/store/settings"
+
 export default function CartDrawer() {
   const products = useActiveProducts()
-  const { items, open, setOpen, change } = useCart()
-  const getQty = (product: Product) => {
+  const open = useCart((state) => state.open)
+  const setOpen = useCart((state) => state.setOpen)
+  const items = useCart((state) => state.items)
+  const change = useCart((state) => state.change)
+  const settings = useStoreSettings()
+
+  // Safe body scroll lock with cleanup to prevent overflow leaks
+  useEffect(() => {
+    if (open) {
+      const original = document.body.style.overflow
+      document.body.style.overflow = "hidden"
+      return () => {
+        document.body.style.overflow = original || ""
+      }
+    } else {
+      document.body.style.overflow = ""
+    }
+  }, [open])
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open, setOpen])
+
+  const getQty = (product: { id: string }) => {
     return (
       items[product.id] ??
       items[product.id.replace(/^prod-/, "")] ??
@@ -96,8 +127,58 @@ export default function CartDrawer() {
           </div>
         )}
         <div className="drawer-total">
-          <span>الإجمالي</span>
-          <strong>{number.format(total)} ج.م</strong>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              marginBottom: "0.35rem",
+              color: "var(--ink)",
+            }}
+          >
+            <span>إجمالي المنتجات:</span>
+            <strong>{number.format(total)} ج.م</strong>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: "0.8rem",
+              marginBottom: "0.5rem",
+              color: "var(--forest)",
+            }}
+          >
+            <span>التوصيل:</span>
+            {settings.freeDeliveryActive ? (
+              <span style={{ fontWeight: 700, color: "#2e7d32" }}>
+                {settings.freeDeliveryText ? `${settings.freeDeliveryText} (مجاني)` : "مجاني"}
+              </span>
+            ) : (
+              <span style={{ color: "#78716c", fontWeight: 600 }}>
+                بيتحدد حسب المسافة وهيتأكد معاك
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingTop: "0.5rem",
+              borderTop: "1px dashed var(--line)",
+              marginBottom: "0.75rem",
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>
+              {settings.freeDeliveryActive
+                ? "الإجمالي:"
+                : "الإجمالي (بدون التوصيل):"}
+            </span>
+            <strong style={{ fontSize: "1.15rem", color: "var(--forest)" }}>
+              {number.format(total)} ج.م
+            </strong>
+          </div>
           {selected.length > 0 ? (
             <Link href="/checkout" onClick={() => setOpen(false)}>
               إتمام الطلب
@@ -112,3 +193,4 @@ export default function CartDrawer() {
     </>
   )
 }
+

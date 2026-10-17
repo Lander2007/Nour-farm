@@ -3,7 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Metadata } from "next"
 import Header from "@/components/Header"
-import Footer from "@/components/Footer"
+import SlimFooter from "@/components/SlimFooter"
 import { getSections, getProducts } from "@/lib/db"
 import { ArrowLeft, ChevronLeft, Sparkles, Carrot, Utensils, Salad, Leaf } from "lucide-react"
 
@@ -39,7 +39,7 @@ export default async function VegetablesDepartmentPage() {
   }, {})
 
   return (
-    <div className="min-h-screen bg-[#fcf9f2] text-stone-900 flex flex-col justify-between" dir="rtl">
+    <div className="min-h-screen bg-[#EDE3CF] text-stone-900 flex flex-col justify-between" dir="rtl">
       <Header />
 
       <main className="flex-1 pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
@@ -148,7 +148,7 @@ export default async function VegetablesDepartmentPage() {
         </div>
       </main>
 
-      <Footer />
+      <SlimFooter />
     </div>
   )
 }

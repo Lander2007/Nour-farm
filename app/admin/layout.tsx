@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { isAuthenticatedAdmin } from "@/lib/auth/server-auth"
 import { isUsingDevFallback, assertDatabaseConfigured } from "@/lib/db"
 import { AlertTriangle, Database } from "lucide-react"
+import AdminMobileNav from "@/components/admin/AdminMobileNav"
 
 export const metadata = {
   title: "لوحة التحكم | نور فارم - NOOR FARM",
@@ -122,6 +123,7 @@ export default async function AdminLayout({
       )}
 
       {children}
+      <AdminMobileNav />
     </div>
   )
 }

@@ -15,11 +15,15 @@ const arNum = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
 export default function NeutralProductCard({ product }: NeutralProductCardProps) {
   const [imageError, setImageError] = useState(false)
-  const items = useCart((state) => state.items)
+  const quantity = useCart(
+    (state) =>
+      state.items[product.id] ??
+      state.items[product.id.replace(/^prod-/, "")] ??
+      state.items[`prod-${product.id}`] ??
+      0
+  )
   const add = useCart((state) => state.add)
   const change = useCart((state) => state.change)
-
-  const quantity = items[product.id] || 0
   const storeProduct = mapDbProductToProduct(product)
   const step = product.step || (product.unit_type === "kg" ? 0.5 : 1)
 

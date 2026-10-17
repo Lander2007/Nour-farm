@@ -5,6 +5,10 @@ import type { Metadata } from "next"
 import { getOrderById } from "@/lib/db"
 import BrandMark from "@/components/BrandMark"
 import OrderConfirmationClient from "./OrderConfirmationClient"
+import SlimFooter from "@/components/SlimFooter"
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 interface OrderPageProps {
   params: Promise<{ id: string }>
@@ -32,7 +36,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   return (
     <div
-      className="min-h-screen bg-[#F7F0E3] text-[#2F3B27] font-sans antialiased flex flex-col items-center justify-start w-full"
+      className="min-h-screen bg-[#EDE3CF] text-[#2F3B27] font-sans antialiased flex flex-col items-center justify-start w-full"
       dir="rtl"
     >
       {/* Top Header */}
@@ -52,11 +56,13 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
       {/* Main Order View */}
       <main
-        className="w-full max-w-4xl px-4 py-8 md:py-12"
+        className="w-full max-w-4xl px-4 py-8 md:py-12 flex-1"
         style={{ maxWidth: "896px", margin: "0 auto", width: "100%" }}
       >
         <OrderConfirmationClient order={order} />
       </main>
+
+      <SlimFooter />
     </div>
   )
 }

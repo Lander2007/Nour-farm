@@ -25,6 +25,7 @@ import {
   ShoppingBag,
   Clock,
   Sparkles,
+  Settings,
 } from "lucide-react"
 
 import type { Product, Section, DepartmentId } from "@/lib/db/types"
@@ -718,7 +719,28 @@ export default function AdminProductsPage() {
             </Link>
           </div>
 
-          <div className="admin-header-actions">
+          <div className="admin-mobile-only" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Link
+              href="/"
+              target="_blank"
+              className="row-action-btn"
+              title="المتجر المباشر"
+              style={{ width: 38, height: 38 }}
+            >
+              <ExternalLink size={16} />
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="row-action-btn delete"
+              title="تسجيل خروج"
+              style={{ width: 38, height: 38 }}
+            >
+              <Lock size={16} />
+            </button>
+          </div>
+
+          <div className="admin-header-actions admin-desktop-only">
             <Link
               href="/admin/orders"
               className="admin-action-btn-ghost"
@@ -726,6 +748,11 @@ export default function AdminProductsPage() {
             >
               <ShoppingBag size={16} />
               <span>إدارة الطلبات</span>
+            </Link>
+
+            <Link href="/admin/settings" className="admin-action-btn-ghost">
+              <Settings size={16} />
+              <span>إعدادات المتجر</span>
             </Link>
 
             <Link href="/" target="_blank" className="admin-action-btn-ghost">
@@ -900,26 +927,48 @@ export default function AdminProductsPage() {
                 </select>
 
                 {activeSection !== "all" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const sec = sections.find((s) => s.id === activeSection)
-                      if (sec) handleDeleteSection(sec.id, sec.name)
-                    }}
-                    className="btn-secondary-action"
-                    style={{
-                      background: "#fef2f2",
-                      borderColor: "#fca5a5",
-                      color: "#dc2626",
-                      padding: "0.45rem 0.65rem",
-                      fontSize: "0.82rem",
-                      fontWeight: 600,
-                    }}
-                    title="حذف هذا القسم بالكامل"
-                  >
-                    <Trash2 size={14} />
-                    <span>حذف القسم</span>
-                  </button>
+                  <>
+                    <Link
+                      href={`/admin/sections/${activeSection}`}
+                      className="btn-secondary-action"
+                      style={{
+                        background: "#f0fdf4",
+                        borderColor: "#86efac",
+                        color: "#166534",
+                        padding: "0.45rem 0.75rem",
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                      title="فتح معرض هذا القسم لإدارة منتجاته وكروته"
+                    >
+                      <ImageIcon size={14} />
+                      <span>معرض القسم</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sec = sections.find((s) => s.id === activeSection)
+                        if (sec) handleDeleteSection(sec.id, sec.name)
+                      }}
+                      className="btn-secondary-action"
+                      style={{
+                        background: "#fef2f2",
+                        borderColor: "#fca5a5",
+                        color: "#dc2626",
+                        padding: "0.45rem 0.65rem",
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                      }}
+                      title="حذف هذا القسم بالكامل"
+                    >
+                      <Trash2 size={14} />
+                      <span>حذف القسم</span>
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -960,8 +1009,8 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        {/* PRODUCTS TABLE */}
-        <div className="table-container">
+        {/* PRODUCTS TABLE (DESKTOP) */}
+        <div className="table-container admin-table-desktop-only">
           <table className="admin-table">
             <thead>
               <tr>
@@ -1097,6 +1146,116 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* PRODUCTS CARDS (MOBILE PHONE) */}
+        <div className="admin-mobile-cards-only">
+          {filteredProducts.map((p) => {
+            const sectionName = sections.find((s) => s.id === p.section_id)?.name || p.section_id
+
+            return (
+              <div key={p.id} className="admin-mobile-product-card">
+                <div className="mobile-card-top-row">
+                  <div
+                    className="mobile-card-thumb"
+                    onClick={() => handleOpenEdit(p)}
+                    title="تعديل صورة الصنف"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.name_ar} />
+                    ) : (
+                      <span style={{ fontSize: "0.68rem", color: "#6b7c62", fontWeight: 700, textAlign: "center", padding: "2px" }}>
+                        بدون صورة
+                      </span>
+                    )}
+                  </div>
+                  <div className="mobile-card-info">
+                    <div className="mobile-card-title">{p.name_ar}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                      <span className="mobile-card-section-pill">{sectionName}</span>
+                      <span style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 600 }}>
+                        ترتيب: {p.sort}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mobile-card-middle-row">
+                  <div className="mobile-card-price-box">
+                    <span style={{ fontSize: "0.82rem", color: "#55704a", fontWeight: 700 }}>السعر:</span>
+                    <input
+                      type="number"
+                      className="mobile-card-price-input"
+                      defaultValue={p.price !== null && p.price !== undefined ? p.price : ""}
+                      placeholder="غير محدد"
+                      onBlur={(e) => handleQuickPriceBlur(p, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          ;(e.target as HTMLInputElement).blur()
+                        }
+                      }}
+                    />
+                    <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#1e3322" }}>ج.م</span>
+                  </div>
+
+                  <div style={{ fontSize: "0.8rem", color: "#475569", fontWeight: 700, textAlign: "left" }}>
+                    {UNIT_OPTIONS.find((u) => u.value === p.unit_type)?.label || p.unit_type}
+                    {p.pack_label && (
+                      <span style={{ display: "block", fontSize: "0.72rem", color: "#94a3b8" }}>
+                        ({p.pack_label})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mobile-card-actions-row">
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePublished(p)}
+                    className={`mobile-toggle-btn ${p.published ? "is-published" : "is-draft"}`}
+                    title={p.published ? "انقر لإلغاء النشر (تحويل لمسودة)" : "انقر للنشر في المتجر"}
+                  >
+                    {p.published ? <Eye size={16} /> : <EyeOff size={16} />}
+                    <span>{p.published ? "منشور في المتجر ✓" : "مسودة ✕"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(p)}
+                    className="mobile-action-icon-btn"
+                    title="تعديل الصنف والصورة"
+                  >
+                    <Edit3 size={15} />
+                    <span>تعديل</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductToDelete(p)
+                      setIsDeleteModalOpen(true)
+                    }}
+                    className="mobile-action-icon-btn is-danger"
+                    title="حذف الصنف"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* FLOATING ACTION BUTTON (MOBILE) */}
+        <button
+          type="button"
+          onClick={handleOpenAdd}
+          className="admin-mobile-fab"
+          aria-label="إضافة منتج جديد"
+        >
+          <Plus size={20} />
+          <span>إضافة منتج</span>
+        </button>
       </main>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -1772,6 +1931,24 @@ export default function AdminProductsPage() {
                               />
                             </label>
 
+                            <Link
+                              href={`/admin/sections/${sec.id}`}
+                              className="btn-primary-add"
+                              style={{
+                                padding: "4px 9px",
+                                fontSize: "0.78rem",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                textDecoration: "none",
+                                fontWeight: 700,
+                              }}
+                              title={`فتح معرض ومنتجات قسم ${sec.name}`}
+                            >
+                              <ImageIcon size={13} />
+                              <span>المعرض ({count})</span>
+                            </Link>
+
                             <button
                               type="button"
                               onClick={() => {
@@ -1780,10 +1957,9 @@ export default function AdminProductsPage() {
                               }}
                               className="btn-secondary-action"
                               style={{ padding: "3px 7px", fontSize: "0.74rem", display: "inline-flex", alignItems: "center", gap: "3px" }}
-                              title="اختيار صورة من مكتبة صور المزرعة"
+                              title="اختيار صورة غلاف من مكتبة صور المزرعة"
                             >
-                              <ImageIcon size={12} />
-                              <span>المعرض</span>
+                              <span>غلاف</span>
                             </button>
 
                             {sec.cover_image && (

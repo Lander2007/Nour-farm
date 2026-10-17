@@ -340,7 +340,6 @@ export default function Catalog() {
   return (
     <main className="catalog-page">
       <Header solid />
-      <CartDrawer />
 
       {}
       <section className="catalog-banner-section">
