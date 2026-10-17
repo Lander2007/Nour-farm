@@ -5432,9 +5432,11 @@ button {
 }
 
 .home-viewport-container .site-header {
-  background-color: transparent;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(47, 59, 39, 0.08);
-  box-shadow: none;
+  box-shadow: 0 2px 14px rgba(47, 59, 39, 0.04);
 }
 
 .home-viewport-container footer {
@@ -5547,7 +5549,8 @@ button {
 .home-slogan .accent-word {
   font-family: 'Aref Ruqaa', cursive;
   font-weight: 700;
-  color: #2F4A33;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(70, 20, 35, 0.35);
   font-style: normal;
   display: inline-block;
   margin-right: 0.25rem;
