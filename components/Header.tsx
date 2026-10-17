@@ -24,11 +24,9 @@ export default function Header({
   solid?: boolean
   hideLogo?: boolean
 }) {
-  const products = useActiveProducts()
-  const items = useCart((state) => state.items)
+  const count = useCart((state) => Object.keys(state.items).length)
   const setOpen = useCart((state) => state.setOpen)
   const add = useCart((state) => state.add)
-  const count = Object.keys(items).length
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)

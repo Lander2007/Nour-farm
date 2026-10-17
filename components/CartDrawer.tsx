@@ -9,14 +9,41 @@ import BrandMark from "./BrandMark"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
+import { useEffect } from "react"
 import { useStoreSettings } from "@/store/settings"
 
 export default function CartDrawer() {
   const products = useActiveProducts()
-  const { items, open, setOpen, change } = useCart()
+  const open = useCart((state) => state.open)
+  const setOpen = useCart((state) => state.setOpen)
+  const items = useCart((state) => state.items)
+  const change = useCart((state) => state.change)
   const settings = useStoreSettings()
 
-  const getQty = (product: Product) => {
+  // Safe body scroll lock with cleanup to prevent overflow leaks
+  useEffect(() => {
+    if (open) {
+      const original = document.body.style.overflow
+      document.body.style.overflow = "hidden"
+      return () => {
+        document.body.style.overflow = original || ""
+      }
+    } else {
+      document.body.style.overflow = ""
+    }
+  }, [open])
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open, setOpen])
+
+  const getQty = (product: { id: string }) => {
     return (
       items[product.id] ??
       items[product.id.replace(/^prod-/, "")] ??

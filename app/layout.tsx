@@ -1,4 +1,5 @@
-import type { Metadata } from "next"
+import CartDrawer from "@/components/CartDrawer"
+import CartErrorBoundary from "@/components/CartErrorBoundary"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -41,7 +42,12 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <CartErrorBoundary>
+          <CartDrawer />
+        </CartErrorBoundary>
+      </body>
     </html>
   )
 }

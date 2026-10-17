@@ -8,6 +8,9 @@ import { useCart } from "@/store/cart"
 
 const number = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 1 })
 
+let activeFlyingCount = 0
+const MAX_CONCURRENT_FLYING = 3
+
 export default function ProductCard({
   product,
   index = 0,
@@ -25,11 +28,14 @@ export default function ProductCard({
 
   const addWithFlight = (event: React.MouseEvent<HTMLButtonElement>) => {
     add(product)
+    if (activeFlyingCount >= MAX_CONCURRENT_FLYING) return
+
     try {
       const card = event.currentTarget.closest(".product-card")
       const image = card?.querySelector("img")
       const cart = document.querySelector(".cart-button")
       if (!image || !cart) return
+
       const from = image.getBoundingClientRect()
       const to = cart.getBoundingClientRect()
       const flying = document.createElement("img")
@@ -38,19 +44,28 @@ export default function ProductCard({
       flying.className = "flying-product"
       flying.style.left = `${from.left + from.width / 2 - 25}px`
       flying.style.top = `${from.top + from.height / 2 - 25}px`
+
+      activeFlyingCount++
+      let rafId: number | null = null
+
+      const cleanup = () => {
+        if (rafId !== null) cancelAnimationFrame(rafId)
+        if (flying.parentNode) flying.remove()
+        activeFlyingCount = Math.max(0, activeFlyingCount - 1)
+      }
+
+      flying.addEventListener("animationend", cleanup, { once: true })
+      const timeoutId = window.setTimeout(cleanup, 500)
+
       document.body.appendChild(flying)
-      requestAnimationFrame(() => {
-        flying.style.transform = `translate(${
-          to.left -
-          from.left
-        }px, ${
-          to.top -
-          from.top
-        }px) scale(0.2)`
+
+      rafId = requestAnimationFrame(() => {
+        flying.style.transform = `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(0.2)`
         flying.style.opacity = "0"
       })
-      window.setTimeout(() => flying.remove(), 600)
-    } catch {}
+    } catch {
+      activeFlyingCount = Math.max(0, activeFlyingCount - 1)
+    }
   }
 
   return (
