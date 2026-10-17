@@ -5426,8 +5426,20 @@ button {
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  background-color: var(--cream);
+  background-color: #FA9EB8;
+  background: radial-gradient(circle at 50% 28%, #FCC1D1 0%, #FA9EB8 60%, #F58CA9 100%);
   position: relative;
+}
+
+.home-viewport-container .site-header {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(47, 59, 39, 0.08);
+  box-shadow: none;
+}
+
+.home-viewport-container footer {
+  background-color: transparent !important;
+  border-top-color: rgba(47, 59, 39, 0.08) !important;
 }
 
 .home-center-content {
@@ -5470,14 +5482,14 @@ button {
   border-radius: 50%;
   z-index: 2;
   user-select: none;
-  box-shadow: 0 4px 20px rgba(47, 59, 39, 0.12), 0 0 0 3px rgba(251, 246, 234, 0.95);
-  filter: drop-shadow(0 4px 16px rgba(47, 59, 39, 0.08));
+  box-shadow: 0 8px 28px rgba(47, 59, 39, 0.16), 0 0 0 4px #FFFFFF;
+  filter: drop-shadow(0 4px 16px rgba(47, 59, 39, 0.1));
 }
 
 .logo-dotted-ring {
   position: absolute;
   inset: -3%;
-  border: 2px dotted #D9788C;
+  border: 2px dotted rgba(47, 59, 39, 0.35);
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
@@ -5523,7 +5535,7 @@ button {
   font-family: 'Readex Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 700;
   font-size: clamp(26px, 4vw, 50px);
-  color: #2F3B27;
+  color: #1F281B;
   line-height: 1.15;
   text-align: center;
   margin: 0 0 0.85rem 0;
@@ -5535,7 +5547,7 @@ button {
 .home-slogan .accent-word {
   font-family: 'Aref Ruqaa', cursive;
   font-weight: 700;
-  color: #D9788C;
+  color: #2F4A33;
   font-style: normal;
   display: inline-block;
   margin-right: 0.25rem;
@@ -5559,7 +5571,7 @@ button {
 .home-tile {
   position: relative;
   border-radius: 20px;
-  border: 1px solid rgba(47, 59, 39, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   padding: 0.65rem 0.85rem;
   display: flex;
   flex-direction: column;
@@ -5570,13 +5582,13 @@ button {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(47, 59, 39, 0.04);
+  box-shadow: 0 4px 16px rgba(47, 59, 39, 0.08);
 }
 
 .home-tile:hover,
 .home-tile:focus-visible {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(47, 59, 39, 0.08);
+  box-shadow: 0 10px 24px rgba(47, 59, 39, 0.12);
 }
 
 .home-tile:focus-visible {
@@ -5619,15 +5631,15 @@ button {
 
 /* Produce tile themes */
 .home-tile-veg {
-  background-color: #E6EFE3; /* sage tint */
+  background-color: rgba(251, 246, 234, 0.94);
 }
 
 .home-tile-fruits {
-  background-color: #FCECE8; /* blush / peach tint */
+  background-color: rgba(251, 246, 234, 0.94);
 }
 
 .home-tile-all {
-  background-color: #F5EEDB; /* warm sand tint */
+  background-color: rgba(251, 246, 234, 0.97);
   grid-column: span 2;
 }
 
