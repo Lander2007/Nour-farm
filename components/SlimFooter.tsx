@@ -33,7 +33,7 @@ export default function SlimFooter({
 
   return (
     <footer
-      className="w-full border-t border-[#2F3B27]/10 bg-[#FFCED8]/95 py-2 px-3 text-center text-[11px] sm:text-xs text-[#2F3B27]/80 font-medium select-none z-20 shrink-0"
+      className="w-full border-t border-[#2F3B27]/10 bg-[#EDE3CF]/95 py-2 px-3 text-center text-[11px] sm:text-xs text-[#2F3B27]/80 font-medium select-none z-20 shrink-0"
       dir="rtl"
     >
       <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-3 gap-y-0.5 leading-snug">

@@ -13,8 +13,8 @@
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Curated organic color palette */
-  --cream: #f7f0e3;
-  --cream-surface: #faf5ec;
+  --cream: #EDE3CF;
+  --cream-surface: #FBF6EA;
   --ink: #2f3b27;
   --forest: #1e3322;
   --forest-dark: #142217;
@@ -5421,7 +5421,7 @@ button {
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  background-color: #FFCED8;
+  background-color: var(--cream);
   position: relative;
 }
 
@@ -5465,6 +5465,7 @@ button {
   border-radius: 50%;
   z-index: 2;
   user-select: none;
+  box-shadow: 0 4px 20px rgba(47, 59, 39, 0.12), 0 0 0 3px rgba(251, 246, 234, 0.95);
   filter: drop-shadow(0 4px 16px rgba(47, 59, 39, 0.08));
 }
 

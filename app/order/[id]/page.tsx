@@ -36,7 +36,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   return (
     <div
-      className="min-h-screen bg-[#F7F0E3] text-[#2F3B27] font-sans antialiased flex flex-col items-center justify-start w-full"
+      className="min-h-screen bg-[#EDE3CF] text-[#2F3B27] font-sans antialiased flex flex-col items-center justify-start w-full"
       dir="rtl"
     >
       {/* Top Header */}
