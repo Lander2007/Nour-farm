@@ -933,6 +933,17 @@ export default function AdminSectionManagerPage() {
             })}
           </div>
         )}
+
+        {/* Mobile Floating Add Button */}
+        <button
+          type="button"
+          onClick={handleOpenCreate}
+          className="admin-mobile-fab"
+          title="إضافة صنف جديد لهذا القسم"
+        >
+          <Plus size={18} />
+          <span>إضافة منتج للقسم</span>
+        </button>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────

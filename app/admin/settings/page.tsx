@@ -162,7 +162,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="admin-page" dir="rtl">
+    <div className="admin-root" dir="rtl">
       {/* Header */}
       <header className="admin-header">
         <div className="admin-header-inner">
@@ -193,7 +193,28 @@ export default function AdminSettingsPage() {
             </Link>
           </div>
 
-          <div className="admin-header-actions">
+          <div className="admin-mobile-only" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={() => handleSave()}
+              disabled={saving}
+              className="px-3 py-1.5 rounded-lg bg-emerald-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              <Save size={14} />
+              <span>{saving ? "حفظ..." : "حفظ"}</span>
+            </button>
+            <Link
+              href="/"
+              target="_blank"
+              className="row-action-btn"
+              title="المتجر المباشر"
+              style={{ width: 36, height: 36 }}
+            >
+              <ExternalLink size={15} />
+            </Link>
+          </div>
+
+          <div className="admin-header-actions admin-desktop-only">
             <Link href="/admin" className="admin-action-btn-ghost">
               <Layers size={16} />
               <span>إدارة المنتجات</span>
@@ -211,7 +232,7 @@ export default function AdminSettingsPage() {
       </header>
 
       {/* Main Container */}
-      <main className="admin-container" style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <main className="admin-container" style={{ maxWidth: "900px", margin: "0 auto", padding: "1.5rem 0.85rem" }}>
         {loading ? (
           <div className="py-20 text-center text-stone-500">
             <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-3" />
@@ -273,7 +294,7 @@ export default function AdminSettingsPage() {
               </p>
 
               {/* Add New Area */}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   value={newAreaName}
@@ -285,24 +306,25 @@ export default function AdminSettingsPage() {
                     }
                   }}
                   placeholder="اكتب اسم منطقة جديدة (مثال: أكتوبر – الحي المتميز)..."
-                  className="flex-1 p-2.5 rounded-xl border border-stone-300 font-semibold text-sm focus:border-emerald-700 focus:outline-none"
+                  style={{ fontSize: 16, minHeight: 44 }}
+                  className="flex-1 p-3 rounded-xl border border-stone-300 font-semibold focus:border-emerald-700 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddArea}
-                  className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]"
                 >
                   <Plus size={16} />
-                  <span>إضافة منطقة</span>
+                  <span>إضافة منطقة جديدة</span>
                 </button>
               </div>
 
               {/* Areas List */}
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2.5 pt-2">
                 {serviceAreas.map((area, idx) => (
                   <div
                     key={area.id}
-                    className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border transition-colors ${
                       area.enabled
                         ? "bg-stone-50 border-stone-200"
                         : "bg-stone-100/60 border-stone-200 opacity-60"
@@ -316,52 +338,53 @@ export default function AdminSettingsPage() {
                         type="text"
                         value={area.name}
                         onChange={(e) => handleRenameArea(area.id, e.target.value)}
-                        className="flex-1 p-1.5 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-emerald-600 focus:bg-white rounded font-bold text-sm outline-none"
+                        style={{ fontSize: 16 }}
+                        className="flex-1 p-2 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-emerald-600 focus:bg-white rounded font-bold outline-none"
                       />
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-end gap-1.5 pt-1 sm:pt-0 border-t sm:border-t-0 border-stone-200/60">
                       {/* Reorder Buttons */}
                       <button
                         type="button"
                         onClick={() => handleMoveArea(idx, "up")}
                         disabled={idx === 0}
-                        className="p-1.5 rounded-lg hover:bg-stone-200 disabled:opacity-30 cursor-pointer"
+                        className="p-2 min-h-[40px] min-w-[40px] rounded-lg hover:bg-stone-200 disabled:opacity-30 cursor-pointer inline-flex items-center justify-center text-stone-700"
                         title="تحريك لأعلى"
                       >
-                        <ArrowUp size={14} />
+                        <ArrowUp size={16} />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleMoveArea(idx, "down")}
                         disabled={idx === serviceAreas.length - 1}
-                        className="p-1.5 rounded-lg hover:bg-stone-200 disabled:opacity-30 cursor-pointer"
+                        className="p-2 min-h-[40px] min-w-[40px] rounded-lg hover:bg-stone-200 disabled:opacity-30 cursor-pointer inline-flex items-center justify-center text-stone-700"
                         title="تحريك لأسفل"
                       >
-                        <ArrowDown size={14} />
+                        <ArrowDown size={16} />
                       </button>
 
                       {/* Enable/Disable Toggle */}
                       <button
                         type="button"
                         onClick={() => handleToggleArea(area.id)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition ${
+                        className={`px-3 py-2 min-h-[40px] rounded-lg text-xs font-bold cursor-pointer transition ${
                           area.enabled
                             ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
                             : "bg-stone-200 text-stone-600 hover:bg-stone-300"
                         }`}
                       >
-                        {area.enabled ? "مفعلة" : "معطلة"}
+                        {area.enabled ? "مفعلة ✓" : "معطلة ✕"}
                       </button>
 
                       {/* Delete Button */}
                       <button
                         type="button"
                         onClick={() => handleDeleteArea(area.id)}
-                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer"
+                        className="p-2 min-h-[40px] min-w-[40px] rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer inline-flex items-center justify-center"
                         title="حذف المنطقة"
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -499,15 +522,37 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Submit Bar */}
+            {/* Submit Bar (Desktop) */}
             <div className="flex items-center justify-end gap-3 pt-4">
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold text-sm inline-flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold text-sm inline-flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50 min-h-[44px]"
               >
                 <Save size={18} />
                 <span>{saving ? "جاري الحفظ..." : "حفظ التغييرات"}</span>
+              </button>
+            </div>
+
+            {/* Mobile Floating Save Bar */}
+            <div
+              className="admin-mobile-only"
+              style={{
+                position: "fixed",
+                bottom: "76px",
+                left: "14px",
+                right: "14px",
+                zIndex: 999,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => handleSave()}
+                disabled={saving}
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-900 text-white font-extrabold text-sm inline-flex items-center justify-center gap-2 shadow-xl cursor-pointer disabled:opacity-50 border border-white/25"
+              >
+                <Save size={18} />
+                <span>{saving ? "جاري حفظ الإعدادات..." : "💾 حفظ التغييرات الآن"}</span>
               </button>
             </div>
           </form>

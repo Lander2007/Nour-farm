@@ -32,7 +32,7 @@ export default function AdminMobileNav() {
         display: "flex",
         alignItems: "stretch",
         justifyContent: "space-around",
-        zIndex: 9999,
+        zIndex: 60,
         direction: "rtl",
         boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.08)",
         paddingBottom: "max(0px, env(safe-area-inset-bottom))",

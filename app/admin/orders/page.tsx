@@ -22,6 +22,8 @@ import {
   Settings,
   MessageCircle,
   Send,
+  Copy,
+  Check,
 } from "lucide-react"
 import type { Order, OrderStatus, DeliveryFeeStatus, PaymentStatus } from "@/lib/db/types"
 import { useStoreSettings } from "@/store/settings"
@@ -70,6 +72,20 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [feeInputs, setFeeInputs] = useState<Record<string, string>>({})
   const [modalFeeInput, setModalFeeInput] = useState<string>("")
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null)
+
+  const handleCopyAddress = (order: Order) => {
+    const bld = order.address_details?.building ? `عمارة ${order.address_details.building}` : ""
+    const flr = order.address_details?.floor ? `الدور ${order.address_details.floor}` : ""
+    const apt = order.address_details?.apartment ? `شقة ${order.address_details.apartment}` : ""
+    const lnd = order.address_details?.landmark ? `(علامة: ${order.address_details.landmark})` : ""
+    const full = [order.area ? `[${order.area}]` : "", bld, flr, apt, lnd].filter(Boolean).join("، ")
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(full)
+      setCopiedOrderId(order.id)
+      setTimeout(() => setCopiedOrderId(null), 2500)
+    }
+  }
 
   const fetchOrders = async () => {
     try {
@@ -265,7 +281,28 @@ export default function AdminOrdersPage() {
             </div>
           </div>
 
-          <div className="admin-header-actions">
+          <div className="admin-mobile-only" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={fetchOrders}
+              className="row-action-btn"
+              title="تحديث البيانات"
+              style={{ width: 38, height: 38 }}
+            >
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            </button>
+            <Link
+              href="/"
+              target="_blank"
+              className="row-action-btn"
+              title="عرض المتجر"
+              style={{ width: 38, height: 38 }}
+            >
+              <ExternalLink size={16} />
+            </Link>
+          </div>
+
+          <div className="admin-header-actions admin-desktop-only">
             <Link href="/admin" className="admin-action-btn-ghost">
               <Layers size={16} />
               <span>إدارة المنتجات</span>
@@ -400,7 +437,8 @@ export default function AdminOrdersPage() {
               </span>
             </div>
           ) : (
-            <table className="admin-table">
+            <>
+              <table className="admin-table admin-orders-desktop-table">
               <thead>
                 <tr>
                   <th>رقم الطلب</th>
@@ -683,7 +721,259 @@ export default function AdminOrdersPage() {
                 })}
               </tbody>
             </table>
-          )}
+
+            {/* MOBILE ORDERS LIST */}
+            <div className="admin-orders-mobile-list">
+              {filteredOrders.map((order) => {
+                const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.new
+                const currentInputValue =
+                  feeInputs[order.id] !== undefined
+                    ? feeInputs[order.id]
+                    : order.delivery_fee != null
+                    ? String(order.delivery_fee)
+                    : ""
+                const isFeeSaved =
+                  order.delivery_fee_status === "set" || order.delivery_fee_status === "free"
+
+                return (
+                  <div key={order.id} className="mobile-order-card">
+                    {/* Header */}
+                    <div className="mobile-order-header">
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span className="font-mono font-black text-stone-900 text-base">
+                            #{order.order_number}
+                          </span>
+                          <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                            {cfg.label}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-400 font-mono">
+                          {new Date(order.created_at).toLocaleDateString("ar-EG")} • {new Date(order.created_at).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+
+                      {/* Status Select */}
+                      <select
+                        value={order.status}
+                        disabled={updatingId === order.id}
+                        onChange={(e) =>
+                          handleStatusChange(order.id, e.target.value as OrderStatus)
+                        }
+                        className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none transition ${cfg.bg} ${cfg.color} ${cfg.border}`}
+                      >
+                        <option value="new">جديد</option>
+                        <option value="preparing">قيد التجهيز</option>
+                        <option value="delivered">تم التسليم</option>
+                        <option value="cancelled">ملغي</option>
+                      </select>
+                    </div>
+
+                    {/* Customer Details & 1-Tap Quick Contact */}
+                    <div className="mobile-order-customer-box">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <strong className="text-stone-900 text-sm font-black">
+                          {order.customer_name}
+                        </strong>
+                        <span className="text-xs font-mono font-bold text-stone-600" dir="ltr">
+                          {order.customer_phone}
+                        </span>
+                      </div>
+
+                      <div className="mobile-contact-actions">
+                        <a
+                          href={`tel:${order.customer_phone}`}
+                          className="mobile-contact-btn mobile-contact-call"
+                          title="اتصال هاتفي مباشر"
+                        >
+                          <Phone size={15} />
+                          <span>اتصال هاتفي</span>
+                        </a>
+                        <a
+                          href={`https://wa.me/20${order.customer_phone.replace(/^0+/, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mobile-contact-btn mobile-contact-whatsapp"
+                          title="محادثة واتساب مباشرة"
+                        >
+                          <MessageCircle size={15} />
+                          <span>واتساب</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Delivery Address & Copy */}
+                    <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "0.75rem", fontSize: "0.82rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                        <div style={{ flex: 1 }}>
+                          {order.area && (
+                            <span className="font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded text-[11px] inline-block mb-1">
+                              📍 {order.area}
+                            </span>
+                          )}
+                          <p className="text-stone-700 font-medium leading-relaxed">
+                            عمارة {order.address_details?.building || "غير محدد"}، الدور {order.address_details?.floor || "غير محدد"}، شقة {order.address_details?.apartment || "غير محدد"}
+                            {order.address_details?.landmark && ` (علامة: ${order.address_details.landmark})`}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAddress(order)}
+                          className="px-2.5 py-1.5 rounded-lg border text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+                          style={{
+                            background: copiedOrderId === order.id ? "#ecfdf5" : "#ffffff",
+                            borderColor: copiedOrderId === order.id ? "#10b981" : "#cbd5e1",
+                            color: copiedOrderId === order.id ? "#047857" : "#475569",
+                            flexShrink: 0
+                          }}
+                          title="نسخ العنوان للدليفري"
+                        >
+                          {copiedOrderId === order.id ? <Check size={13} /> : <Copy size={13} />}
+                          <span>{copiedOrderId === order.id ? "تم النسخ" : "نسخ"}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Items Summary */}
+                    <div style={{ fontSize: "0.8rem", color: "#334155", background: "#fafaf9", padding: "0.6rem 0.75rem", borderRadius: 10 }}>
+                      <span className="text-[11px] font-bold text-stone-500 block mb-1">
+                        الأصناف المطلوبة ({order.items?.length || 0}):
+                      </span>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        {order.items?.map((it, idx) => (
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem" }}>
+                            <span className="font-semibold text-stone-800">{it.name_ar} × {it.qty} {it.unit || ""}</span>
+                            <span className="font-mono font-bold text-stone-600">{number.format(it.line_total || it.unit_price * it.qty)} ج.م</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Delivery Fee Editor */}
+                    <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 12, padding: "0.75rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                        <span className="text-xs font-black text-emerald-900">رسوم التوصيل:</span>
+                        {order.delivery_fee_status === "free" ? (
+                          <span className="text-[11px] font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                            محددة: مجاني ✓
+                          </span>
+                        ) : order.delivery_fee_status === "set" ? (
+                          <span className="text-[11px] font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                            محددة: {number.format(order.delivery_fee ?? 0)} ج.م
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                            لم تُحدد بعد
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", width: "100%" }}>
+                        <input
+                          type="number"
+                          placeholder="ج.م"
+                          value={currentInputValue}
+                          onChange={(e) =>
+                            setFeeInputs((prev) => ({ ...prev, [order.id]: e.target.value }))
+                          }
+                          style={{ minHeight: 40, fontSize: 16, minWidth: 0, flex: "1 1 0%" }}
+                          className="px-3 py-1 border border-emerald-300 rounded-lg font-mono font-bold bg-white focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFeeInputs((prev) => ({ ...prev, [order.id]: "0" }))
+                            handleSaveDeliveryFee(order.id, 0, "free")
+                          }}
+                          disabled={updatingId === order.id}
+                          style={{ flexShrink: 0, whiteSpace: "nowrap", minHeight: 40 }}
+                          className="px-3 py-2 text-xs font-extrabold rounded-lg bg-white border border-emerald-400 text-emerald-800 cursor-pointer"
+                        >
+                          مجاني
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const val = Number(currentInputValue || 0)
+                            handleSaveDeliveryFee(order.id, val, val === 0 ? "free" : "set")
+                          }}
+                          disabled={updatingId === order.id}
+                          style={{ flexShrink: 0, whiteSpace: "nowrap", minHeight: 40 }}
+                          className="px-4 py-2 text-xs font-extrabold rounded-lg bg-emerald-800 text-white cursor-pointer"
+                        >
+                          حفظ
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Payment Method & Total Row */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "0.25rem" }}>
+                      <div>
+                        <span className="text-[11px] text-stone-500 block">طريقة الدفع:</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "2px" }}>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-stone-100 text-stone-800">
+                            {order.payment_method === "wallet"
+                              ? "محفظة إلكترونية"
+                              : order.payment_method === "instapay"
+                              ? "إنستاباي"
+                              : "عند الاستلام"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handlePaymentStatusToggle(
+                                order.id,
+                                order.payment_status === "received" ? "pending" : "received"
+                              )
+                            }
+                            className={`text-[11px] font-bold px-2 py-0.5 rounded cursor-pointer ${
+                              order.payment_status === "received"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-rose-100 text-rose-800"
+                            }`}
+                            title="انقر لتغيير حالة السداد"
+                          >
+                            {order.payment_status === "received" ? "مدفوع ✓" : "لم يُسدد ✕"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "left" }}>
+                        <span className="text-[11px] text-stone-500 block">الإجمالي:</span>
+                        <strong className="text-base font-black text-stone-900 font-mono">
+                          {number.format(order.total_price)} ج.م
+                        </strong>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", paddingTop: "0.25rem" }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(order)}
+                        className="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs text-center cursor-pointer"
+                      >
+                        عرض التفاصيل والفاتورة
+                      </button>
+
+                      {isFeeSaved && (
+                        <a
+                          href={getWhatsAppShareUrl(order)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-bold rounded-xl bg-emerald-700 text-white shadow-xs"
+                          title="إرسال الإجمالي للعميل عبر واتساب"
+                        >
+                          <MessageCircle size={14} />
+                          <span>واتساب</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
         </div>
       </div>
 
